@@ -8,6 +8,7 @@
                 },
                 "GFA_2_FA_HIFI": {
                     "awk": "mawk 1.3.4",
+                    "awk": "1.3.4",
                     "gzip": 1.13
                 },
                 "HIFIASM": {
