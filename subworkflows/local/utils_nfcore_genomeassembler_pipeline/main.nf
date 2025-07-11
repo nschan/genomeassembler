@@ -165,6 +165,7 @@ workflow PIPELINE_INITIALISATION {
                 busco: it.busco ?: params.busco,
                 busco_lineage: it.busco_lineage ?: params.busco_lineage,
                 busco_db: it.busco_db ?: params.busco_db,
+                meryl_k: it.meryl_k ?: params.meryl_k,
                 merqury: it.merqury ?: params.merqury,
                 lift_annotations: it.lift_annotations ?: params.lift_annotations,
                 shortread_F: it.shortread_F ?: params.shortread_F,
@@ -172,7 +173,7 @@ workflow PIPELINE_INITIALISATION {
                 paired: it.paired ?: params.paired,
                 // new:
                 use_short_reads: it.use_short_reads ?: params.use_short_reads ?: it.shortread_F ? true : false,
-                shortread_trim: it.shortread_trim ?: params.trim_short_reads
+                shortread_trim: it.shortread_trim ?: params.shortread_trim
             ] }
         .set { ch_samplesheet }
 
