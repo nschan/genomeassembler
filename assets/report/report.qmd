@@ -71,7 +71,7 @@ fastplong_reports <- list.files(paste0(data_base, "fastplong"),
                             pattern = ".json",
                             full.names = T) %>%
     map_dfr(\(x) read_fastplong(x)) %>%
-    left_join(groups, by = join_by(sample))
+    left_join(groups, by = join_by(group))
 ```
 
 ```{r}
@@ -88,8 +88,9 @@ paste0('```{r}\n
             p <- fastplong_reports %>%
             filter(group == "', unique(fastplong_reports$group)[i], '") %>%
             ggplot(aes(x = sample, y = value)) +
-            geom_point(size = 5, pch=21, aes(fill=stage), position = position_dodge(width = 0.5)) +
-            facet_wrap(read_type~stat, scales = "free_y", ncol=2, , labeller = label_context) +
+            geom_line() +
+            geom_point(size = 5, pch=21, aes(fill=stage)) +
+            facet_wrap(read_type~stat, scales = "free_y", ncol=2) +
             fill_scale_plots +
             scale_y_continuous(labels = function(x) format(x,scientific=-1,trim=T, digits = 3, drop0trailing=T), n.breaks = 4) +
             theme(axis.title.x = element_blank(),
@@ -114,51 +115,32 @@ paste0('```{r}\n
 ## Each tab contains 3 valueboxes
 ## Below the valueboxes, the sample-specific plot code generated above is inserted
 
-for (i in 1:length(unique(fastplong_reports$sample))) {
-    cat(paste0('## ', unique(fastplong_reports$sample)[i], '\n\n'),
+for (i in 1:length(unique(fastplong_reports$group))) {
+    cat(paste0('## ', unique(fastplong_reports$group)[i], '\n\n'),
         paste0('### { width = 30% }', '\n\n'),
         paste0('::: {.valuebox icon="magic" color="primary" title="Total bases sequenced"}','\n'),
         paste0(fastplong_reports %>%
             filter(stat == "Total Bases", stage == "After Filtering") %>%
-            filter(sample == unique(fastplong_reports$sample)[i],) %$%
+            filter(sample == unique(fastplong_reports$group)[i]) %$%
             sum(value) %>%
             format(scientific=-1,trim=T, digits = 3, drop0trailing=T),'\n'),
         paste0(':::', '\n\n'),
         paste0('::: {.valuebox icon="collection" color="secondary" title="Number of reads"}', '\n'),
         paste0(fastplong_reports %>%
                 filter(stat == "Total Reads", stage == "After Filtering") %>%
-                filter(sample == unique(fastplong_reports$sample)[i]) %$%
+                filter(sample == unique(fastplong_reports$group)[i]) %$%
                 sum(value) %>%
                 paste(" bases"), '\n'),
         paste0(':::', '\n\n'),
         paste0('::: {.valuebox icon="chevron-double-up" color="success" title="Q30 rate"}', '\n'),
         paste0(fastplong_reports %>%
                 filter(stat == "Q30 Rate", stage == "After Filtering") %>%
-                filter(sample == unique(fastplong_reports$sample)[i]) %$%
+                filter(sample == unique(fastplong_reports$group)[i]) %$%
                 {value*100} %>%
                 round(1) %>%
                 paste0(" %"),
                 '\n'),
         paste0(':::', '\n\n'),
-        paste0('\n\n'),
-        paste0('### {.tabset}'),
-        paste0('\n\n'),
-        paste0('#### Tables \n\n'),
-        fastplong_reports %>%
-            filter(sample == unique(fastplong_reports$sample)[i]) %>%
-            pivot_wider(id_cols = c("sample","read_type","stat"),names_from = "stage") %>%
-          gt::gt() %>%
-          gt::cols_label(
-            sample = "Group",
-            read_type = "Read Type",
-            stat = "Metric"
-          ) %>%
-          gt::fmt_number(suffixing = TRUE, n_sigfig = 3, rows = ! (stat %>% str_detect("Rate"))) %>%
-          gt::fmt_percent(rows = stat %>% str_detect("Rate"))  %>%
-          gt::as_raw_html()
-        ,
-        paste0('\n\n'),
-        paste0('#### Plots'),
         paste0('### ', '\n\n'),
         knitr::knit_child(glue::glue('fastplong_files/_{ unique(fastplong_reports$sample)[i] }_fastplong.Rmd'),
                         envir = globalenv(),

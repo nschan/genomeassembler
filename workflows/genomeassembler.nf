@@ -175,7 +175,9 @@ workflow GENOMEASSEMBLER {
         .set { ch_main_scaffolded }
 
     PREPARE.out.fastplong_json_reports
-        .collect { it -> it[1] }
+        .map { it -> it[1] }
+        .unique()
+        .collect()
         .set { fasplong_jsons }
 
     PREPARE.out.genomescope_summary
@@ -250,6 +252,8 @@ workflow GENOMEASSEMBLER {
         .fromPath("${projectDir}/assets/report/functions/*")
         .collect()
         .set { report_functions }
+
+    //fasplong_jsons.view { it -> "UNQIE JSONS: $it"}
 
     REPORT( report_files,
             report_functions,

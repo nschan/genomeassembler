@@ -5,7 +5,7 @@ library(readr)
 
 # Read a nanoq json report
 read_fastplong <- function(file) {
-  sample_name <- file %>% str_extract('(?<=fastplong/).+?(?=_(ont|hifi)\\.fastplong\\.json)')
+  group_name <- file %>% str_extract('(?<=fastplong/).+?(?=_(ont|hifi)\\.fastplong\\.json)')
   read_type <- file %>%
     str_extract('(?<=fastplong/).*') %>%
     str_extract('_(ont|hifi)\\.') %>%
@@ -18,7 +18,7 @@ read_fastplong <- function(file) {
       pivot_longer(everything(),
                    names_to = c("stage", "stat"),
                    names_pattern = "(.*)\\.(.*)") %>%
-    mutate(sample = sample_name) %>%
+    mutate(group = group_name) %>%
     mutate(
       stat = stat %>%
         str_replace_all("_", " ") %>%
