@@ -557,7 +557,7 @@ merqury_stats <- list.files(paste0(data_base, "merqury"), full.names = T, patter
                     str_detect(x, "_pilon") ~ "pilon",
                     str_detect(x, "_longstitch") ~ "longstitch",
                     str_detect(x, "_links") ~ "LINKS",
-                    str_detect(x, "assembl[ey]") ~ "Assembly"
+                    str_detect(x, "assembl[ey]") ~ "Assembly",
                     TRUE ~ "Unknown")) }) %>%
     bind_rows() %>%
     left_join(groups, by = join_by(sample))
@@ -566,15 +566,15 @@ merqury_asm_hists <- list.files(paste0(data_base, "/merqury"), full.names = T, p
     lapply(\(x) {
             read_tsv(x, col_names = T, show_col_types = FALSE) %>%
             mutate(
-                sample = str_extract(x %>% basename(),
-                                ".+?(?=_\\.assembly|\\-assemble|links|longstitch|ragtag|medaka|pilon|\\-run|\\-polish)"),
+                sample = basename(x) %>%
+                            str_extract(groups$sample[rev(order(nchar(groups$sample)))] %>% paste(collapse = "|")),
                 stage = case_when(
                     str_detect(x, "_ragtag") ~ "RagTag",
                     str_detect(x, "_medaka") ~ "medaka",
                     str_detect(x, "_pilon") ~ "pilon",
                     str_detect(x, "_longstitch") ~ "longstitch",
                     str_detect(x, "_links") ~ "LINKS",
-                    str_detect(x, "assembl[ey]") ~ "Assembly"
+                    str_detect(x, "assembl[ey]") ~ "Assembly",
                     TRUE ~ "Unknown"),
                 Assembly = as.factor(Assembly),
                 stage = as.factor(stage),
@@ -589,15 +589,15 @@ merqury_cn_hists <- list.files(paste0(data_base, "merqury"), full.names = T, pat
     lapply(\(x) {
             read_tsv(x, col_names = T, show_col_types = FALSE) %>%
             mutate(
-                sample = str_extract(x %>% basename(),
-                                ".+?(?=_\\.assembly|\\-assemble|links|longstitch|ragtag|medaka|pilon|\\-run|\\-polish)"),
+                sample = basename(x) %>%
+                            str_extract(groups$sample[rev(order(nchar(groups$sample)))] %>% paste(collapse = "|")),
                 stage = case_when(
                     str_detect(x, "_ragtag") ~ "RagTag",
                     str_detect(x, "_medaka") ~ "medaka",
                     str_detect(x, "_pilon") ~ "pilon",
                     str_detect(x, "_longstitch") ~ "longstitch",
                     str_detect(x, "_links") ~ "LINKS",
-                    str_detect(x, "assembl[ey]") ~ "Assembly"
+                    str_detect(x, "assembl[ey]") ~ "Assembly",
                     TRUE ~ "Unknown"),
                 Copies = as.factor(Copies),
                 stage = as.factor(stage),
@@ -614,15 +614,15 @@ merqury_qv <- list.files(paste0(data_base, "merqury"), full.names = T, pattern =
                     col_names = c("Assembly", "kmers_assembly_unique", "kmers_assembly_shared", "QV", "error_rate"),
                     show_col_types = FALSE) %>%
                 mutate(
-                    sample = str_extract(x %>% basename(),
-                                ".+?(?=_\\.assembly|\\-assemble|links|longstitch|ragtag|medaka|pilon|\\-run|\\-polish)"),
+                    sample = basename(x) %>%
+                                str_extract(groups$sample[rev(order(nchar(groups$sample)))] %>% paste(collapse = "|")),
                     stage = case_when(
                         str_detect(x, "_ragtag") ~ "RagTag",
                         str_detect(x, "_medaka") ~ "medaka",
                         str_detect(x, "_pilon") ~ "pilon",
                         str_detect(x, "_longstitch") ~ "longstitch",
                         str_detect(x, "_links") ~ "LINKS",
-                        str_detect(x, "assembl[ey]") ~ "Assembly"
+                        str_detect(x, "assembl[ey]") ~ "Assembly",
                         TRUE ~ "Unknown"),
                     stage = as.factor(stage),
                     sample = as.factor(sample),
@@ -824,7 +824,7 @@ genomescope_out <- list.files(paste0(data_base, "genomescope"), full.names = T, 
 
 ::: {.content-visible when-profile="jellyfish"}
 
-Below are the genomescope estimates based on the provided ONT reads:
+Below are the genomescope estimates based on the provided QC reads:
 
 ```{r}
 #| eval: !expr params$jellyfish
@@ -839,8 +839,7 @@ for (file in img_files) {
 }
 
 img_files <- data.frame(file = list.files("genomescope_files/", full.names = T, pattern = "plot.png")) %>%
-  mutate(sample = str_extract(file %>% basename(), ".+?(?=_plot.png)")) %>%
-  left_join(groups, join_by(sample))
+  mutate(group = str_extract(file %>% basename(), ".+?(?=_plot.png)"))
 
 
 cat(":::{.panel-tabset}\n\n")
