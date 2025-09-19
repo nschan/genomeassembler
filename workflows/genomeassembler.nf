@@ -95,9 +95,68 @@ workflow GENOMEASSEMBLER {
         paired: bool,
         use_short_reads: bool,
         shortread_trim: bool
-    */
 
-    // TODO: Currently the pipeline is losing everything with hifireads somewhere.
+
+
+    ===========
+       JOINS
+    ===========
+
+    Since this channel needs to stay a map so I can pull out the correct elements, joining is difficult:
+    Nextflow's join operator only works on list-typed channels, but the channels here are maps.
+    For this reason, there are some confuding map operations involved where each map-element is converted to a list,
+    containing the value and the previous map. The whole channel is turned into a list this way:
+
+    Something like
+
+    [
+        meta: [id: something1],
+        somepath: "/path"
+    ]
+
+    becomes
+
+    [
+        [id: something, meta: [id: something]],
+        ["path", somepath: "path"]
+    ]
+
+    This can be joined to
+
+    [
+        [id: something, meta: [id: something]],
+        ["different_path", otherpath: "path"]
+    ]
+
+    This makes it possible to join on the first element (the one containing meta):
+
+    [
+        [id: something, meta: [id: something]],
+        ["path", somepath: "path"],
+        ["different_path", otherpath: "different_path"]
+    ]
+
+    After joining, the map is recreated from the second list element, to create:
+
+    [
+        meta: [id: something],
+        somepath: "path",
+        otherpath: "different_path"
+    ]
+
+    This is sadly a somewhat frequent pattern in this pipeline and
+    it is done like this:
+
+    map_channel_1
+            // Convert to list for join
+            .map { it -> it.collect { entry -> [ entry.value, entry ] } }
+            .join( map_channel_2
+                     // Convert to list for join
+                    .map { it -> it.collect { entry -> [ entry.value, entry ] } }
+            )
+            // After joining re-create the maps from the stored map
+            .map { it -> it.collect { _entry, map -> [ (map.key): map.value ] }.collectEntries() }
+    */
 
     Channel.empty().set { meryl_kmers }
 
