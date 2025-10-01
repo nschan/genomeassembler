@@ -1,4 +1,5 @@
-include { FLYE } from '../../../modules/nf-core/flye/main'
+include { FLYE as FLYE_ONT} from '../../../modules/nf-core/flye/main'
+include { FLYE as FLYE_HIFI} from '../../../modules/nf-core/flye/main'
 include { HIFIASM } from '../../../modules/nf-core/hifiasm/main'
 include { HIFIASM as HIFIASM_ONT } from '../../../modules/nf-core/hifiasm/main'
 include { GFA_2_FA as GFA_2_FA_HIFI } from '../../../modules/local/gfa2fa/main'
@@ -67,17 +68,24 @@ workflow ASSEMBLE {
         .single
         .filter { it -> it.assembler1 == "flye" }
         .mix(
-            // Does this actually work correctly? What happens to samples where assembler1 and assembler2 are flye?
-            // TODO: May need fixing, think those need to be mixed in individually so they actually are assembled twice
+            // Add in the scaffolding samples where flye is used for ONT
             ch_main_assemble_branched
                 .scaffold
-                .filter { it -> it.assembler1 == "flye" || it.assembler2 == "flye" }
+                .filter { it -> it.assembler1 == "flye"  }
+            // Add in the scaffolding samples where is used for HiFi
+                .mix(
+                    ch_main_assemble_branched
+                    .scaffold
+                    .filter { it -> it.assembler2 == "flye" }
+                )
         )
         .set { ch_main_assemble_flye }
 
     // Assembly flye branch
     // Extra args per sample are stored in the meta map, so is the estimated / expected genome size
+    // The inputs are created once for ONT and once for HiFi
     ch_main_assemble_flye
+        .filter { it -> it.assembler1 == "flye" && it.ontreads }
         .multiMap {
             it ->
             reads: [
@@ -87,20 +95,39 @@ workflow ASSEMBLE {
                     flye_args: it.flye_args ?: ""
                 ],
                 // Reads are matched based on assembler
-                // Does this actually work correctly? What happens to samples where assembler1 and assembler2 are flye?
-                // TODO: May need fixing
-                it.assembler1 == "flye" ? it.ontreads : (it.assembler2 == "flye" ? it.hifireads : []),
+                it.assembler1 == "flye" ? it.ontreads : null,
             ]
-            mode: it.assembler1 == "flye" ? "--nano-hq" : "--pacbio-hifi"
+            mode: it.assembler1 == "flye" ? "--nano-hq" : null
         }
-        .set { flye_inputs }
+        .set { flye_ont_inputs }
+    // These are the hifi samples
+    ch_main_assemble_flye
+        // Those where the hifi assembler is flye, or where there is only one assembler and hifireads
+        .filter { it -> it.assembler2 == "flye" || (it.strategy == "single" && it.assembler1 == "flye" && it.hifireads)}
+        .multiMap {
+            it ->
+            reads: [
+                [
+                    id: it.meta.id,
+                    genome_size: it.genome_size,
+                    flye_args: it.flye_args ?: ""
+                ],
+                // Reads are matched based on assembler
+                it.assembler2 == "flye" ? it.hifireads : null,
+            ]
+            mode: it.assembler2 == "flye" ? "--pacbio-hifi" : null
+        }
+        .set { flye_hifi_inputs }
 
-    flye_inputs.reads.dump(tag: "Assemble: Flye inputs")
+    flye_ont_inputs.reads.dump(tag: "Assemble: Flye-ONT inputs")
+    flye_hifi_inputs.reads.dump(tag: "Assemble: Flye-HIFI inputs")
 
     // Run through flye
-    FLYE(flye_inputs.reads, flye_inputs.mode)
+    FLYE_ONT(flye_ont_inputs.reads, flye_ont_inputs.mode)
+    FLYE_HIFI(flye_hifi_inputs.reads, flye_hifi_inputs.mode)
 
-    ch_versions = ch_versions.mix(FLYE.out.versions)
+
+    ch_versions = ch_versions.mix(FLYE_ONT.out.versions).mix(FLYE_HIFI.out.versions)
 
     /* Hifiasm: everything that is not hifiasm-ONT
         Single branch with hifiasm as assembler and no ont reads (only hifireads)
@@ -177,19 +204,22 @@ workflow ASSEMBLE {
     ch_main_assemble_flye
         // Convert to list for join
         .map { it -> it.collect { entry -> [ entry.value, entry ] } }
-        .join( FLYE.out.fasta
-                .map { meta, assembly -> [meta: [id: meta.id], flye_assembly: assembly ] }
+        .join( FLYE_ONT.out.fasta
+                .map { meta, assembly -> [meta: [id: meta.id], flye_ont_assembly: assembly ] }
+                .map { it -> it.collect { entry -> [ entry.value, entry ] } }
+        )
+        .join( FLYE_HIFI.out.fasta
+                .map { meta, assembly -> [meta: [id: meta.id], flye_hifi_assembly: assembly ] }
                 .map { it -> it.collect { entry -> [ entry.value, entry ] } }
         )
         // After joining re-create the maps from the stored map
         .map { it -> it.collect { _entry, map -> [ (map.key): map.value ] }.collectEntries() }
-        // The flye_assembly has to be placed into the correct slot
-        // TODO: Rethink if this works for flye/flye scaffolds?!
-        .map { it -> it - it.subMap("flye_assembly") +
+        // The flye_ont|hifi_assembly has to be placed into the correct slot
+        .map { it -> it - it.subMap("flye_ont_assembly") - it.subMap("flye_hifi_assembly") +
                 [
-                    assembly:  it.strategy == "single" ? it.flye_assembly : null,
-                    assembly1: it.assembler1 == "flye" ? it.flye_assembly : null,
-                    assembly2: it.assembler2 == "flye" ? it.flye_assembly : null,
+                    assembly:  it.strategy == "single" && it.ontreads ? it.flye_ont_assembly : it.flye_hifi_assembly,
+                    assembly1: it.assembler1 == "flye" ? it.flye_ont_assembly : null,
+                    assembly2: it.assembler2 == "flye" ? it.flye_hifi_assembly : null,
                 ]
         }
         .set { flye_assemblies }
@@ -396,7 +426,7 @@ workflow ASSEMBLE {
         .set {
             ch_quast_branched
         }
-    // It is actually only created if no bam file is provided
+    // Alignment is actually only created if no bam file is provided
     ch_quast_branched
         .use_ref
         .branch { it ->
