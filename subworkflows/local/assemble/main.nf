@@ -223,6 +223,7 @@ workflow ASSEMBLE {
                 ]
         }
         .set { flye_assemblies }
+
     flye_assemblies.dump(tag: "Assemble: Flye assemblies")
 
     // Join hifiasm hifi assemblies back to main channel
