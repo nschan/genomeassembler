@@ -152,8 +152,6 @@ workflow ASSEMBLE {
 
     ch_main_assemble_hifi_hifiasm.dump(tag: "Assemble: hifiasm HIFI inputs")
 
-
-
     HIFIASM(ch_main_assemble_hifi_hifiasm
                 .map {
                     it -> [
@@ -176,7 +174,7 @@ workflow ASSEMBLE {
     /*
     Assemble hifiasm_ont branch:
         Single branch with hifiasm and only ont reads
-        Scaffold samples where assembler1 (ont assembler) is hifiasm
+        Scaffold branch where assembler1 (ont assembler) is hifiasm
     */
     ch_main_assemble_branched
         .single
