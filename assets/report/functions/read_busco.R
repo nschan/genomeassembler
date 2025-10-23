@@ -2,8 +2,8 @@
 
 read_busco_report <- function(file) {
   assembly <- read_lines(file,
-                        skip = 2L,
-                        n_max = 1L) %>%
+                         skip = 2L,
+                         n_max = 1L) %>%
     str_extract('(?<=input_seqs/).+?(?=\\.fa)')
   bind_rows(
     read_tsv(
@@ -64,18 +64,18 @@ read_busco_report <- function(file) {
 read_busco_batch <- \(x) {read_tsv(x, show_col_types = F) %>%
     set_colnames(colnames(.) %>% str_replace_all(" ", "_")) %>%
     mutate(
-        # Get sample name by matching filename to samples in groups, reverse sort by length to hopefully catch
-        # the correct name first in case there is partial overlap between sample names.
-        sample = basename(x) %>%
+      # Get sample name by matching filename to samples in groups, reverse sort by length to hopefully catch
+      # the correct name first in case there is partial overlap between sample names.
+      sample = basename(x) %>%
         str_extract(groups$sample[rev(order(nchar(groups$sample)))] %>% paste(collapse = "|")),,
-           stage = case_when(
-             str_detect(x, "ragtag") ~ "RagTag",
-             str_detect(x, "medaka") ~ "medaka",
-             str_detect(x, "pilon") ~ "pilon",
-             str_detect(x, "longstitch") ~ "longstitch",
-             str_detect(x, "links") ~ "LINKS",
-             str_detect(x, "assembl[ey]") ~ "Assembly",
-           ),
-           Percent_gaps = Percent_gaps %>% str_remove("%") %>% as.numeric) %>%
+      stage = case_when(
+        str_detect(x, "ragtag") ~ "RagTag",
+        str_detect(x, "medaka") ~ "medaka",
+        str_detect(x, "pilon") ~ "pilon",
+        str_detect(x, "longstitch") ~ "longstitch",
+        str_detect(x, "links") ~ "LINKS",
+        str_detect(x, "assembl[ey]") ~ "Assembly",
+      ),
+      Percent_gaps = Percent_gaps %>% str_remove("%") %>% as.numeric) %>%
     dplyr::select(-Dataset) %>%
     pivot_longer(Complete:Number_of_scaffolds, names_to = "Var")}

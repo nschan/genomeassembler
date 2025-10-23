@@ -10,7 +10,9 @@ plot_merqury_stats <- function(data, groupname) {
       color = "k-mers copy number",
       fill = "k-mers copy number",
       title = glue::glue("k-mer completeness {groupname} assemblies")
-    )
+    ) +
+    fill_scale_plots +
+    color_scale_plots
 }
 
 plot_merqury_multiplicity <- function(data, groupname) {
@@ -19,16 +21,15 @@ plot_merqury_multiplicity <- function(data, groupname) {
     max(Count)
   x_max <- data %>%
     filter(group == paste(groupname), Assembly != "read-only") %$%
-    quantile(Count, .95)
+    quantile(Count, .9)
   data %>%
     filter(group == paste(groupname)) %>%
     mutate(Assembly = case_when(Assembly == "read-only" ~ "Reads", TRUE ~ "Assembly")) %>%
     ggplot(aes(x = kmer_multiplicity, y = Count)) +
     geom_line(aes(color = Assembly)) +
-    #geom_area(aes(fill = Assembly), alpha = 0.15,stat = "identity") +
     facet_grid(sample ~ stage) +
     coord_cartesian(
-      xlim = c(0, x_max * 1.1),
+      xlim = c(0, x_max * 1.05),
       ylim = c(0, y_max * 1.05),
       expand = TRUE,
       default = FALSE,
@@ -52,15 +53,14 @@ plot_merqury_copynumber <- function(data, groupname) {
     max(Count)
   x_max <- data %>%
     filter(group == paste(groupname), Copies != "read-only") %$%
-    quantile(Count, .965)
+    quantile(Count, .9)
   data %>%
     filter(group == paste(groupname)) %>%
     ggplot(aes(x = kmer_multiplicity, y = Count)) +
     geom_line(aes(color = Copies)) +
-    #geom_area(aes(fill = Copies), alpha = 0.15, stat = "identity") +
     facet_grid(sample ~ stage) +
     coord_cartesian(
-      xlim = c(0, x_max * 1.1),
+      xlim = c(0, x_max * 1.05),
       ylim = c(0, y_max * 1.05),
       expand = TRUE,
       default = FALSE,
@@ -88,5 +88,7 @@ plot_merqury_qv <- function(data, groupname) {
       color = "black",
       size = 5
     ) +
-    labs(y = "QV", x = "Stage", title = "QV across assembly stages")
+    labs(y = "QV", x = "Stage", title = "QV across assembly stages") +
+    fill_scale_plots +
+    color_scale_plots
 }

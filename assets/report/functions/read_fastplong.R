@@ -9,7 +9,9 @@ read_fastplong <- function(file) {
   read_type <- file %>%
     str_extract('(?<=fastplong/).*') %>%
     str_extract('_(ont|hifi)\\.') %>%
-    str_remove_all("_|\\.")
+    str_remove_all("_|\\.") |>
+    str_replace("ont", "ONT") |>
+    str_replace("hifi", "PB HiFi")
   read_json(file) %>%
       enter_object("summary") %>%
       tidyjson::spread_all() %>%
