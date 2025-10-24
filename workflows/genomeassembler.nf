@@ -39,7 +39,6 @@ workflow GENOMEASSEMBLER {
     ch_input
     ch_refs
 
-<<<<<<< HEAD
     main:
     // Initialize empty channels
     Channel.empty().set { ch_ref_bam }
@@ -211,17 +210,6 @@ workflow GENOMEASSEMBLER {
     }
 
     REPORT(report_files, report_functions, nanoq_files, genomescope_files, quast_files, busco_files, merqury_files, Channel.fromPath("${params.outdir}/pipeline_info/nf_core_pipeline_software_versions.yml"))
-=======
-    ch_versions = Channel.empty()
-    //
-    // MODULE: Run FastQC
-    //
-    FASTQC (
-        ch_samplesheet
-    )
-    
-    ch_versions = ch_versions.mix(FASTQC.out.versions.first())
->>>>>>> nf-core-template-merge-3.4.1
 
     //
     // Collate and save software versions
@@ -232,17 +220,9 @@ workflow GENOMEASSEMBLER {
             name: 'nf_core_'  +  'genomeassembler_software_'  + 'versions.yml',
             sort: true,
             newLine: true
-<<<<<<< HEAD
         )
 
     _report = REPORT.out.report_html.toList()
-=======
-        ).set { ch_collated_versions }
-
-
-    emit:
-    versions       = ch_versions                 // channel: [ path(versions.yml) ]
->>>>>>> nf-core-template-merge-3.4.1
 
     emit:
     _report
