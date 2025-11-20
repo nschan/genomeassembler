@@ -52,11 +52,8 @@ runs:
       with:
         auto-update-conda: true
         conda-solver: libmamba
-<<<<<<< HEAD
-=======
         channels: conda-forge
         channel-priority: strict
->>>>>>> nf-core-template-merge-3.4.1
         conda-remove-defaults: true
 
     - name: Run nf-test
