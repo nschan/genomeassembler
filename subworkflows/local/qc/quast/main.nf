@@ -5,13 +5,13 @@ workflow RUN_QUAST {
     ch_main
 
     main:
-    Channel.empty().set { versions }
+    channel.empty().set { versions }
     /* prepare for quast:
      * This makes use of the input channel to obtain the reference and reference annotations
      * See quast module for details
      */
-    Channel.empty().set { quast_results }
-    Channel.empty().set { quast_tsv }
+    channel.empty().set { quast_results }
+    channel.empty().set { quast_tsv }
 
     ch_main
         .filter {
@@ -22,7 +22,7 @@ workflow RUN_QUAST {
                     it.meta,
                     it.qc_target,
                     it.ref_fasta ?: [],
-                    it.ref_gff?: [],
+                    it.ref_gff ?: [],
                     it.ref_map_bam ?: [],
                     it.assembly_map_bam
                 ]
