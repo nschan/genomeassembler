@@ -1,4 +1,4 @@
-include { TRIMGALORE } from '../../../../modules/nf-core/trimgalore/main'
+include { FASTP } from '../../../../modules/nf-core/fastp/main'
 include { MERYL_COUNT } from '../../../../modules/nf-core/meryl/count/main'
 include { MERYL_UNIONSUM } from '../../../../modules/nf-core/meryl/unionsum/main'
 
@@ -7,7 +7,7 @@ workflow PREPARE_SHORTREADS {
     shortreads_in
 
     main:
-    Channel.empty().set { ch_versions }
+    channel.empty().set { ch_versions }
 
     shortreads_in
         .map { create_shortread_channel(it) }
@@ -55,14 +55,14 @@ workflow PREPARE_SHORTREADS {
         .mix(shortreads.trim
             .filter { it -> !it.group }
             .map {
-                it -> [ it.meta, it.shortreads ]
+                it -> [ it.meta, it.shortreads, [] ]
             }
         )
-        .set { trimgalore_in }
+        .set { trim_in }
 
-    TRIMGALORE(trimgalore_in)
+    FASTP(trim_in)
 
-    TRIMGALORE.out.reads
+    FASTP.out.reads
         .filter { it -> it[0].ids }
         .flatMap { it ->
             it[0].ids.tokenize("+").collect {
@@ -70,7 +70,7 @@ workflow PREPARE_SHORTREADS {
             }
         }
         .mix(
-            TRIMGALORE.out.reads
+            FASTP.out.reads
                 .filter { it -> !it[0].ids }
                 .map { it -> [ meta: [ id: it[0].id ], shortreads: it[1] ] }
         )
@@ -88,7 +88,7 @@ workflow PREPARE_SHORTREADS {
         .mix( shortreads.no_trim )
         .set { shortreads }
 
-    ch_versions = ch_versions.mix(TRIMGALORE.out.versions)
+    ch_versions = ch_versions.mix(FASTP.out.versions)
 
     shortreads
         .filter { it -> it.merqury }
