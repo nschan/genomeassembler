@@ -6,7 +6,7 @@ workflow MERQURY_QC {
     meryl_out
 
     main:
-    Channel.empty().set { versions }
+    channel.empty().set { versions }
     assembly.map { meta, _assembly -> [meta.id, []] }.set { stats }
     assembly.map { meta, _assembly -> [meta.id, []] }.set { spectra_asm_hist }
     assembly.map { meta, _assembly -> [meta.id, []] }.set { spectra_cn_hist }

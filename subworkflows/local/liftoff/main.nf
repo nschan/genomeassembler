@@ -5,7 +5,7 @@ workflow RUN_LIFTOFF {
     liftoff_in
 
     main:
-    Channel.empty().set { ch_versions }
+    channel.empty().set { ch_versions }
 
     LIFTOFF(liftoff_in, [])
 

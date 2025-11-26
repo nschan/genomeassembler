@@ -17,7 +17,7 @@ workflow ASSEMBLE {
 
     main:
     // Empty channels
-    Channel.empty().set { ch_versions }
+    channel.empty().set { ch_versions }
 
     /*
     Samples are split into those that need assembly, and those that will not be assembled (i.e. assemblies are provided)

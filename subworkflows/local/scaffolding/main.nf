@@ -8,16 +8,16 @@ workflow SCAFFOLD {
     meryl_kmers
 
     main:
-    Channel.empty().set { ch_versions }
-    Channel.empty().set { links_busco }
-    Channel.empty().set { links_quast }
-    Channel.empty().set { links_merqury }
-    Channel.empty().set { longstitch_busco }
-    Channel.empty().set { longstitch_quast }
-    Channel.empty().set { longstitch_merqury }
-    Channel.empty().set { ragtag_busco }
-    Channel.empty().set { ragtag_quast }
-    Channel.empty().set { ragtag_merqury }
+    channel.empty().set { ch_versions }
+    channel.empty().set { links_busco }
+    channel.empty().set { links_quast }
+    channel.empty().set { links_merqury }
+    channel.empty().set { longstitch_busco }
+    channel.empty().set { longstitch_quast }
+    channel.empty().set { longstitch_merqury }
+    channel.empty().set { ragtag_busco }
+    channel.empty().set { ragtag_quast }
+    channel.empty().set { ragtag_merqury }
 
     // There is no support for scaffolding of scaffolded scaffolds.
     // But it is possible that one sample is scaffolded with different tools.

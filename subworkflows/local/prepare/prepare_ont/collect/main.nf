@@ -5,7 +5,7 @@ workflow COLLECT {
     ch_input
 
     main:
-    Channel.empty().set { ch_versions }
+    channel.empty().set { ch_versions }
 
     ch_input
         .filter {

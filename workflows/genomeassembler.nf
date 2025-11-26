@@ -158,9 +158,9 @@ workflow GENOMEASSEMBLER {
             .map { it -> it.collect { _entry, map -> [ (map.key): map.value ] }.collectEntries() }
     */
 
-    Channel.empty().set { meryl_kmers }
+    channel.empty().set { meryl_kmers }
 
-    Channel.empty().set { ch_versions }
+    channel.empty().set { ch_versions }
 
     // Initialize channels for QC report collection
     Channel

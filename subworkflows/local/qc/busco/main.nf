@@ -5,10 +5,10 @@ workflow RUN_BUSCO {
     ch_main
 
     main:
-    Channel.empty().set { versions }
-    Channel.empty().set { batch_summary }
-    Channel.empty().set { short_summary_txt }
-    Channel.empty().set { short_summary_json }
+    channel.empty().set { versions }
+    channel.empty().set { batch_summary }
+    channel.empty().set { short_summary_txt }
+    channel.empty().set { short_summary_json }
 
     ch_main
         .filter {

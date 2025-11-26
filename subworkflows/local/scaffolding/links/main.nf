@@ -8,7 +8,7 @@ workflow RUN_LINKS {
     meryl_kmers
 
     main:
-    Channel.empty().set { ch_versions }
+    channel.empty().set { ch_versions }
 
     ch_main
         .multiMap {

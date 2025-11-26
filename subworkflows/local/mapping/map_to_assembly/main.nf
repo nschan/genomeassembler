@@ -6,7 +6,7 @@ workflow MAP_TO_ASSEMBLY {
     map_assembly // meta: [id, qc_reads], reads, refs
 
     main:
-    Channel.empty().set { ch_versions }
+    channel.empty().set { ch_versions }
     // map reads to assembly
 
     ALIGN(map_assembly, true, 'bai', false, false)

@@ -6,7 +6,7 @@ workflow MAP_TO_REF {
     ch_map_ref // meta: [id, qc_reads], reads, refs
 
     main:
-    Channel.empty().set { ch_versions }
+    channel.empty().set { ch_versions }
 
     // Map reads to reference
     ALIGN(ch_map_ref, true, 'bai', false, false)

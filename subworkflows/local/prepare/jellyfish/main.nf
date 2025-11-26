@@ -8,8 +8,8 @@ workflow JELLYFISH {
     ch_main
 
     main:
-    Channel.empty().set { genomescope_in }
-    Channel.empty().set { ch_versions }
+    channel.empty().set { genomescope_in }
+    channel.empty().set { ch_versions }
 
     ch_main
         .filter { it -> it.group }

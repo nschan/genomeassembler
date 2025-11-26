@@ -10,10 +10,10 @@ workflow QC {
     meryl_kmers
 
     main:
-    Channel.empty().set { ch_versions }
-    Channel.empty().set { quast_out }
-    Channel.empty().set { busco_out }
-    Channel.empty().set { merqury_report_files }
+    channel.empty().set { ch_versions }
+    channel.empty().set { quast_out }
+    channel.empty().set { busco_out }
+    channel.empty().set { merqury_report_files }
 
     ch_main
         .branch {

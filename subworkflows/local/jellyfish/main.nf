@@ -10,8 +10,8 @@ workflow JELLYFISH {
     nanoq_out
 
     main:
-    Channel.empty().set { genomescope_in }
-    Channel.empty().set { ch_versions }
+    channel.empty().set { genomescope_in }
+    channel.empty().set { ch_versions }
     inputs.map {
         it ->
             [

@@ -7,7 +7,7 @@ workflow PREPARE_ONT {
     ch_main // should contain only samples with ontreads
 
     main:
-    Channel.empty().set { ch_versions }
+    channel.empty().set { ch_versions }
 
     ch_main.dump(tag: "Prepare-ONT input")
     ch_main

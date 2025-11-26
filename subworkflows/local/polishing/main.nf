@@ -8,10 +8,10 @@ workflow POLISH {
 
     main:
 
-    Channel.empty().set { ch_versions }
-    Channel.empty().set { polish_busco_reports }
-    Channel.empty().set { polish_quast_reports }
-    Channel.empty().set { polish_merqury_reports }
+    channel.empty().set { ch_versions }
+    channel.empty().set { polish_busco_reports }
+    channel.empty().set { polish_quast_reports }
+    channel.empty().set { polish_merqury_reports }
 
     ch_main
         .branch { it ->

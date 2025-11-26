@@ -5,7 +5,7 @@ workflow PREPARE_HIFI {
     main_in // should contain only samples with hifireads
 
     main:
-    Channel.empty().set { ch_versions }
+    channel.empty().set { ch_versions }
 
     main_in.dump(tag: "Prepare-HIFI input")
     main_in
