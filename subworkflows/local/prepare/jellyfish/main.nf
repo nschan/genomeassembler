@@ -49,11 +49,6 @@ workflow JELLYFISH {
 
     ch_versions = ch_versions.mix(COUNT.out.versions)
 
-    if (params.dump) {
-        DUMP(kmers)
-        ch_versions = ch_versions.mix(DUMP.out.versions)
-    }
-
     HISTO(kmers)
     ch_versions = ch_versions.mix(HISTO.out.versions)
 

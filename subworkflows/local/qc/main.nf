@@ -29,9 +29,9 @@ workflow QC {
         .map { it -> [it.meta] }
         .join(scaffolds)
         .join(meryl_kmers)
-        .multiMap { it ->
-                scaffolds: [it[0], it[1]]
-                kmers: [it[0], it[2]]
+        .multiMap { meta, scaffs, kmers ->
+                scaffolds: [ meta, scaffs ]
+                kmers: [ meta, kmers ]
             }
         .set { merqury_in }
 
@@ -53,9 +53,16 @@ workflow QC {
             it -> [ it.meta, it.qc_reads_path, it.qc_reads ]
         }
         .join(scaffolds)
-        .multiMap {
+        .map {
             meta, reads, qc_reads, target_scaffolds ->
-            reads: [[id: meta.id, qc_reads:qc_reads], reads, target_scaffolds]
+            [
+                [
+                    id: meta.id,
+                    qc_reads:qc_reads
+                ],
+                reads,
+                target_scaffolds
+            ]
         }
         .set { map_assembly_in }
 

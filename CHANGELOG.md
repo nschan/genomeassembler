@@ -13,7 +13,7 @@ v2.0.0 of this pipeline is a (almost complete) refactor of the pipeline to facil
 - migration to nf-test
 - increased flexibility of the scaffolding strategy
 - added option to group samples
--
+- fastp for short-read trimming and qc
 
 ### `Fixed`
 
@@ -28,6 +28,10 @@ The following tools are no longer used:
 - `nanoq`
 - `porechop`
 - `lima`
+
+The following param is no longer implemented:
+
+- `dump`, used to dump jellyfish output.
 
 ## v1.1.0 'Brass Pigeon' - [2025-07-21]
 

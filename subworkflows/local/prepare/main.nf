@@ -197,7 +197,6 @@ workflow PREPARE {
         }
         .set { ch_main_jellyfish_branched }
 
-    // TODO: Jellyfish is currently not grouped
     JELLYFISH(ch_main_jellyfish_branched.jelly)
 
     ch_main_jellyfish_branched.no_jelly
@@ -221,6 +220,7 @@ workflow PREPARE {
     emit:
     ch_main                 = main_out
     fastplong_json_reports
+    fastp_json_reports      = SHORTREADS.out.fastp_json
     meryl_kmers
     genomescope_summary
     genomescope_plot

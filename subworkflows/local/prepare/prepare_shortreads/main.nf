@@ -151,6 +151,7 @@ workflow PREPARE_SHORTREADS {
     main_out
     meryl_kmers
     versions
+    fastp_json = FASTP.out.json
 }
 
 def create_shortread_channel(row) {

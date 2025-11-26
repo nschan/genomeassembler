@@ -59,11 +59,18 @@ workflow ASSEMBLE {
         .scaffold
         .dump(tag: "Assemble: Branched: scaffold")
 
+
+    /*
+    =========================
+        FLYE ASSEMBLER
+    =========================
+    */
     /*
     Inputs for flye assembler:
         - Samples with single strategy, where the assembler is flye
         - Samples from the scaffold strategy where either (or both) assembler is flye
     */
+
     ch_main_assemble_branched
         .single
         .filter { it -> it.assembler1 == "flye" }
@@ -72,7 +79,7 @@ workflow ASSEMBLE {
             ch_main_assemble_branched
                 .scaffold
                 .filter { it -> it.assembler1 == "flye"  }
-            // Add in the scaffolding samples where is used for HiFi
+            // Add in the scaffolding samples where flye is used for HiFi
                 .mix(
                     ch_main_assemble_branched
                     .scaffold
@@ -94,12 +101,12 @@ workflow ASSEMBLE {
                     genome_size: it.genome_size,
                     flye_args: it.flye_args ?: ""
                 ],
-                // Reads are matched based on assembler
-                it.assembler1 == "flye" ? it.ontreads : null,
+                it.ontreads ?: [],
             ]
             mode: it.assembler1 == "flye" ? "--nano-hq" : null
         }
         .set { flye_ont_inputs }
+
     // These are the hifi samples
     ch_main_assemble_flye
         // Those where the hifi assembler is flye, or where there is only one assembler and hifireads
@@ -112,8 +119,7 @@ workflow ASSEMBLE {
                     genome_size: it.genome_size,
                     flye_args: it.flye_args ?: ""
                 ],
-                // Reads are matched based on assembler
-                it.assembler2 == "flye" ? it.hifireads : null,
+                it.hifireads ?: [],
             ]
             mode: it.assembler2 == "flye" ? "--pacbio-hifi" : null
         }
@@ -129,10 +135,15 @@ workflow ASSEMBLE {
 
     ch_versions = ch_versions.mix(FLYE_ONT.out.versions).mix(FLYE_HIFI.out.versions)
 
+    /*
+    =========================
+        HIFIASM ASSEMBLER
+    =========================
+    */
     /* Hifiasm: everything that is not hifiasm-ONT
-        Single branch with hifiasm as assembler and no ont reads (only hifireads)
-        Hybrid assembly
-        Scaffold samples where assembler2 (hifi assembler) is hifiasm
+            - Single branch with hifiasm as assembler and no ont reads (only hifireads)
+            - Hybrid assembly
+            - Scaffold samples where assembler2 (hifi assembler) is hifiasm
     */
     ch_main_assemble_branched
             .single
@@ -172,10 +183,12 @@ workflow ASSEMBLE {
     ch_versions = ch_versions.mix(HIFIASM.out.versions).mix(GFA_2_FA_HIFI.out.versions)
 
     /*
+    hifiasm with ONLY ont reads.
     Assemble hifiasm_ont branch:
         Single branch with hifiasm and only ont reads
         Scaffold branch where assembler1 (ont assembler) is hifiasm
     */
+
     ch_main_assemble_branched
         .single
         .filter { it -> it.assembler1 == "hifiasm" && it.ontreads }
@@ -195,7 +208,7 @@ workflow ASSEMBLE {
 
 
     // Now, the individual assemblies need to be correctly added into the main channel.
-    // This should be done per-strategy I think
+    // This should be done per-strategy
     // join assembler outputs back to assembler inputs and determine correct placement of the assembly.
 
     // Flye:
@@ -234,7 +247,7 @@ workflow ASSEMBLE {
         )
         // After joining re-create the maps from the stored map
         .map { it -> it.collect { _entry, map -> [ (map.key): map.value ] }.collectEntries() }
-        // On the proper map, place the hifiasm assembly into the correct position
+        // On the map, place the hifiasm assembly into the correct position
         .map {
             // remove hifiasm_assembly entry from joined result
             it -> it - it.subMap("hifiasm_assembly") +
@@ -263,14 +276,19 @@ workflow ASSEMBLE {
             it -> it -it.subMap("hifiasm_assembly") +
             [
                 assembly: (it.strategy == "single" || it.strategy == "hybrid") && it.assembler1 == "hifiasm" ? it.hifiasm_assembly : null,
-                // I think below case dose not exist in this channel since it is only ont (assembler1) assemblies?
                 assembly1: it.strategy == "scaffold" && it.assembler1 == "hifiasm" ? it.hifiasm_assembly : null,
                 assembly2: it.strategy == "scaffold" && it.assembler2 == "hifiasm" ? it.hifiasm_assembly : null
             ]
         }
         .set { hifiasm_ont_assemblies }
 
-    hifiasm_ont_assemblies.dump(tag: "Assemble: hifiasm HIFI assemblies")
+    hifiasm_ont_assemblies.dump(tag: "Assemble: hifiasm ONT assemblies")
+
+    /*
+    =========================
+          SCAFFOLDING
+    =========================
+    */
 
     // The single and hybrid channels can be mixed and forwarded.
     // The scaffold channel needs to be joined separately.
@@ -288,8 +306,14 @@ workflow ASSEMBLE {
 
     ch_assemblies_no_scaffold.dump(tag: "Assemble: Assemblies without scaffolding")
 
+
+    /*
+    -------------------
+    Prepare Scaffolding
+    -------------------
+    */
     // This leaves the scaffold strategy.
-    // scaffolds can be: FLYE-HIFIASM, FLYE-FLYE, HIFIASM-HIFIASM HIFIASM-FLYE or
+    // scaffolds can be: FLYE-HIFIASM, FLYE-FLYE, HIFIASM-HIFIASM or HIFIASM-FLYE
 
     flye_assemblies
         // Flye-hifiasm
@@ -301,7 +325,7 @@ workflow ASSEMBLE {
                 .map { it -> it.collect { entry -> [ entry.value, entry ] } }
         )
         .map { it -> it.collect { _entry, map -> [ (map.key): map.value ] }.collectEntries() }
-        .map { it -> it - it.subMap("hifiasm_assembly","assembly2") + [assembly2: it.hifiasm_assembly] }
+        .map { it -> it - it.subMap("hifiasm_assembly","assembly2") + [ assembly2: it.hifiasm_assembly ] }
         .set{ scaffold_flye_hifiasm }
 
     // flye-flye
@@ -314,7 +338,7 @@ workflow ASSEMBLE {
                 .map { it -> it.collect { entry -> [ entry.value, entry ] } }
         )
         .map { it -> it.collect { _entry, map -> [ (map.key): map.value ] }.collectEntries() }
-        .map { it -> it - it.subMap("flye_assembly", "assembly2") + [assembly2: it.flye_assembly] }
+        .map { it -> it - it.subMap("flye_assembly", "assembly2") + [ assembly2: it.flye_assembly ] }
         .set{ scaffold_flye_flye }
 
     // hifiasm_flye
@@ -327,7 +351,7 @@ workflow ASSEMBLE {
                 .map { it -> it.collect { entry -> [ entry.value, entry ] } }
         )
         .map { it -> it.collect { _entry, map -> [ (map.key): map.value ] }.collectEntries() }
-        .map { it -> it - it.subMap("flye_assembly", "assembly2") + [assembly2: it.flye_assembly] }
+        .map { it -> it - it.subMap("flye_assembly", "assembly2") + [ assembly2: it.flye_assembly ] }
         .set{ scaffold_hifiasm_flye }
 
     // hifiasm_hifiasm
@@ -340,7 +364,7 @@ workflow ASSEMBLE {
                 .map { it -> it.collect { entry -> [ entry.value, entry ] } }
         )
         .map { it -> it.collect { _entry, map -> [ (map.key): map.value ] }.collectEntries() }
-        .map { it -> it - it.subMap("hifiasm_assembly","assembly2") + [assembly2: it.hifiasm_assembly] }
+        .map { it -> it - it.subMap("hifiasm_assembly","assembly2") + [ assembly2: it.hifiasm_assembly ] }
         .set{ scaffold_hifiasm_hifiasm }
 
     // branch to scaffold those assemblies that need it
@@ -353,7 +377,7 @@ workflow ASSEMBLE {
 
     ch_to_scaffold.dump(tag: "Assemble: Assemblies with scaffolding - inputs")
 
-    // For scaffolding, depeding on which strategy we used, the correct assembly needs to go into either target or query:
+    // For scaffolding, depeding on which strategy used, the correct assembly needs to go into either target or query:
     // assembly1 is always ONT, assembly2 is always HiFi
 
     ch_to_scaffold
@@ -404,6 +428,7 @@ workflow ASSEMBLE {
 
     ch_main_to_mapping.dump(tag: "Assemble: TO MAPPING")
 
+    // QUAST is the only QC tool that requires mapping
 
     ch_main_to_mapping
         .branch {
@@ -411,7 +436,7 @@ workflow ASSEMBLE {
             quast: it.quast
             no_quast: !it.quast
         }
-        // Note that this channel is set here but the quast branch is further used
+        // Note that this channel is set here but only the quast branch is further used
         .set { ch_main_quast_branch }
 
     // If QUAST should run, and we need an alignment to reference, this is created here
@@ -425,6 +450,7 @@ workflow ASSEMBLE {
         .set {
             ch_quast_branched
         }
+
     // Alignment is actually only created if no bam file is provided
     ch_quast_branched
         .use_ref
@@ -453,7 +479,7 @@ workflow ASSEMBLE {
         .join(
             MAP_TO_REF.out.ch_aln_to_ref_bam
             // Note that this is a normal list channel and needs to become a map before conversion back to list and joining
-            // Otherwise the map cannot be regenerated later
+            // otherwise, the map cannot be regenerated later
                 .map { it -> [meta: it[0], ref_map_bam: it[1]] }
                 .map { it -> it.collect { entry -> [ entry.value, entry ] } }
         )
