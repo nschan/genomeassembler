@@ -109,8 +109,8 @@ workflow ASSEMBLE {
 
     // These are the hifi samples
     ch_main_assemble_flye
-        // Those where the hifi assembler is flye, or where there is only one assembler and hifireads
-        .filter { it -> it.assembler2 == "flye" || (it.strategy == "single" && it.assembler1 == "flye" && it.hifireads)}
+        // Those where the hifi assembler is flye, or where there is only one assembler and only hifireads
+        .filter { it -> it.assembler2 == "flye" || (it.strategy == "single" && it.hifireads && !it.ontreads)}
         .multiMap {
             it ->
             reads: [
