@@ -10,7 +10,7 @@ workflow PREPARE_SHORTREADS {
     channel.empty().set { ch_versions }
 
     shortreads_in
-        .map { create_shortread_channel(it) }
+        .map { it -> create_shortread_channel(it) }
         .set { shortreads }
 
     shortreads_in

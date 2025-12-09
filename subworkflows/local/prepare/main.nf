@@ -4,7 +4,7 @@ include { PREPARE_SHORTREADS as SHORTREADS } from './prepare_shortreads/main'
 include { JELLYFISH } from './jellyfish/main'
 
 workflow PREPARE {
-    // TODO: Switch to fastp and fastplong.
+    // TODO: Switch to fastp.
 
     /*
                         Grouped preparations
@@ -166,7 +166,7 @@ workflow PREPARE {
     def slurp = new groovy.json.JsonSlurper()
 
     ch_main_prepared
-        .filter { it.qc_reads.toLowerCase() == "ont" }
+        .filter { it -> it.qc_reads.toLowerCase() == "ont" }
         .map { it -> it.collect { entry -> [ entry.value, entry ] } }
         .join(ONT.out.fastplong_ont_reports
                 .map { it -> [ meta: it[0], fastplong_json: it[1] ]}
@@ -174,7 +174,7 @@ workflow PREPARE {
             )
         .mix(
             ch_main_prepared
-            .filter { it.qc_reads.toLowerCase() == "hifi" }
+            .filter { it -> it.qc_reads.toLowerCase() == "hifi" }
             .map { it -> it.collect { entry -> [ entry.value, entry ] } }
             .join(HIFI.out.fastplong_hifi_reports
                 .map { it -> [ meta: it[0], fastplong_json: it[1] ]}

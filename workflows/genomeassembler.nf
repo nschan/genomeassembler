@@ -118,14 +118,14 @@ workflow GENOMEASSEMBLER {
 
     [
         [id: something, meta: [id: something]],
-        ["path", somepath: "path"]
+        ["/path", somepath: "/path"]
     ]
 
     This can be joined to
 
     [
         [id: something, meta: [id: something]],
-        ["different_path", otherpath: "path"]
+        ["different_path", otherpath: "different_path"]
     ]
 
     This makes it possible to join on the first element (the one containing meta):
@@ -144,7 +144,7 @@ workflow GENOMEASSEMBLER {
         otherpath: "different_path"
     ]
 
-    This is sadly a somewhat frequent pattern in this pipeline and
+    This is (sadly) a somewhat frequent pattern in this pipeline and
     it is done like this:
 
     map_channel_1
@@ -157,16 +157,15 @@ workflow GENOMEASSEMBLER {
             // After joining re-create the maps from the stored map
             .map { it -> it.collect { _entry, map -> [ (map.key): map.value ] }.collectEntries() }
     */
-
     channel.empty().set { meryl_kmers }
 
     channel.empty().set { ch_versions }
 
     // Initialize channels for QC report collection
-    Channel
+    channel
         .of([])
         .tap { quast_files }
-        .tap { fastplong_reports }
+        .tap { fastplong_jsons }
         .tap { genomescope_files }
         .map { it -> ["dummy", it] }
         .tap { busco_files }
@@ -214,7 +213,7 @@ workflow GENOMEASSEMBLER {
     ch_versions = ch_versions.mix(POLISH.out.versions)
 
     ch_main_polished
-        .branch {
+        .branch { it ->
             scaffold: it.scaffold_links || it.scaffold_longstitch || it.scaffold_ragtag
             no_scaffold: !it.scaffold_links && !it.scaffold_longstitch && !it.scaffold_ragtag
         }
@@ -302,12 +301,12 @@ workflow GENOMEASSEMBLER {
         .collect()
         .set { merqury_files }
 
-    Channel
+    channel
         .fromPath("${projectDir}/assets/report/*")
         .collect()
         .set { report_files }
     // Report files
-    Channel
+    channel
         .fromPath("${projectDir}/assets/report/functions/*")
         .collect()
         .set { report_functions }
@@ -321,7 +320,7 @@ workflow GENOMEASSEMBLER {
             quast_files,
             busco_files,
             merqury_files,
-            Channel.fromPath("${params.outdir}/pipeline_info/nf_core_pipeline_software_versions.yml"),
+            channel.fromPath("${params.outdir}/pipeline_info/nf_core_pipeline_software_versions.yml"),
             ch_main.map { it -> [sample: [id: it.meta.id, group: it.group]]}.collect()
     )
 
