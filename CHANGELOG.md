@@ -5,7 +5,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## v2.0.0 'Saffron Vulture' - [2025-xx-xx]
 
-v2.0.0 of this pipeline is a (almost complete) refactor of the pipeline to facilitate sample-level parameteristation. Besides, it contains some additional changes:
+v2.0.0 of this pipeline is a large refactor of the pipeline to facilitate sample-level parameteristation. This allows to either parameterise the _pipeline_ using `params`, or parameterise _samples_ via the `input` samplesheet. In case both types of parameterisations are used, sample parameters will overwrite the pipeline parameters for that sample.
+In addition, v2.0.0 contains some these changes:
 
 ### `Added`
 
