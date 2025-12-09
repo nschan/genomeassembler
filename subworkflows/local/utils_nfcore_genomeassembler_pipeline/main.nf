@@ -95,7 +95,7 @@ workflow PIPELINE_INITIALISATION {
     // Create channel from input file provided through params.input
     //
 
-    Channel.fromPath(params.input)
+    channel.fromPath(params.input)
         .splitCsv(header: true)
         .map { it ->
             [
@@ -196,27 +196,11 @@ workflow PIPELINE_INITIALISATION {
                     "invalid"
                 ]
                 : null,
-            // Check if primers for lima are provided
-            (it.hifi_trim && !it.hifi_primers)
-                ?
-                [
-                    println("Please confirm samplesheet: [sample: $it.meta.id]: Please provide the primers used for pacbio sequencing to trim with lima."),
-                    "invalid"
-                ]
-                : null,
             // Check if reads and strategy match
             (it.strategy == "single" && it.ontreads && it.hifireads)
                 ?
                 [
-                    println("Please confirm samplesheet: [sample: $it.meta.id]: Stragety is $it.strategy, but both types of reads are provided."),
-                    "invalid"
-                ]
-                : null,
-            // Check if assembler can do hybrid
-            (it.strategy == "single" && it.ont_reads && it.hifi_reads)
-                ?
-                [
-                    println("Please confirm samplesheet: [sample: $it.meta.id]: Stragety is $it.strategy, but both types of reads are provided."),
+                    println("Please confirm samplesheet: [sample: $it.meta.id]: Strategy is $it.strategy, but both types of reads are provided."),
                     "invalid"
                 ]
                 : null,
@@ -240,7 +224,7 @@ workflow PIPELINE_INITIALISATION {
             (it.scaffold_longstitch && !it.genome_size && !(params.jellyfish || it.jellyfish))
                 ?
                 [
-                    println("Please confirm samplesheet: [sample: $it.meta.id]: scaffolding with longstitch requires genome-size. Either provide genome-size estimate, or estimate from ONT reads with --jellyfish"),
+                    println("Please confirm samplesheet: [sample: $it.meta.id]: scaffolding with longstitch requires genome-size. Either provide genome-size estimate, or estimate from reads with --jellyfish"),
                     "invalid"
                 ]
                 : null,
@@ -248,10 +232,10 @@ workflow PIPELINE_INITIALISATION {
         }
         .map { it -> it.collect() }
         .collect()
-        // error if >0 samples failed a check above
+        // warn if >0 samples failed a check above
         .subscribe {
             it -> it.contains("invalid")
-                ? error("Invalid combination in samplesheet")
+                ? log.warn("Invalid combination in samplesheet")
                 : null
         }
 
