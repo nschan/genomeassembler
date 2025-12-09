@@ -31,6 +31,7 @@ workflow RUN_LONGSTITCH {
         }
         .set { longstitch_in }
 
+    longstitch_in.dump(tag: "SCAFFOLD: LONGSTITCH: inputs")
     LONGSTITCH(longstitch_in)
 
     LONGSTITCH.out.ntlLinks_arks_scaffolds

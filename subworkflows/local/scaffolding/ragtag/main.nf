@@ -22,6 +22,10 @@ workflow RUN_RAGTAG {
                     }
         .set { ragtag_in }
 
+    ragtag_in.assembly.dump(tag: "SCAFFOLD: RAGTAG: Assembly inputs")
+    ragtag_in.reference.dump(tag: "SCAFFOLD: RAGTAG: Reference inputs")
+
+
     RAGTAG_SCAFFOLD(ragtag_in.assembly, ragtag_in.reference, [[], []], [[], [], []])
 
     RAGTAG_SCAFFOLD.out.corrected_assembly.set { scaffolds }

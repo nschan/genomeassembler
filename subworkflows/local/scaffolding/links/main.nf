@@ -11,11 +11,14 @@ workflow RUN_LINKS {
     channel.empty().set { ch_versions }
 
     ch_main
-        .multiMap {
-            assembly: [it.meta, it.polished ? (it.polished.pilon ?: it.polished.medaka) : it.assembly]
-            reads: [it.meta, it.qc_reads_path]
+        .multiMap { it ->
+            assembly:   [it.meta, it.polished ? (it.polished.pilon ?: it.polished.medaka) : it.assembly]
+            reads:      [it.meta, it.qc_reads_path]
         }
         .set { links_in }
+
+    links_in.assembly.dump(tag: "SCAFFOLD: LINKS: Assembly inputs")
+    links_in.reads.dump(tag: "SCAFFOLD: LINKS: Read inputs")
 
     LINKS(links_in.assembly, links_in.reads)
     LINKS.out.scaffolds_fasta
