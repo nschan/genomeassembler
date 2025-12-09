@@ -160,7 +160,7 @@ workflow PIPELINE_INITIALISATION {
                 assembly_map_bam: it.assembly_map_bam ?: params.ref_map_bam ?: null,
                 // reads for qc
                 qc_reads: ((it.qc_reads == "ont" || params.qc_reads == "ont") && it.ontreads) ? "ont" : "hifi",
-                qc_reads_path: ((it.qc_reads == "ont" || params.qc_reads == "ont") && it.ontreads) ? (it.ontreads) : (it.hifireads),
+                qc_reads_path: ((it.qc_reads == "ont" || params.qc_reads == "ont") && it.ontreads) ? (it.ontreads ?: params.ontreads) : (it.hifireads ?: params.hifireads),
                 quast: it.quast ?: params.quast,
                 busco: it.busco ?: params.busco,
                 busco_lineage: it.busco_lineage ?: params.busco_lineage,
