@@ -134,13 +134,13 @@
             ],
             "creator": [
                 {
-                    "@id": "https://orcid.org/0000-0002-7860-3560"
+                    "@id": "https://orcid.org/0000-0003-3099-7860"
                 },
                 {
                     "@id": "https://orcid.org/0000-0003-1675-0677"
                 },
                 {
-                    "@id": "https://orcid.org/0000-0003-3099-7860"
+                    "@id": "https://orcid.org/0000-0002-7860-3560"
                 }
             ],
             "dateCreated": "",
@@ -323,10 +323,10 @@
             "url": "https://nf-co.re/"
         },
         {
-            "@id": "https://orcid.org/0000-0002-7860-3560",
+            "@id": "https://orcid.org/0000-0003-3099-7860",
             "@type": "Person",
-            "email": "mm49@sanger.ac.uk",
-            "name": "Matthieu Muffato"
+            "email": "niklas@bio.lmu.de",
+            "name": "Niklas Schandry"
         },
         {
             "@id": "https://orcid.org/0000-0003-1675-0677",
@@ -335,10 +335,10 @@
             "name": "Mahesh Binzer-Panchal"
         },
         {
-            "@id": "https://orcid.org/0000-0003-3099-7860",
+            "@id": "https://orcid.org/0000-0002-7860-3560",
             "@type": "Person",
-            "email": "niklas@bio.lmu.de",
-            "name": "Niklas Schandry"
+            "email": "mm49@sanger.ac.uk",
+            "name": "Matthieu Muffato"
         }
     ]
 }
