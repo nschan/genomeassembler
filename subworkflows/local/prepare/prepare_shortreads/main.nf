@@ -60,7 +60,7 @@ workflow PREPARE_SHORTREADS {
         )
         .set { trim_in }
 
-    FASTP(trim_in)
+    FASTP(trim_in, false, false, false)
 
     FASTP.out.reads
         .filter { it -> it[0].ids }
