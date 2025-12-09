@@ -199,8 +199,11 @@ workflow PREPARE {
 
     JELLYFISH(ch_main_jellyfish_branched.jelly)
 
+
     ch_main_jellyfish_branched.no_jelly
         .mix( JELLYFISH.out.main_out )
+        // At this stage, make sure that qc_read_path for downstream qc is using the prepared reads.
+        .map { it -> it - it.subMap("qc_read_path") + [qc_read_path: it.qc_reads.toLowerCase() == "ont" ? it.ontreads : it.hifireads] }
         .set { main_out }
 
     main_out.dump(tag: "Prepare: Combined outputs")
