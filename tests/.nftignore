@@ -1,6 +1,9 @@
 .DS_Store
 fastqc/*_fastqc.{html,zip}
 pipeline_info/*.{html,json,txt,yml}
-*/*/*/*.{log,bin,gz,gff3,fasta,agp}
-*/*/*.{log,bin,gz,gff3,txt}
+*/*/*/*/*.{log,bin,gff3,agp,html,gz}
+*/*/*/*.{log,bin,gff3,agp,html,gz}
+*/*/*.{log,bin,gz,gff3,agp,html,gz}
+*/*.{log,bin,gz,gff3,agp,html,gz}
+*.{log,bin,gz,gff3,agp,html,gz}
 */*/*/*.assembly_info.txt
