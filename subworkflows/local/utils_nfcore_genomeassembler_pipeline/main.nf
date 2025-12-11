@@ -170,9 +170,9 @@ workflow PIPELINE_INITIALISATION {
                 lift_annotations: (it.ref_gff || params.ref_gff) ? (it.lift_annotations ?: params.lift_annotations) : false,
                 shortread_F: it.shortread_F ?: params.shortread_F,
                 shortread_R: it.shortread_R ?: params.shortread_R,
-                paired: it.paired ?: params.paired,
+                paired: it.paired ?: params.paired ?: ((it.shortread_F || params.shortread_F) && (it.shortread_R || params.shortread_R)) ? true : false,
                 // new:
-                use_short_reads: it.use_short_reads ?: params.use_short_reads ?: it.shortread_F ? true : false,
+                use_short_reads: it.use_short_reads ?: params.use_short_reads ?: params.shortread_F ? true : (it.shortread_F ? true : false),
                 shortread_trim: it.shortread_trim ?: params.shortread_trim
             ]
         }
