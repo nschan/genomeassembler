@@ -4,8 +4,6 @@ include { PREPARE_SHORTREADS as SHORTREADS } from './prepare_shortreads/main'
 include { JELLYFISH } from './jellyfish/main'
 
 workflow PREPARE {
-    // TODO: Switch to fastp.
-
     /*
                         Grouped preparations
 
