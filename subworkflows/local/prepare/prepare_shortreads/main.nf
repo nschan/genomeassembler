@@ -49,7 +49,8 @@ workflow PREPARE_SHORTREADS {
             it ->
                 [
                     [ id: it[1], ids: it[0].id.collect().join("+") ],
-                    it[2].unique()[0]
+                    it[2].unique()[0],
+                    []
                 ]
         }
         .mix(shortreads.trim
