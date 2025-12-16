@@ -98,40 +98,67 @@ workflow PIPELINE_INITIALISATION {
     channel.fromPath(params.input)
         .splitCsv(header: true)
         .map { it ->
+        /*
+        This is a somewhat crucial step, where the samplesheet and params are used to determine per-sample parameters.
+        Some variables that with more complex logic are handled below
+        */
+        def strategy        =   it.strategy ?: params.strategy
+
+        def ontreads        =   it.ontreads ?: params.ontreads
+
+        def hifireads       =   it.hifireads ?: params.hifireads
+
+        def assembler       =   it.assembler ?: params.assembler
+
+        def assembler1      =   it.assembler1 ?:
+                                params.assembler1 ?:
+                                (strategy == "single" && ontreads && !hifireads) ? assembler :
+                                (strategy == "hybrid" && assembler == "hifiasm") ? assembler :
+                                assembler.contains("_") ? assembler.tokenize("_")[0] :
+                                null
+
+        def assembler2      =   it.assembler2 ?:
+                                params.assembler2 ?:
+                                (strategy == "single" && !ontreads && hifireads) ? assembler :
+                                assembler.contains("_") ? assembler.tokenize("_")[1] :
+                                null
+
+        def polish          =   it.polish ?:
+                                (params.polish_medaka && params.polish_pilon && ontreads) ? "medaka+pilon" :
+                                (params.polish_medaka && ontreads) ? "medaka" :
+                                (params.polish_pilon && (it.shortread_F || params.shortread_F)) ? "pilon" :
+                                null
+
+        // Hard exit here if assembler cannot be determined.
+        strategy == "single" && ontreads && hifireads && !(assembler1 || assembler2) ?
+            error("""
+            [$it.sample]: Strategy is 'single', but ONT and HiFi reads are provided.
+            Please unambigiously define either 'assembler1' for ONT or 'assembler2' for Hifi
+                  """) : null
+
             [
                 meta: [id: it.sample],
                 // new in refactor-assemblies
                 group: it.group ?: null,
-                ontreads: it.ontreads ?: params.ontreads,
-                hifireads: it.hifireads ?: params.hifireads,
+                ontreads: ontreads,
+                hifireads: hifireads,
                 // new in refactor-assemblers
-                strategy: it.strategy ?: params.strategy,
-                assembler: it.assembler ?: params.assembler,
-                assembler1: it.assembler1 ?:
-                    it.assembler == "hifiasm" || it.assembler == "flye" ? it.assembler :
-                    it.assembler.contains("_") ? it.assembler.tokenize("_")[0] :
-                    params.assembler == "hifiasm" || params.assembler == "flye" ? params.assembler :
-                    params.assembler.contains("_") ? it.assembler.tokenize("_")[0] :
-                    null,
-                assembler2: it.assembler2 ?:
-                    it.assembler.contains("_") ? it.assembler.tokenize("_")[1] :
-                    params.assembler.contains("_") ? it.assembler.tokenize("_")[1] :
-                    null,
+                strategy: strategy,
+                // The "assembler" value is mainly to ease input, all actual workflow logic should use assembler1/2
+                assembler: assembler,
+                // Assembler1: ONT, Assembler2: HiFi
+                assembler1: assembler1,
+                assembler2: assembler2,
                 assembly_scaffolding_order: it.assembly_scaffolding_order ?: params.assembly_scaffolding_order ?: "ont_on_hifi",
-                genome_size: it.genome_size ?: params.genome_size,
-                assembler1_args: it.assembler1_args ?:
-                    (it.assembler1 == "hifiasm") ? params.hifiasm_args :
-                    (it.assembler1 == "flye") ? params.flye_args :
+                assembler1_args: it.assembler1_args ?: params.assembler1_args ?:
+                    (assembler1 == "hifiasm") ? params.hifiasm_args :
+                    (assembler1 == "flye") ? params.flye_args :
                     null,
-                assembler2_args: it.assembler2_args ?:
-                    (it.assembler2 == "hifiasm") ? params.hifiasm_args :
-                    (it.assembler2 == "flye") ? params.flye_args :
+                assembler2_args: it.assembler2_args ?: params.assembler2_args ?:
+                    (assembler2 == "hifiasm") ? params.hifiasm_args :
+                    (assembler2 == "flye") ? params.flye_args :
                     null,
-                polish: it.polish ?:
-                    (params.polish_medaka && params.polish_pilon && (it.ontreads || params.ontreads)) ? "medaka+pilon" :
-                    (params.polish_medaka && (it.ontreads || params.ontreads)) ? "medaka" :
-                    (params.polish_pilon && (it.shortread_F || params.shortread_F)) ? "pilon" :
-                    null,
+                polish: polish,
                 ont_collect: it.ont_collect ?: params.ont_collect,
                 ont_trim: it.ont_trim ?: params.ont_trim,
                 ont_adapters: it.ont_adapters ?: params.ont_adapters,
@@ -141,26 +168,25 @@ workflow PIPELINE_INITIALISATION {
                 hifi_trim: it.hifi_trim ?: params.hifi_trim,
                 hifi_adapters: it.hifi_adapters ?: params.hifi_adapters,
                 hifi_fastplong_args: it.hifi_fastplong_args ?: params.hifi_fastplong_args,
-                polish_medaka: it.polish_medaka ?: params.polish_medaka,
                 medaka_model: it.medaka_model ?: params.medaka_model,
-                polish_pilon: it.polish_pilon ?: params.polish_pilon,
                 scaffold_longstitch: it.scaffold_longstitch ?: params.scaffold_longstitch,
                 scaffold_links: it.scaffold_links ?: params.scaffold_links,
                 scaffold_ragtag: it.scaffold_ragtag ?: params.scaffold_ragtag,
                 use_ref: it.use_ref ?: params.use_ref ?: it.ref_fasta ? true : false,
                 // not new
+                genome_size: it.genome_size ?: params.genome_size,
                 ref_fasta: it.ref_fasta ?: params.ref_fasta,
                 ref_gff: it.ref_gff ?: params.ref_gff,
                 flye_mode: it.flye_mode ?: params.flye_mode,
                 // assembly already provided?
-                assembly: it.assembly ?: "",
+                assembly: it.assembly ?: params.assembly ?: null,
                 // ref mapping provided?
                 ref_map_bam: it.ref_map_bam ?: params.ref_map_bam ?: null,
                 // assembly mapping provided
                 assembly_map_bam: it.assembly_map_bam ?: params.ref_map_bam ?: null,
                 // reads for qc
-                qc_reads: ((it.qc_reads == "ont" || params.qc_reads == "ont") && it.ontreads) ? "ont" : "hifi",
-                qc_reads_path: ((it.qc_reads == "ont" || params.qc_reads == "ont") && it.ontreads) ? (it.ontreads ?: params.ontreads) : (it.hifireads ?: params.hifireads),
+                qc_reads: ((it.qc_reads == "ont" || params.qc_reads == "ont") && ontreads) ? "ont" : "hifi",
+                qc_reads_path: ((it.qc_reads == "ont" || params.qc_reads == "ont") && ontreads) ? ontreads : hifireads,
                 quast: it.quast ?: params.quast,
                 busco: it.busco ?: params.busco,
                 busco_lineage: it.busco_lineage ?: params.busco_lineage,
@@ -181,23 +207,45 @@ workflow PIPELINE_INITIALISATION {
     // Define valid hybrid assemblers
 
     def hybrid_assemblers = ["hifiasm"]
-
+    ch_samplesheet.dump(tag: "PARSED INPUTS:")
     // sample-level checks
     // if a check fails, map returns a list that prints what fails, and contains "invalid"
     // error is raised by subscribe if there is more than one "invalid"
     ch_samplesheet
         .map {
             it ->
-            // Check if assembler1 was set
-            [(!it.assembler1 && !it.assembly)
+            [
+                // Check if assembler1 was set
+                (it.ontreads && !it.assembler1 && !it.assembly)
                 ?
-                [
-                    println("Please confirm samplesheet: [sample: $it.meta.id]: assembler1 could not be set and no assembly was provided."),
-                    "invalid"
-                ]
+(                    // Check if assembler2 was set
+                    (it.hifireads && it.assembler2 && it.stragegy == "single")
+                    ?
+                    null
+                    :
+                    [
+                        println("Please confirm samplesheet: [sample: $it.meta.id]: assembler1 could not be set and no assembly was provided."),
+                        "invalid"
+                    ]
+                )
+                : null,
+                // Check if assembler2 was set
+                (it.hifireads && !it.assembler2 && !it.assembly)
+                ?
+                (
+                    // Check if assembler1 was set
+                    (it.ontreads && it.assembler1 && it.stragegy == "single")
+                    ?
+                    null
+                    :
+                    [
+                        println("Please confirm samplesheet: [sample: $it.meta.id]: assembler2 could not be set and no assembly was provided."),
+                        "invalid"
+                    ]
+                )
                 : null,
             // Check if reads and strategy match
-            (it.strategy == "single" && it.ontreads && it.hifireads)
+                (it.strategy == "single" && it.ontreads && it.hifireads)
                 ?
                 [
                     println("Please confirm samplesheet: [sample: $it.meta.id]: Strategy is $it.strategy, but both types of reads are provided."),

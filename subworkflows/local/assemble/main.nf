@@ -110,7 +110,7 @@ workflow ASSEMBLE {
     // These are the hifi samples
     ch_main_assemble_flye
         // Those where the hifi assembler is flye, or where there is only one assembler and only hifireads
-        .filter { it -> it.assembler2 == "flye" || (it.strategy == "single" && it.hifireads && !it.ontreads)}
+        .filter { it -> it.assembler2 == "flye" && it.hifireads || (it.strategy == "single" && it.hifireads && !it.ontreads && it.assembler == "flye")}
         .multiMap {
             it ->
             reads: [
@@ -147,11 +147,11 @@ workflow ASSEMBLE {
     */
     ch_main_assemble_branched
             .single
-            .filter { it -> it.assembler1 == "hifiasm" && !it.ontreads }
+            .filter { it -> it.assembler2 == "hifiasm" }
             .mix(
                 ch_main_assemble_branched
                     .hybrid
-                    .filter { it -> it.assembler1 == "hifiasm" }
+                    .filter { it -> it.assembler2 == "hifiasm" }
             )
             .mix(ch_main_assemble_branched
                     .scaffold
@@ -331,6 +331,9 @@ workflow ASSEMBLE {
     // flye-flye
     flye_assemblies
         .filter { it -> it.strategy == "scaffold" && it.assembler1 == "flye" && it.assembler2 == "flye" }
+        /*
+        Below is uneccessary, this is handled already when flye_assemblies is created.
+        --------------------------------------------
         .map { it -> it.collect { entry -> [ entry.value, entry ] } }
         .join( flye_assemblies
                 .filter{ it -> it.strategy == "scaffold" && it.assembler1 == "flye" && it.assembler2 == "flye" }
@@ -339,6 +342,8 @@ workflow ASSEMBLE {
         )
         .map { it -> it.collect { _entry, map -> [ (map.key): map.value ] }.collectEntries() }
         .map { it -> it - it.subMap("flye_assembly", "assembly2") + [ assembly2: it.flye_assembly ] }
+        --------------------------------------------
+        */
         .set{ scaffold_flye_flye }
 
     // hifiasm_flye

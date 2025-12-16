@@ -310,11 +310,16 @@ workflow GENOMEASSEMBLER {
         .fromPath("${projectDir}/assets/report/functions/*")
         .collect()
         .set { report_functions }
+    channel
+        .fromPath("${projectDir}/assets/report/scripts/*")
+        .collect()
+        .set { report_scripts }
 
     //fasplong_jsons.view { it -> "UNQIE JSONS: $it"}
 
     REPORT( report_files,
             report_functions,
+            report_scripts,
             fasplong_jsons,
             genomescope_files,
             quast_files,
