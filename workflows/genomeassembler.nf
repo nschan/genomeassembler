@@ -236,7 +236,7 @@ workflow GENOMEASSEMBLER {
         .map { it -> it[1] }
         .unique()
         .collect()
-        .set { fasplong_jsons }
+        .set { fastplong_jsons }
 
     PREPARE.out.genomescope_summary
         .concat(
@@ -315,12 +315,12 @@ workflow GENOMEASSEMBLER {
         .collect()
         .set { report_scripts }
 
-    //fasplong_jsons.view { it -> "UNQIE JSONS: $it"}
+    //fastplong_jsons.view { it -> "UNQIE JSONS: $it"}
 
     REPORT( report_files,
             report_functions,
             report_scripts,
-            fasplong_jsons,
+            fastplong_jsons,
             genomescope_files,
             quast_files,
             busco_files,
