@@ -97,45 +97,47 @@ workflow PIPELINE_INITIALISATION {
 
     channel.fromPath(params.input)
         .splitCsv(header: true)
-        .map { it ->
         /*
         This is a somewhat crucial step, where the samplesheet and params are used to determine per-sample parameters.
-        Some variables that with more complex logic are handled below
         */
-        def strategy        =   it.strategy ?: params.strategy
+        .map { it ->
+            def strategy        =   it.strategy ?: params.strategy
 
-        def ontreads        =   it.ontreads ?: params.ontreads
+            def ontreads        =   it.ontreads ?: params.ontreads
 
-        def hifireads       =   it.hifireads ?: params.hifireads
+            def hifireads       =   it.hifireads ?: params.hifireads
 
-        def assembler       =   it.assembler ?: params.assembler
+            def assembler       =   it.assembler ?: params.assembler
 
-        def assembler1      =   it.assembler1 ?:
-                                params.assembler1 ?:
-                                (strategy == "single" && ontreads && !hifireads) ? assembler :
-                                (strategy == "hybrid" && assembler == "hifiasm") ? assembler :
-                                assembler.contains("_") ? assembler.tokenize("_")[0] :
-                                null
+            def assembler1      =   it.assembler1 ?:
+                                    params.assembler1 ?:
+                                    (strategy == "single" && ontreads && !hifireads) ? assembler :
+                                    (strategy == "hybrid" && assembler == "hifiasm") ? assembler :
+                                    assembler.contains("_") ? assembler.tokenize("_")[0] :
+                                    null
 
-        def assembler2      =   it.assembler2 ?:
-                                params.assembler2 ?:
-                                (strategy == "single" && !ontreads && hifireads) ? assembler :
-                                assembler.contains("_") ? assembler.tokenize("_")[1] :
-                                null
+            def assembler2      =   it.assembler2 ?:
+                                    params.assembler2 ?:
+                                    (strategy == "single" && !ontreads && hifireads) ? assembler :
+                                    assembler.contains("_") ? assembler.tokenize("_")[1] :
+                                    null
 
-        def polish          =   it.polish ?:
-                                (params.polish_medaka && params.polish_pilon && ontreads) ? "medaka+pilon" :
-                                (params.polish_medaka && ontreads) ? "medaka" :
-                                (params.polish_pilon && (it.shortread_F || params.shortread_F)) ? "pilon" :
-                                null
+            def polish          =   it.polish ?:
+                                    (params.polish_medaka && params.polish_pilon && ontreads) ? "medaka+pilon" :
+                                    (params.polish_medaka && ontreads) ? "medaka" :
+                                    (params.polish_pilon && (it.shortread_F || params.shortread_F)) ? "pilon" :
+                                    null
 
-        // Hard exit here if assembler cannot be determined.
-        strategy == "single" && ontreads && hifireads && !(assembler1 || assembler2) ?
-            error("""
-            [$it.sample]: Strategy is 'single', but ONT and HiFi reads are provided.
-            Please unambigiously define either 'assembler1' for ONT or 'assembler2' for Hifi
-                  """) : null
-
+            // Hard exit here if assembler cannot be determined.
+            strategy == "single" && ontreads && hifireads && !(assembler1 || assembler2) ?
+                error(
+                    """
+                    [$it.sample]: Strategy is 'single', but ONT and HiFi reads are provided.
+                    Please unambigiously define either 'assembler1' for ONT or 'assembler2' for HiFi
+                    """
+                ) :
+                null
+            // Build the map
             [
                 meta: [id: it.sample],
                 // new in refactor-assemblies
@@ -144,19 +146,20 @@ workflow PIPELINE_INITIALISATION {
                 hifireads: hifireads,
                 // new in refactor-assemblers
                 strategy: strategy,
-                // The "assembler" value is mainly to ease input, all actual workflow logic should use assembler1/2
+                // The "assembler" value is mainly to ease input, all actual workflow logic should use assembler1/2.
+                // Could still be useful for debugging.
                 assembler: assembler,
                 // Assembler1: ONT, Assembler2: HiFi
                 assembler1: assembler1,
                 assembler2: assembler2,
                 assembly_scaffolding_order: it.assembly_scaffolding_order ?: params.assembly_scaffolding_order ?: "ont_on_hifi",
                 assembler1_args: it.assembler1_args ?: params.assembler1_args ?:
-                    (assembler1 == "hifiasm") ? params.hifiasm_args :
-                    (assembler1 == "flye") ? params.flye_args :
+                    (assembler1 == "hifiasm") ? (it.hifiasm_args ?: params.hifiasm_args) :
+                    (assembler1 == "flye") ? (it.flye_args ?: params.flye_args) :
                     null,
                 assembler2_args: it.assembler2_args ?: params.assembler2_args ?:
-                    (assembler2 == "hifiasm") ? params.hifiasm_args :
-                    (assembler2 == "flye") ? params.flye_args :
+                    (assembler2 == "hifiasm") ? (it.hifiasm_args ?: params.hifiasm_args) :
+                    (assembler2 == "flye") ? (it.flye_args ?: params.flye_args) :
                     null,
                 polish: polish,
                 ont_collect: it.ont_collect ?: params.ont_collect,
@@ -172,7 +175,7 @@ workflow PIPELINE_INITIALISATION {
                 scaffold_longstitch: it.scaffold_longstitch ?: params.scaffold_longstitch,
                 scaffold_links: it.scaffold_links ?: params.scaffold_links,
                 scaffold_ragtag: it.scaffold_ragtag ?: params.scaffold_ragtag,
-                use_ref: it.use_ref ?: params.use_ref ?: it.ref_fasta ? true : false,
+                use_ref: it.use_ref ?: params.use_ref,
                 // not new
                 genome_size: it.genome_size ?: params.genome_size,
                 ref_fasta: it.ref_fasta ?: params.ref_fasta,
@@ -218,7 +221,8 @@ workflow PIPELINE_INITIALISATION {
                 // Check if assembler1 was set
                 (it.ontreads && !it.assembler1 && !it.assembly)
                 ?
-(                    // Check if assembler2 was set
+                (
+                    // Check if assembler2 was set
                     (it.hifireads && it.assembler2 && it.stragegy == "single")
                     ?
                     null
