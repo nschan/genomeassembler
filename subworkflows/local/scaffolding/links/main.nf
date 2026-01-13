@@ -9,7 +9,7 @@ workflow RUN_LINKS {
 
     main:
     channel.empty().set { ch_versions }
-
+    ch_main.dump(tag: "SCAFFOLD: LINKS: WORKFLOW inputs")
     ch_main
         .multiMap { it ->
             assembly:   [it.meta, it.polished ? (it.polished.pilon ?: it.polished.medaka) : it.assembly]

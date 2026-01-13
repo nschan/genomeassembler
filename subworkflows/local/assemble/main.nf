@@ -75,16 +75,10 @@ workflow ASSEMBLE {
         .single
         .filter { it -> it.assembler1 == "flye" }
         .mix(
-            // Add in the scaffolding samples where flye is used for ONT
+            // Add in the scaffolding samples where flye is used
             ch_main_assemble_branched
                 .scaffold
-                .filter { it -> it.assembler1 == "flye"  }
-            // Add in the scaffolding samples where flye is used for HiFi
-                .mix(
-                    ch_main_assemble_branched
-                    .scaffold
-                    .filter { it -> it.assembler2 == "flye" }
-                )
+                .filter { it -> it.assembler1 == "flye" || it.assembler2 == "flye"  }
         )
         .set { ch_main_assemble_flye }
 
@@ -253,8 +247,8 @@ workflow ASSEMBLE {
             it -> it - it.subMap("hifiasm_assembly") +
             // stick what was in hifiasm_assembly into the correct key
             [
-                assembly: (it.strategy == "single" || it.strategy == "hybrid") && it.assembler1 == "hifiasm" ? it.hifiasm_assembly : null,
-                // I think below case dose not exist in this channel since it is only hifiasm (assembler2) assemblies?
+                assembly: (it.strategy == "single" && it.assembler2 == "hifiasm")  || (it.strategy == "hybrid" && it.assembler1 == "hifiasm") ? it.hifiasm_assembly : null,
+                // I think below case does not exist in this channel since it is only hifiasm (assembler2) assemblies?
                 assembly1: it.strategy == "scaffold" && it.assembler1 == "hifiasm" ? it.hifiasm_assembly : null,
                 assembly2: it.strategy == "scaffold" && it.assembler2 == "hifiasm" ? it.hifiasm_assembly : null
             ]
@@ -332,17 +326,7 @@ workflow ASSEMBLE {
     flye_assemblies
         .filter { it -> it.strategy == "scaffold" && it.assembler1 == "flye" && it.assembler2 == "flye" }
         /*
-        Below is uneccessary, this is handled already when flye_assemblies is created.
-        --------------------------------------------
-        .map { it -> it.collect { entry -> [ entry.value, entry ] } }
-        .join( flye_assemblies
-                .filter{ it -> it.strategy == "scaffold" && it.assembler1 == "flye" && it.assembler2 == "flye" }
-                .map { it -> [ meta: it.meta, flye_assembly: it.assembly2 ] }
-                .map { it -> it.collect { entry -> [ entry.value, entry ] } }
-        )
-        .map { it -> it.collect { _entry, map -> [ (map.key): map.value ] }.collectEntries() }
-        .map { it -> it - it.subMap("flye_assembly", "assembly2") + [ assembly2: it.flye_assembly ] }
-        --------------------------------------------
+        No joins neccessary, this is handled already when flye_assemblies is created.
         */
         .set{ scaffold_flye_flye }
 
@@ -399,6 +383,8 @@ workflow ASSEMBLE {
         }
         .set { ragtag_in }
 
+    ragtag_in.target.dump(tag: "ASSEMBLE: SCAFFOLD: RAGTAG_PATCH INPUT: TARGET")
+    ragtag_in.query.dump( tag: "ASSEMBLE: SCAFFOLD: RAGTAG_PATCH INPUT: QUERY")
     // Scaffold with PATCH
     RAGTAG_PATCH(ragtag_in.target, ragtag_in.query, [[], []], [[], []] )
 
@@ -419,6 +405,9 @@ workflow ASSEMBLE {
     // Mix everything assembled back togehter
     ch_assemblies_no_scaffold
         .mix(ch_assemblies_scaffold)
+        .map {
+            it -> it - it.subMap("assembly","assembly1", "assembly2") + [assembly: it.assembly ?: it.assembly1 ?: it.assembly2]
+        }
         .set { ch_main_assembled }
 
     ch_main_assembled.dump(tag: "Assemble: Assembled")
@@ -495,7 +484,7 @@ workflow ASSEMBLE {
         .mix(ch_main_quast_branch.no_quast)
         .set { ch_main_to_qc }
 
-
+    ch_main_to_qc.dump(tag: "ASSEMBLE: QC INPUT")
     //QC on initial assembly
 
     // scaffolds to QC need to be defined here, this is what is in the assembly slot
@@ -521,7 +510,7 @@ workflow ASSEMBLE {
             ]
         }
         .set { liftoff_in }
-
+    liftoff_in.dump(tag: "ASSEMBLE: LIFTOFF: INPUT")
     RUN_LIFTOFF(liftoff_in)
     ch_versions = ch_versions.mix(RUN_LIFTOFF.out.versions)
 

@@ -23,7 +23,6 @@ workflow SCAFFOLD {
     // But it is possible that one sample is scaffolded with different tools.
     // Therefore main is filtered, instead of branched.
 
-
     ch_main
         .filter {
             it ->  it.scaffold_links
