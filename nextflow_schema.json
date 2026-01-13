@@ -186,7 +186,7 @@
                 },
                 "assembler": {
                     "type": "string",
-                    "description": "Assembler to use. Valid choices depend on strategy; for single either `flye` or `hifiasm`, hybrid can be done with `hifiasm` and for scaffolded assembly provide the names of the assemblers separated with an underscore. The first assembler will be used for ONT reads, the second for HiFi reads.",
+                    "description": "Assembler to use. Valid choices depend on strategy; for single either `flye` or `hifiasm`, hybrid can be done with `hifiasm` and for scaffolded assembly provide the names of the assemblers separated with an underscore. The first assembler will be used for ONT reads, the second for HiFi reads. (see below, asembler1 and assembler2)",
                     "enum": ["flye", "hifiasm", "flye_hifiasm", "hifiasm_hifiasm", "flye_flye", "hifiasm_flye"],
                     "default": "hifiasm"
                 },
@@ -214,6 +214,22 @@
                     "type": "string",
                     "description": "Extra arguments passed to `hifiasm`",
                     "default": "\"\""
+                },
+                "assembler1": {
+                    "type": "string",
+                    "description": "Assembler1 assembles ONT reads. This option is mainly useful when building more complex samplesheets"
+                },
+                "assembler1_args": {
+                    "type": "string",
+                    "description": "Arguments to be passed to assembler1 (ONT)"
+                },
+                "assembler2": {
+                    "type": "string",
+                    "description": "Assembler2 assembles HiFi reads. This option is mainly useful when building more complex samplesheets"
+                },
+                "assembler2_args": {
+                    "type": "string",
+                    "description": "Arguments to be passed to assembler2 (HiFi)"
                 }
             }
         },
@@ -271,10 +287,6 @@
                     "type": "integer",
                     "default": 21,
                     "description": "Value of k used during k-mer analysis with jellyfish"
-                },
-                "dump": {
-                    "type": "boolean",
-                    "description": "dump jellyfish output"
                 }
             }
         },
@@ -348,7 +360,7 @@
                 "busco_lineage": {
                     "type": "string",
                     "description": "Busco lineage to use",
-                    "default": "brassicales_odb10"
+                    "default": "auto_euk"
                 },
                 "quast": {
                     "type": "boolean",
@@ -356,7 +368,7 @@
                 },
                 "ref_map_bam": {
                     "type": "string",
-                    "description": "A mapping (bam) of reads mapped to the reference can be provided for QC. If provided alignment to reference fasta will not run"
+                    "description": "A mapping (bam) of reads mapped to the reference can be provided for QC. If provided, alignment to reference fasta will not run."
                 },
                 "assembly": {
                     "type": "string",
@@ -364,7 +376,7 @@
                 },
                 "assembly_map_bam": {
                     "type": "string",
-                    "description": "A mapping (bam) of reads mapped to the provided assembly can be specified for QC. If provided alignment to the provided assembly fasta will not run"
+                    "description": "A mapping (bam) of reads mapped to the provided assembly can be specified for QC. If provided, alignment to the provided assembly fasta will not run"
                 }
             }
         },
