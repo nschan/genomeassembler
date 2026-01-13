@@ -12,6 +12,7 @@ process REPORT {
     input:
     path qmdir_files,       stageAs: "*"
     path funct_files,       stageAs: "functions/*"
+    path script_files,      stageAs: "scripts/*"
     path fastplong_files,   stageAs: "data/fastplong/*"
     path jelly_files,       stageAs: "data/genomescope/*"
     path quast_files,       stageAs: "data/quast/*"
@@ -65,8 +66,7 @@ process REPORT {
     export HOME="\$PWD"
     quarto render report.qmd \\
         ${report_profile} \\
-        ${report_params} \\
-        --to dashboard
+        ${report_params}
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
