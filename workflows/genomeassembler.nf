@@ -225,7 +225,7 @@ workflow GENOMEASSEMBLER {
     */
     SCAFFOLD(ch_main_polished.scaffold, meryl_kmers)
 
-    // Recreate ch_main, even though it is not used since there are no later steps._report
+    // Recreate ch_main, even though it is not used since there are no later steps.
 
     ch_main_polished
         .no_scaffold
@@ -264,10 +264,12 @@ workflow GENOMEASSEMBLER {
         )
 
     quast_files
-        .concat(
-            ASSEMBLE.out.assembly_quast_reports.concat(
+        .mix(
+            ASSEMBLE.out.assembly_quast_reports
+            .mix(
                 POLISH.out.polish_quast_reports
-            ).concat(
+            )
+            .mix(
                 SCAFFOLD.out.scaffold_quast_reports
             )
         )
@@ -276,10 +278,12 @@ workflow GENOMEASSEMBLER {
         .set { quast_files }
 
     busco_files
-        .concat(
-            ASSEMBLE.out.assembly_busco_reports.concat(
+        .mix(
+            ASSEMBLE.out.assembly_busco_reports
+            .mix(
                 POLISH.out.polish_busco_reports
-            ).concat(
+            )
+            .mix(
                 SCAFFOLD.out.scaffold_busco_reports
             )
         )
@@ -288,10 +292,12 @@ workflow GENOMEASSEMBLER {
         .set { busco_files }
 
     merqury_files
-        .concat(
-            ASSEMBLE.out.assembly_merqury_reports.concat(
+        .mix(
+            ASSEMBLE.out.assembly_merqury_reports
+            .mix(
                 POLISH.out.polish_merqury_reports
-            ).concat(
+            )
+            .mix(
                 SCAFFOLD.out.scaffold_merqury_reports
             )
         )
