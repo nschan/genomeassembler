@@ -211,10 +211,10 @@ workflow ASSEMBLE {
         .map { it -> it.collect { entry -> [ entry.value, entry ] } }
         .join( FLYE_ONT.out.fasta
                 .map { meta, assembly -> [meta: [id: meta.id], flye_ont_assembly: assembly ] }
-                .map { it -> it.collect { entry -> [ entry.value, entry ] } }
-        )
-        .join( FLYE_HIFI.out.fasta
-                .map { meta, assembly -> [meta: [id: meta.id], flye_hifi_assembly: assembly ] }
+                .mix(
+                    FLYE_HIFI.out.fasta
+                        .map { meta, assembly -> [meta: [id: meta.id], flye_hifi_assembly: assembly ] }
+                )
                 .map { it -> it.collect { entry -> [ entry.value, entry ] } }
         )
         // After joining re-create the maps from the stored map
