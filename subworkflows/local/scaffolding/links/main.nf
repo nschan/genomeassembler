@@ -12,8 +12,8 @@ workflow RUN_LINKS {
     ch_main.dump(tag: "SCAFFOLD: LINKS: WORKFLOW inputs")
     ch_main
         .multiMap { it ->
-            assembly:   [it.meta, it.polished ? (it.polished.pilon ?: it.polished.medaka) : it.assembly]
-            reads:      [it.meta, it.qc_reads_path]
+            assembly:   [it.meta, it.meta.polished ? (it.meta.polished.pilon ?: it.meta.polished.medaka) : it.meta.assembly]
+            reads:      [it.meta, it.meta.qc_reads_path]
         }
         .set { links_in }
 
@@ -22,21 +22,14 @@ workflow RUN_LINKS {
 
     LINKS(links_in.assembly, links_in.reads)
     LINKS.out.scaffolds_fasta
-        .set { scaffolds }
-
-    ch_main
-        .map { it -> it.collect { entry -> [ entry.value, entry ] } }
-        .join(
-            scaffolds
-                .map { it -> [meta: it[0], scaffolds_links: it[1]] }
-                .map { it -> it.collect { entry -> [ entry.value, entry ] } }
-        )
-        .map { it -> it.collect { _entry, map -> [ (map.key): map.value ] }.collectEntries() }
+        .map { meta, scaff_links -> [meta: meta + [scaffolds_links: scaff_links] ] }
         .set { ch_main_scaffolded }
 
     ch_versions = ch_versions.mix(LINKS.out.versions)
 
-    QC(ch_main_scaffolded.map { it -> it - it.subMap("assembly_map_bam") + [assembly_map_bam: null] }, scaffolds, meryl_kmers)
+    QC(ch_main_scaffolded.map { it -> [meta: it.meta - it.meta.subMap("assembly_map_bam") + [assembly_map_bam: null] ]},
+        LINKS.out.scaffolds_fasta.map { meta, scaffold -> [meta.id, scaffold]},
+         meryl_kmers)
 
     ch_versions = ch_versions.mix(QC.out.versions)
 

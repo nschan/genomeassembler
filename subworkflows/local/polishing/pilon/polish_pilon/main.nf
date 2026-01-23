@@ -14,10 +14,10 @@ workflow POLISH_PILON {
     ch_main
         .multiMap {
             it ->
-            shortreads: [it.meta, it.shortreads]
+            shortreads: [it.meta, it.meta.shortreads]
             assembly: [
                 it.meta,
-                it.polish == "medaka+pilon" ? it.polished.medaka : it.assembly
+                it.meta.polish == "medaka+pilon" ? it.meta.polished.medaka : it.meta.assembly
                 ]
         }
         .set { map_sr_in }
@@ -31,27 +31,19 @@ workflow POLISH_PILON {
     RUN_PILON.out.improved_assembly
         .set { pilon_polished }
 
-    ch_main
-        .map { it -> it - it.subMap("polished") + [polished_medaka: it.polish == "medaka+pilon" ? it.polished.medaka : null] }
-        .map { it -> it.collect { entry -> [ entry.value, entry ] } }
-        .join(
-            pilon_polished
-                .map { it -> [ meta: it[0], polished_pilon: it[1] ] }
-                .map { it -> it.collect { entry -> [ entry.value, entry ] } }
-        )
-        .map { it -> it.collect { _entry, map -> [ (map.key): map.value ] }.collectEntries() }
-        .map { it -> (
-                 ["medaka+pilon"].contains(it.polish) ?
-                 (it - it.subMap("polished_medaka", "polished_pilon")) :
-                 (it - it.subMap("polished_pilon"))
-                 ) +
-                 [polished: [medaka: it.polished_medaka, pilon: it.polished_pilon]]
+    pilon_polished
+        .map { meta, polished_pilon -> [ meta: meta, polished_pilon: polished_pilon ] }
+        .map { it -> [ meta: it.meta +
+                        [ polished: [it.polished_pilon] ]
+            ]
         }
         .set { ch_main }
 
     ch_versions = ch_versions.mix(RUN_PILON.out.versions)
 
-    QC(ch_main.map { it -> it - it.subMap("assembly_map_bam") + [assembly_map_bam: null] }, pilon_polished, meryl_kmers)
+    QC(ch_main.map { it -> [meta: it.meta - it.meta.subMap("assembly_map_bam") + [assembly_map_bam: null] ]},
+        pilon_polished.map {meta, polished -> [meta.id, polished ]},
+        meryl_kmers)
 
     ch_versions = ch_versions.mix(QC.out.versions)
 
@@ -62,9 +54,9 @@ workflow POLISH_PILON {
         .map { it ->
                 [
                 it.meta,
-                it.polished.pilon,
-                it.ref_fasta,
-                it.ref_gff
+                it.meta.polished.pilon,
+                it.meta.ref_fasta,
+                it.meta.ref_gff
                 ]
         }
         .set { liftoff_in }

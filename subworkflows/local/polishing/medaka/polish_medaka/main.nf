@@ -12,12 +12,12 @@ workflow POLISH_MEDAKA {
 
     ch_main
         .filter {
-            it -> it.polish_medaka
+            it -> it.meta.polish_medaka
         }
         .multiMap {
             it ->
-            reads: [it.meta, it.ontreads]
-            reference: [it.meta, it.assembly]
+            reads: [it.meta, it.meta.ontreads]
+            reference: [it.meta, it.meta.assembly]
         }
         .set { ch_medaka_in }
 
@@ -25,15 +25,9 @@ workflow POLISH_MEDAKA {
 
     RUN_MEDAKA.out.medaka_out.set { polished_assembly }
 
-    ch_main
-        .map { it -> it.collect { entry -> [ entry.value, entry ] } }
-        .join( polished_assembly
-                .map { it -> [meta: it[0], polished_medaka: it[1]]}
-                .map { it -> it.collect {  entry -> [ entry.value, entry ] } }
-        )
+    polished_assembly
+        .map { meta, polished_medaka -> [meta: meta + [ polished: [polished_medaka: polished_medaka ] ] ]}
         // After joining re-create the maps from the stored map
-        .map { it -> it.collect { _entry, map -> [ (map.key): map.value ] }.collectEntries() }
-        .map { it -> it - it.subMap("polished_medaka") + [polished: [medaka: it.polished_medaka ]]}
         .set { ch_medaka_out }
 
     ch_main
@@ -44,8 +38,8 @@ workflow POLISH_MEDAKA {
     ch_versions = ch_versions.mix(RUN_MEDAKA.out.versions)
 
     QC(
-        ch_medaka_out.map { it -> it - it.subMap("assembly_map_bam") + [assembly_map_bam: null] },
-        polished_assembly,
+        ch_medaka_out.map { it -> [meta: it.meta - it.meta.subMap("assembly_map_bam") + [ assembly_map_bam: null] ] },
+        polished_assembly.map { meta, polished -> [meta.id, polished] },
         meryl_kmers
     )
 
@@ -59,9 +53,9 @@ workflow POLISH_MEDAKA {
         .map { it ->
                 [
                 it.meta,
-                it.polished.medaka,
-                it.ref_fasta,
-                it.ref_gff
+                it.meta.polished.medaka,
+                it.meta.ref_fasta,
+                it.meta.ref_gff
                 ]
         }
         .set { liftoff_in }

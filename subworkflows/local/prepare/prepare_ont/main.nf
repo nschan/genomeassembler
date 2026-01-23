@@ -13,29 +13,32 @@ workflow PREPARE_ONT {
     ch_main
         .branch {
             it ->
-                to_collect: it.ont_collect
-                no_collect: !it.ont_collect
+                to_collect: it.meta.ont_collect
+                no_collect: !it.meta.ont_collect
         }
         .set { ch_main_collect_branched }
 
     ch_main_collect_branched
         .to_collect
-        .filter { it -> it.group }
-        .map { it -> [it.meta, it.group, it.ontreads] }
+        .filter { it -> it.meta.group }
+        .map { it -> [it.meta, it.meta.group, it.meta.ontreads] }
         .groupTuple(by: 1)
         .map {
             it ->
                 [
-                    [id: it[1], ids: it[0].id.collect().join("+")],
-                    it[2].unique()[0]
+                    [
+                        id: it[1], // the group
+                        metas: it[0]
+                    ],
+                    it[2].unique()[0] // Ontreads
                 ]
         }
         .mix(
             ch_main_collect_branched
                 .to_collect
-                .filter { it -> !it.group }
+                .filter { it -> !it.meta.group }
                 .map {
-                    it -> [ it.meta, it.ontreads ]
+                    it -> [ it.meta, it.meta.ontreads ]
                 }
         )
         .set { collect_in }
@@ -43,45 +46,44 @@ workflow PREPARE_ONT {
     COLLECT(collect_in)
 
     COLLECT.out.reads
-        .filter { it -> it[0].ids }
-        .flatMap { it ->
-            it[0].ids
-                .tokenize("+")
-                .collect { sample -> [ meta: [ id: sample ], ontreads: it[1] ] }
-            }
-        .mix(COLLECT.out.reads
+        .filter { it -> it[0].metas }
+        .flatMap { it -> // it looks like [meta, output_path]
+            it[0].metas
+                  .collect { meta -> [ meta: meta + [ontreads: it[1]] ] }
+        }
+        .mix(
+            COLLECT.out.reads
                 .filter { it -> !it[0].ids }
                 .map {
-                    it -> [ meta: [ it[0].id ], ontreads: it[1] ]
+                    it -> [ meta: it[0] + [ontreads: it[1]] ]
                 }
         )
-        .map { it -> it.collect { entry -> [ entry.value, entry ] } }
         .set { ch_collected_reads }
 
-    ch_main_collect_branched
-        .to_collect
-        .map { it -> it - it.subMap("ontreads") }
-        .map { it -> it.collect { entry -> [ entry.value, entry ] } }
-        .join(ch_collected_reads)
-        .map { it -> it.collect { _entry, map -> [ (map.key): map.value ] }.collectEntries() }
+    ch_collected_reads.dump(tag: "Collected ONT reads")
+
+    ch_collected_reads
         .mix(ch_main_collect_branched.no_collect)
         .set { ch_collected }
+
+    ch_collected.dump(tag: "Collected reads mixed with uncollected.")
 
     // ch_collected is the same samples as the input channel
     ch_collected
         .filter { it -> it.group }
-        .map { it -> [it.meta, it.group, it.ont_trim, it.ontreads, it.ont_adaptors, it.ont_fastplong_args] }
+        .map { it -> [it.meta, it.meta.group, it.meta.ont_trim, it.meta.ontreads, it.meta.ont_adaptors, it.meta.ont_fastplong_args] }
         .groupTuple(by: 1)
         .map {
             it ->
                 [
                     meta: [
-                        id: it[1], ids: it[0].id.collect().join("+"),
-                        trim: it[2].unique()[0],
-                        ont_fastplong_args: it[5].unique()[0]
+                        id: it[1],
+                        metas: it[0],
+                        trim: it[2][0],
+                        ont_fastplong_args: it[5][0]
                         ],
-                    ontreads: it[3].unique()[0],
-                    ont_adaptors: it[4].unique()[0]
+                    ontreads: it[3][0],
+                    ont_adaptors: it[4][0]
                 ]
         }
         .mix(
@@ -90,13 +92,9 @@ workflow PREPARE_ONT {
                 .map {
                     it ->
                     [
-                        meta: [
-                            id: it.meta.id,
-                            trim: it.ont_trim,
-                            ont_fastplong_args: it.ont_fastplong_args
-                            ],
-                        ontreads: it.ontreads,
-                        ont_adaptors: it.ont_adaptors,
+                        meta: it.meta,
+                        ontreads: it.meta.ontreads,
+                        ont_adaptors: it.meta.ont_adaptors,
                     ]
                 }
         )
@@ -112,16 +110,15 @@ workflow PREPARE_ONT {
     FASTPLONG_ONT
         .out
         .reads
-        .filter { it -> it[0].ids }
-        .flatMap { it ->
-            it[0].ids
-                .tokenize("+")
-                .collect { sample -> [ meta: [ id: sample ], ontreads: it[1] ] }
-            }
+        .filter { it -> it[0].metas }
+        .flatMap { it -> // it looks like [meta, output_path]
+            it[0].metas
+                  .collect { meta -> [ meta: meta + [ontreads: it[1]] ] }
+        }
         .mix(FASTPLONG_ONT.out.reads
             .filter { it -> !it[0].ids }
             .map {
-                it -> [ meta: [ id: it[0].id ], ontreads: it[1] ]
+                it -> [ meta: [ id: it[0] ] + [ ontreads: it[1] ] ]
             }
         )
         .set { fastplong_reads_out }
@@ -129,36 +126,23 @@ workflow PREPARE_ONT {
     FASTPLONG_ONT
         .out
         .json
-        .filter { it -> it[0].ids }
-        .flatMap { it ->
-            it[0].ids
-                .tokenize("+")
-                .collect { sample -> [ [ id: sample ], it[1] ] }
-            }
-        .mix(FASTPLONG_ONT.out.json
-            .filter { it -> !it[0].ids }
-            .map {
-                it -> [ [ id: it[0].id ], it[1] ]
-            }
+        .filter { it -> it[0].metas }
+        .flatMap { it -> // it looks like [meta, output_path]
+            it[0].metas
+                  .collect { meta -> [ meta, + it[1] ] }
+        }
+        .mix(
+            FASTPLONG_ONT.out.json
+            .filter { it -> !it[0].metas }
         )
         .set { fastplong_json_out }
 
-    ch_collected
-        .map { it -> it - it.subMap('ontreads') }
-        .map { it -> it.collect { entry -> [ entry.value, entry ] } }
-        .join(
-            fastplong_reads_out
-                .map { it -> it.collect { entry -> [ entry.value, entry ] } }
-        )
-        .map { it -> it.collect { _entry, map -> [ (map.key): map.value ] }.collectEntries() }
-        .set { main_out }
+        versions = ch_versions.mix(COLLECT.out.versions).mix(FASTPLONG_ONT.out.versions)
 
-    versions = ch_versions.mix(COLLECT.out.versions).mix(FASTPLONG_ONT.out.versions)
-
-    main_out.dump(tag: "Prepare-ONT output")
+    fastplong_reads_out.dump(tag: "Prepare-ONT output")
 
     emit:
-    main_out
+    main_out = fastplong_reads_out
     fastplong_ont_reports = fastplong_json_out
     versions
 }

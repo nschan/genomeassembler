@@ -70,19 +70,19 @@ workflow PREPARE {
     main:
     ch_main
         .filter {
-            it -> (it.shortread_F && it.use_short_reads) ? true : false
+            it -> (it.meta.shortread_F && it.meta.use_short_reads) ? true : false
         }
         .set { shortreads }
 
     ch_main
         .filter {
-            it -> (it.ontreads) ? true : false
+            it -> (it.meta.ontreads) ? true : false
         }
         .set { ontreads }
 
     ch_main
         .filter {
-            it -> (it.hifireads) ? true : false
+            it -> (it.meta.hifireads) ? true : false
         }
         .set { hifireads }
 
@@ -99,9 +99,9 @@ workflow PREPARE {
 
     ch_main
         .filter {
-            it -> !it.shortread_F ? true : false
+            it -> !it.meta.shortread_F ? true : false
         }
-        .map { it -> it - it.subMap("shortread_F","shortread_R", "paired") + [shorteads: null] }
+        .map { it -> it.meta - it.meta.subMap("shortread_F","shortread_R", "paired") + [shorteads: null] }
         .mix(SHORTREADS.out.main_out)
         .set { ch_main_shortreaded }
 
@@ -110,26 +110,32 @@ workflow PREPARE {
 
     ONT.out.main_out.set { ch_main_ont_prepped }
 
+    // Continue here with switching to meta
+
     HIFI(hifireads)
 
     HIFI.out.main_out.set { ch_main_hifi_prepped }
 
     ch_main_shortreaded
+        // ADD ONT READS
         .filter {
             it -> it.ontreads ? true : false
         }
-        .map { it -> it.subMap("meta","shortreads")}
-        .map { it -> it.collect { entry -> [ entry.value, entry ] } }
-            .join( ch_main_ont_prepped
-                    .map { it -> it - it.subMap("shortreads") }
-                    .map { it -> it.collect { entry -> [ entry.value, entry ] } }
+        .map { it -> [it.meta.id, it.meta - it.meta.subMap("ontreads")]}
+        .join(
+            ch_main_ont_prepped
+                .map { it -> [it.meta.id, it.meta.ontreads] }
             )
-            // After joining re-create the maps from the stored map
-        .map { it -> it.collect { _entry, map -> [ (map.key): map.value ] }.collectEntries() }
+        // After joining re-create the maps from the stored map
+        .map { _id, meta_old, ont_reads ->
+            [
+                meta: meta_old + [ontreads: ont_reads]
+            ]
+        }
         // mix back in those samples where nothing was done to the ont reads
         .mix(ch_main_shortreaded
             .filter {
-                it -> it.ontreads ? false : true
+                it -> it.meta.ontreads ? false : true
             }
         )
         .set {
@@ -142,14 +148,17 @@ workflow PREPARE {
         .filter {
             it -> it.hifireads ? true : false
         }
-        .map { it -> it.subMap("meta", "shortreads", "ontreads")}
-        .map { it -> it.collect { entry -> [ entry.value, entry ] } }
-        .join( ch_main_hifi_prepped
-                .map { it -> it - it.subMap("shortreads","ontreads") }
-                .map { it -> it.collect { entry -> [ entry.value, entry ] } }
+        .map { it -> [it.meta.id, it.meta - it.meta.subMap("hifireads")]}
+        .join(
+            ch_main_hifi_prepped
+                .map { it -> [it.meta.id, it.meta.hifireads] }
             )
             // After joining re-create the maps from the stored map
-        .map { it -> it.collect { _entry, map -> [ (map.key): map.value ] }.collectEntries() }
+        .map { _id, meta_old, hifi_reads ->
+            [
+                meta: meta_old + [hifireads: hifi_reads]
+            ]
+        }
         // mix back in those samples where nothing was done to the hifireads reads
         .mix(ch_main_sr_ont
             .filter {
@@ -164,34 +173,53 @@ workflow PREPARE {
     def slurp = new groovy.json.JsonSlurper()
 
     ch_main_prepared
-        .filter { it -> it.qc_reads.toLowerCase() == "ont" }
-        .map { it -> it.collect { entry -> [ entry.value, entry ] } }
-        .join(ONT.out.fastplong_ont_reports
-                .map { it -> [ meta: it[0], fastplong_json: it[1] ]}
-                .map { it -> it.collect { entry -> [ entry.value, entry ] } }
-            )
+        .filter { it -> it.meta.qc_reads.toLowerCase() == "ont" }
+        .map { it ->
+            [
+                it.meta.id,
+                it.meta - it.meta.subMap("fastplong_json")
+            ]
+        }
+        .join(
+            ONT.out.fastplong_ont_reports
+                .map { it -> [ it[0].id, it[1] ]}
+        )
+        .map {
+            _id, meta_old, json -> [meta: meta_old + [fastplong_json: json]]
+        }
         .mix(
             ch_main_prepared
             .filter { it -> it.qc_reads.toLowerCase() == "hifi" }
-            .map { it -> it.collect { entry -> [ entry.value, entry ] } }
-            .join(HIFI.out.fastplong_hifi_reports
-                .map { it -> [ meta: it[0], fastplong_json: it[1] ]}
-                .map { it -> it.collect { entry -> [ entry.value, entry ] } }
+            .map {
+                it -> [
+                    it.meta.id, it.meta - it.meta.subMap("fastplong_json")]}
+            .join(
+                HIFI.out.fastplong_hifi_reports
+                    .map { it -> [ it[0].id, it[1] ]}
             )
+            .map {
+            _id, meta_old, json -> [meta: meta_old + [fastplong_json: json]]
+            }
         )
-        .map { it -> it.collect { _entry, map -> [ (map.key): map.value ] }.collectEntries() }
         .map { it ->
-            it +
             [
-                qc_read_mean: slurp.parse(it.fastplong_json).summary.after_filtering.read_mean_length ?:
-                              slurp.parse(it.fastplong_json).summary.before_filtering.read_mean_length
-            ] -
-            it.subMap("fastplong_json")
+                meta: it.meta +
+                    [
+                        qc_read_mean: slurp.parse(it.meta.fastplong_json)
+                            .summary
+                            .after_filtering
+                            .read_mean_length ?:
+                        slurp.parse(it.meta.fastplong_json)
+                            .summary
+                            .before_filtering
+                            .read_mean_length
+                    ]
+            ]
         }
         .branch {
             it ->
-                jelly: it.jellyfish
-                no_jelly: !it.jellyfish
+                jelly: it.meta.jellyfish
+                no_jelly: !it.meta.jellyfish
         }
         .set { ch_main_jellyfish_branched }
 
@@ -201,7 +229,17 @@ workflow PREPARE {
     ch_main_jellyfish_branched.no_jelly
         .mix( JELLYFISH.out.main_out )
         // At this stage, make sure that qc_read_path for downstream qc is using the prepared reads.
-        .map { it -> it - it.subMap("qc_read_path") + [qc_read_path: it.qc_reads.toLowerCase() == "ont" ? it.ontreads : it.hifireads] }
+        .map { it ->
+            [
+                meta:   it.meta -
+                        it.meta.subMap("qc_read_path") +
+                        [
+                            qc_read_path: it.meta.qc_reads.toLowerCase() == "ont" ?
+                            it.meta.ontreads :
+                            it.meta.hifireads
+                        ]
+            ]
+        }
         .set { main_out }
 
     main_out.dump(tag: "Prepare: Combined outputs")

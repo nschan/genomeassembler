@@ -16,9 +16,9 @@ workflow RUN_RAGTAG {
                     assembly:
                         [
                             it.meta,
-                            it.polished ? (it.polished.pilon ?: it.polished.medaka) : it.assembly
+                            it.meta.polished ? (it.meta.polished.pilon ?: it.meta.polished.medaka) : it.meta.assembly
                         ]
-                    reference: [it.meta, it.ref_fasta]
+                    reference: [it.meta, it.meta.ref_fasta]
                     }
         .set { ragtag_in }
 
@@ -28,19 +28,13 @@ workflow RUN_RAGTAG {
 
     RAGTAG_SCAFFOLD(ragtag_in.assembly, ragtag_in.reference, [[], []], [[], [], []])
 
-    RAGTAG_SCAFFOLD.out.corrected_assembly.set { scaffolds }
-
-    ch_main
-        .map { it -> it.collect { entry -> [ entry.value, entry ] } }
-        .join(
-            scaffolds
-                .map { it -> [meta: it[0], scaffolds_ragtag: it[1]] }
-                .map { it -> it.collect { entry -> [ entry.value, entry ] } }
-        )
-        .map { it -> it.collect { _entry, map -> [ (map.key): map.value ] }.collectEntries() }
+    RAGTAG_SCAFFOLD.out.corrected_assembly
+        .map { meta, corrected -> [meta: meta + [ scaffolds_ragtag: corrected] ] }
         .set { ch_main_scaffolded }
 
-    QC(ch_main_scaffolded.map { it -> it - it.subMap("assembly_map_bam") + [assembly_map_bam: null] }, scaffolds, meryl_kmers)
+    QC(ch_main_scaffolded.map { it -> [meta: it.meta - it.meta.subMap("assembly_map_bam") + [assembly_map_bam: null] ] },
+        RAGTAG_SCAFFOLD.out.corrected_assembly.map { meta, corrected -> [ meta.id, corrected ] },
+        meryl_kmers)
 
     ch_versions = ch_versions.mix(QC.out.versions)
 
@@ -51,9 +45,9 @@ workflow RUN_RAGTAG {
         .map { it ->
                 [
                 it.meta,
-                it.scaffolds_ragtag,
-                it.ref_fasta,
-                it.ref_gff
+                it.meta.scaffolds_ragtag,
+                it.meta.ref_fasta,
+                it.meta.ref_gff
                 ]
         }
         .set { liftoff_in }

@@ -58,8 +58,8 @@ Assembly strategy is controlled via `strategy` (either pipeline parameter or sam
 - hybrid: Use a single assembler for a combined assembly of ONT and HiFi reads. The assembler should be provided via `assembler`. Currently, only `hifiasm` supports hybrid assembly.
 - scaffold: Assemble ONT reads and HiFi indepently and scaffold one assembly onto the other. `assembler` has to be provided as `"ontAssembler_hifiAssembler"` and could for example be: "`flye_hifiasm"` to assemble ont reads with `flye` and HiFi reads with `hifiasm` or "hifiasm_hifiasm" to assemble both ont and hifi reads indepently with `hifiasm`. When running in "scaffold" mode, `assembly_scaffolding_order` can be used to control which assembly gets scaffolded onto which, the default being "ont_on_hifi" where ONT assembly is scaffolded onto HifI assembly.
 
-Assembler specific arguments can be provided for the assembler via `hifiasm_args` or `flye_args`, or with more fine-grained control via `assembler1_args` and `assembler2_args` for scaffolding.
-`assembler1_args` controls the parameters for the assembler in `single` and `hybrid` strategies, or for the assembler used for ONT reads when using `scaffold`. `assembler2_args` can be used to pass arguments to the assembler used for HiFi reads in `scaffold` mode.
+Assembler specific arguments can be provided for the assembler via `hifiasm_args` or `flye_args`, or with more fine-grained control via `assembler_ont_args` and `assembler_hifi_args` for scaffolding.
+`assembler_ont_args` controls the parameters for the assembler in `single` and `hybrid` strategies, or for the assembler used for ONT reads when using `scaffold`. `assembler_hifi_args` can be used to pass arguments to the assembler used for HiFi reads in `scaffold` mode.
 `assembler[1,2]_args` can only be set via the samplesheet and are not available as global pipeline parameters.
 
 ## Samplesheet input
@@ -294,8 +294,8 @@ Options controlling assembly
 | `flye_mode`                                       | flye mode                                                                                                                                                                                                                                           | `string` |
 | `flye_args`                                       | additional args for flye                                                                                                                                                                                                                            | `string` |
 | `hifiasm_args`                                    | Extra arguments passed to `hifiasm`                                                                                                                                                                                                                 | `string` |
-| `assembler1_args`                                 | Extra arguments passed to assembler1; assembling ONT reads in `scaffold` strategy                                                                                                                                                                   | `string` |
-| `assembler2_args`                                 | Extra arguments passed to assembler2; assembling HiFi reads in `scaffold` strategy                                                                                                                                                                  | `string` |
+| `assembler_ont_args`                              | Extra arguments passed to assembler_ont; assembling ONT reads in `scaffold` strategy                                                                                                                                                                | `string` |
+| `assembler_hifi_args`                             | Extra arguments passed to assembler_hifi; assembling HiFi reads in `scaffold` strategy                                                                                                                                                              | `string` |
 
 ## Long-read preprocessing
 

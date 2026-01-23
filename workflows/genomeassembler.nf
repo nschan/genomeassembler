@@ -52,49 +52,51 @@ workflow GENOMEASSEMBLER {
     The keys are defined in
     ./subworkflows/local/utils_nfcore_genomeassembler/main.nf
 
-        meta: [id: string],
-        ontreads: path,
-        hifireads: path,
-        strategy: string,
-        assembler1: string,
-        assembler2: string,
-        scaffolding: string,
-        genome_size: integer,
-        assembler1_args: string,
-        assembler2_args: string,
-        ref_fasta: path,
-        ref_gff: path,
-        shortread_F: path,
-        shortread_R: path,
-        paired: bool
-        ont_collect: bool,
-        ont_trim: bool,
-        ont_jellyfish: bool,
-        hifi_trim: bool,
-        hifi_primers: path,
-        polish_medaka: bool,
-        medaka_model: string,
-        polish_pilon: bool,
-        scaffold_longstitch: bool,
-        scaffold_links: bool,
-        scaffold_ragtag: bool,
-        use_ref: bool,
-        flye_mode: string,
-        assembly: path,
-        ref_map_bam: path,
-        assembly_map_bam: path,
-        qc_reads: string ["ont","hifi"],
-        qc_reads_path: path,
-        quast: bool,
-        busco: bool,
-        busco_lineage: string,
-        busco_db: path,
-        lift_annotations: bool,
-        shortread_F: path,
-        shortread_R: path,
-        paired: bool,
-        use_short_reads: bool,
-        shortread_trim: bool
+        meta: [
+            id: string,
+            ontreads: path,
+            hifireads: path,
+            strategy: string,
+            assembler_ont: string,
+            assembler_hifi: string,
+            scaffolding: string,
+            genome_size: integer,
+            assembler_ont_args: string,
+            assembler_hifi_args: string,
+            ref_fasta: path,
+            ref_gff: path,
+            shortread_F: path,
+            shortread_R: path,
+            paired: bool
+            ont_collect: bool,
+            ont_trim: bool,
+            ont_jellyfish: bool,
+            hifi_trim: bool,
+            hifi_primers: path,
+            polish_medaka: bool,
+            medaka_model: string,
+            polish_pilon: bool,
+            scaffold_longstitch: bool,
+            scaffold_links: bool,
+            scaffold_ragtag: bool,
+            use_ref: bool,
+            flye_mode: string,
+            assembly: path,
+            ref_map_bam: path,
+            assembly_map_bam: path,
+            qc_reads: string ["ont","hifi"],
+            qc_reads_path: path,
+            quast: bool,
+            busco: bool,
+            busco_lineage: string,
+            busco_db: path,
+            lift_annotations: bool,
+            shortread_F: path,
+            shortread_R: path,
+            paired: bool,
+            use_short_reads: bool,
+            shortread_trim: bool
+        ]
 
 
 
@@ -199,8 +201,8 @@ workflow GENOMEASSEMBLER {
     ch_main_assembled
         .branch {
             it ->
-            polish: it.polish_medaka || it.polish_pilon
-            no_polish: !it.polish_medaka && !it.polish_pilon
+            polish: it.meta.polish_medaka || it.meta.polish_pilon
+            no_polish: !it.meta.polish_medaka && !it.meta.polish_pilon
         }
         .set { ch_main_assembled }
 
@@ -212,10 +214,12 @@ workflow GENOMEASSEMBLER {
 
     ch_versions = ch_versions.mix(POLISH.out.versions)
 
+    // Update scaffold for meta map
+
     ch_main_polished
         .branch { it ->
-            scaffold: it.scaffold_links || it.scaffold_longstitch || it.scaffold_ragtag
-            no_scaffold: !it.scaffold_links && !it.scaffold_longstitch && !it.scaffold_ragtag
+            scaffold: it.meta.scaffold_links || it.meta.scaffold_longstitch || it.meta.scaffold_ragtag
+            no_scaffold: !it.meta.scaffold_links && !it.meta.scaffold_longstitch && !it.meta.scaffold_ragtag
         }
     .set {
         ch_main_polished

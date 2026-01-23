@@ -24,45 +24,39 @@ workflow RUN_LONGSTITCH {
             it ->
             [
                 it.meta,
-                it.polished ? (it.polished.pilon ?: it.polished.medaka) : it.assembly,
-                it.qc_reads_path,
-                it.genome_size ?: params.genome_size
+                it.meta.polished ? (it.polished.pilon ?: it.polished.medaka) : it.assembly,
+                it.meta.qc_reads_path,
+                it.meta.genome_size
             ]
         }
         .set { longstitch_in }
 
     longstitch_in.dump(tag: "SCAFFOLD: LONGSTITCH: inputs")
+
     LONGSTITCH(longstitch_in)
 
     LONGSTITCH.out.ntlLinks_arks_scaffolds
-        .set { scaffolds }
-
-    ch_main
-        .map { it -> it.collect { entry -> [ entry.value, entry ] } }
-        .join(
-            scaffolds
-                .map { it -> [meta: it[0], scaffolds_longstitch: it[1]] }
-                .map { it -> it.collect { entry -> [ entry.value, entry ] } }
-        )
-        .map { it -> it.collect { _entry, map -> [ (map.key): map.value ] }.collectEntries() }
+        .map { meta, scaff_longst -> [meta: meta + [scaffolds_longstitch: scaff_longst] ] }
         .set { ch_main_scaffolded }
 
     ch_versions = ch_versions.mix(LONGSTITCH.out.versions)
 
-    QC(ch_main_scaffolded.map { it -> it - it.subMap("assembly_map_bam") + [assembly_map_bam: null] }, scaffolds, meryl_kmers)
+    QC(ch_main_scaffolded.map { it -> [ meta: it.meta - it.meta.subMap("assembly_map_bam") + [assembly_map_bam: null] ] },
+        LONGSTITCH.out.ntlLinks_arks_scaffolds.map { meta, scaffold -> [meta.id, scaffold]},
+        meryl_kmers)
 
     ch_versions = ch_versions.mix(QC.out.versions)
 
     ch_main_scaffolded
         .filter {
-            it -> it.lift_annotations
+            it -> it.meta.lift_annotations
         }
         .map { it ->
                 [
                 it.meta,
-                it.scaffolds_longstitch,
-                it.ref_fasta,
-                it.ref_gff
+                it.meta.scaffolds_longstitch,
+                it.meta.ref_fasta,
+                it.meta.ref_gff
                 ]
         }
         .set { liftoff_in }

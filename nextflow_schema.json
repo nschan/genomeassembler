@@ -186,7 +186,7 @@
                 },
                 "assembler": {
                     "type": "string",
-                    "description": "Assembler to use. Valid choices depend on strategy; for single either `flye` or `hifiasm`, hybrid can be done with `hifiasm` and for scaffolded assembly provide the names of the assemblers separated with an underscore. The first assembler will be used for ONT reads, the second for HiFi reads. (see below, asembler1 and assembler2)",
+                    "description": "Assembler to use. Valid choices depend on strategy; for single either `flye` or `hifiasm`, hybrid can be done with `hifiasm` and for scaffolded assembly provide the names of the assemblers separated with an underscore. The first assembler will be used for ONT reads, the second for HiFi reads. (see below, asembler1 and assembler_hifi)",
                     "enum": ["flye", "hifiasm", "flye_hifiasm", "hifiasm_hifiasm", "flye_flye", "hifiasm_flye"],
                     "default": "hifiasm"
                 },
@@ -215,21 +215,21 @@
                     "description": "Extra arguments passed to `hifiasm`",
                     "default": "\"\""
                 },
-                "assembler1": {
+                "assembler_ont": {
                     "type": "string",
-                    "description": "Assembler1 assembles ONT reads. This option is mainly useful when building more complex samplesheets"
+                    "description": "assembler_ont assembles ONT reads. This option is mainly useful when building more complex samplesheets"
                 },
-                "assembler1_args": {
+                "assembler_ont_args": {
                     "type": "string",
-                    "description": "Arguments to be passed to assembler1 (ONT)"
+                    "description": "Arguments to be passed to assembler_ont (ONT)"
                 },
-                "assembler2": {
+                "assembler_hifi": {
                     "type": "string",
-                    "description": "Assembler2 assembles HiFi reads. This option is mainly useful when building more complex samplesheets"
+                    "description": "assembler_hifi assembles HiFi reads. This option is mainly useful when building more complex samplesheets"
                 },
-                "assembler2_args": {
+                "assembler_hifi_args": {
                     "type": "string",
-                    "description": "Arguments to be passed to assembler2 (HiFi)"
+                    "description": "Arguments to be passed to assembler_hifi (HiFi)"
                 }
             }
         },

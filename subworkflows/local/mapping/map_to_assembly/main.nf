@@ -12,15 +12,13 @@ workflow MAP_TO_ASSEMBLY {
     ALIGN(map_assembly, true, 'bai', false, false)
 
     ALIGN.out.bam
-        .map {meta, bam -> [ [id: meta.id], bam ]}
         .set { aln_to_assembly_bam }
 
     ALIGN.out.index
-        .map {meta, bai -> [ [id: meta.id], bai ]}
         .set { aln_to_assembly_bai }
 
     map_assembly
-        .map { meta, _reads, fasta -> [[id: meta.id], fasta] }
+        .map { meta, _reads, fasta -> [meta, fasta] }
         .set { ch_fasta }
 
     aln_to_assembly_bam

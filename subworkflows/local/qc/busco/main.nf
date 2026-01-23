@@ -17,10 +17,10 @@ workflow RUN_BUSCO {
         .multiMap { it ->
                 fasta: [
                     it.meta,
-                    it.qc_target
+                    it.meta.qc_target
                 ]
-                busco_lineage: it.busco_lineage
-                busco_db: it.busco_db ? file(it.busco_db, checkIfExists: true) : []
+                busco_lineage: it.meta.busco_lineage
+                busco_db: it.meta.busco_db ? file(it.meta.busco_db, checkIfExists: true) : []
             }
         .set { busco_in }
 

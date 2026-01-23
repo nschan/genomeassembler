@@ -15,8 +15,8 @@ workflow POLISH {
 
     ch_main
         .branch { it ->
-            medaka: ["medaka","medaka+pilon"].contains(it.polish)
-            no_medaka: !["medaka","medaka+pilon"].contains(it.polish)
+            medaka: ["medaka","medaka+pilon"].contains(it.meta.polish)
+            no_medaka: !["medaka","medaka+pilon"].contains(it.meta.polish)
         }
         .set { ch_main_polish }
 
@@ -41,8 +41,8 @@ workflow POLISH {
     ch_main_polish_pilon
         .branch {
             it ->
-            pilon: ["pilon","medaka+pilon"].contains(it.polish)
-            no_pilon: !["pilon","medaka+pilon"].contains(it.polish)
+            pilon: ["pilon","medaka+pilon"].contains(it.meta.polish)
+            no_pilon: !["pilon","medaka+pilon"].contains(it.meta.polish)
         }
         .set { ch_main_polish_pilon_in }
 

@@ -12,15 +12,23 @@ workflow JELLYFISH {
     channel.empty().set { ch_versions }
 
     ch_main
-        .filter { it -> it.group }
-        .map { it -> [it.meta, it.group, it.jellyfish_k, it.qc_reads_path, it.qc_read_mean] }
+        .filter { it -> it.meta.group }
+        .map { it ->
+            [
+                it.meta,
+                it.meta.group,
+                it.meta.jellyfish_k,
+                it.meta.qc_reads_path,
+                it.meta.qc_read_mean
+            ]
+        }
         .groupTuple(by: 1)
         .map {
             it ->
                 [
                     meta: [
                         id: it[1],
-                        ids: it[0].id.collect().join("+"),
+                        metas: it[0],
                         jellyfish_k: it[2].unique()[0],
                         qc_read_mean: it[4].unique()[0]
                     ],
@@ -33,12 +41,8 @@ workflow JELLYFISH {
                 .map {
                     it ->
                     [
-                        meta: [
-                            id: it.meta.id,
-                            jellyfish_k: it.jellyfish_k,
-                            qc_read_mean: it.qc_read_mean
-                        ],
-                        qc_reads_path: it.qc_reads_path
+                        meta: it.meta,
+                        qc_reads_path: it.meta.qc_reads_path
                     ]
                 }
         )
@@ -53,16 +57,14 @@ workflow JELLYFISH {
     ch_versions = ch_versions.mix(HISTO.out.versions)
 
     HISTO.out.histo
-        .join(
-            samples
-                .map { it ->
+        .map { meta, hist ->
                     [
-                        it.meta,
-                        it.meta.jellyfish_k,
-                        it.meta.qc_read_mean
+                        meta,
+                        meta.jellyfish_k,
+                        meta.qc_read_mean,
+                        hist
                     ]
-                }
-        )
+        }
         .set { genomescope_in }
 
     STATS(kmers)
@@ -73,40 +75,21 @@ workflow JELLYFISH {
         .mix(GENOMESCOPE.out.versions)
         .mix(STATS.out.versions)
 
-    ch_main
-        .map {
-            it -> it - it.subMap('genome_size')
+    GENOMESCOPE.out.estimated_hap_len
+        .filter { it -> it[0].metas }
+        .flatMap { it ->
+            it[0].metas
+                .collect { meta -> [ meta: meta + [ genome_size: it[1] ] ] }
         }
-        .map {
-            it -> it.collect { entry -> [ entry.value, entry ] }
-        }
-        .join(
-            GENOMESCOPE.out.estimated_hap_len
-                .filter { it -> it[0].ids }
-                .flatMap { it ->
-                    it[0].ids
-                        .tokenize("+")
-                        .collect { sample -> [ [ id: sample ], it[1] ] }
-            }
-            .mix(GENOMESCOPE.out.estimated_hap_len
-                .filter { it -> !it[0].ids }
-                .map {
-                    it -> [ [ id: it[0].id ], it[1] ]
-                }
-            )
+        .mix(GENOMESCOPE.out.estimated_hap_len
+            .filter { it -> !it[0].ids }
             .map {
-                it ->
-                [
-                    meta: it[0],
-                    genome_size: it[1]
-                ]
-                }
-                .map {
-                    it -> it.collect { entry -> [ entry.value, entry ] }
-                }
+                it -> [ meta: it[0] + [ genome_size: it[1] ] ]
+            }
         )
-        .map { it -> it.collect { _entry, map -> [ (map.key): map.value ] }.collectEntries() }
         .set { outputs }
+
+    outputs.dump(tag: "Jellyfish outputs")
 
     GENOMESCOPE.out.summary.set { genomescope_summary }
 

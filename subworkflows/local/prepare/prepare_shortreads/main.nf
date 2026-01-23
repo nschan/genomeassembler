@@ -10,96 +10,83 @@ workflow PREPARE_SHORTREADS {
     channel.empty().set { ch_versions }
 
     shortreads_in
-        .map { it -> create_shortread_channel(it) }
+        .map { it -> create_shortread_channel(it.meta) } // See modified function below, adds shortreads to meta
         .set { shortreads }
 
-    shortreads_in
-        .map {
-            it -> it - it.subMap('shortread_F', 'shortread_R', 'paired')
-        }
-        .map {
-            it -> it.collect { entry -> [ entry.value, entry ] }
-        }
-        .join(
-            shortreads
-                .map { it -> [meta: [id: it[0].id], shortreads: it[1]]}
-                .map { it -> it.collect { entry -> [ entry.value, entry ] } }
-        )
-        .map { it -> it.collect { _entry, map -> [ (map.key): map.value ] }.collectEntries() }
-        .set { shortreads }
+    shortreads.dump(tag: "shortread channel")
 
     // shortread trimming
-    //shortreads.view { it -> "shortreads: $it" }
 
     shortreads
         .branch {
             it ->
-            trim: it.shortread_trim
-            no_trim: !it.shortread_trim
+            trim: it.meta.shortread_trim
+            no_trim: !it.meta.shortread_trim
         }
         .set { shortreads }
 
+    //shortreads.dump(tag: "Shortreads branched")
+
     shortreads
         .trim
-        .filter { it -> it.group  }
-        .map { it -> [it.meta, it.group, it.shortreads] }
-        // Create a group
+        .filter { it -> it.meta.group }
+        .map {it -> [it.meta, it.meta.group]}
         .groupTuple(by: 1)
         .map {
             it ->
                 [
-                    [ id: it[1], ids: it[0].id.collect().join("+") ],
-                    it[2].unique()[0],
+                    [
+                        id: it[1], // the group
+                        metas: it[0]
+                    ],
+                    it[0].shortreads[0], // Pull path from meta
                     []
                 ]
         }
         .mix(shortreads.trim
             .filter { it -> !it.group }
             .map {
-                it -> [ it.meta, it.shortreads, [] ]
+                it -> [ it.meta, it.meta.shortreads, [] ]
             }
         )
         .set { trim_in }
 
+    trim_in.dump(tag: "Trim in")
+
     FASTP(trim_in, false, false, false)
 
     FASTP.out.reads
-        .filter { it -> it[0].ids }
-        .flatMap { it ->
-            it[0].ids.tokenize("+").collect {
-                sample -> [meta: [ id: sample ], shortreads: it[1] ]
-            }
+        .filter { it -> it[0].metas }
+        .flatMap { it -> // looks like [meta <[id, metas]>, output_path]
+            it[0].metas
+                  .collect { meta -> [ meta: meta + [ shortreads: it[1] ] ] }
         }
         .mix(
             FASTP.out.reads
                 .filter { it -> !it[0].ids }
-                .map { it -> [ meta: [ id: it[0].id ], shortreads: it[1] ] }
+                .map { it -> [ meta: it[0] + [ shortreads: it[1] ] ] }
         )
-        .map { it -> it.collect { entry -> [ entry.value, entry ] } }
         .set { trimmed_reads }
 
+    trimmed_reads.dump(tag: "Trim out")
     // unite branched:
     // add trimmed reads to trim channel, then mix with shortreads.no_trim
 
-    shortreads.trim
-        .map { it -> it - it.subMap("shortreads") }
-        .map { it -> it.collect { entry -> [ entry.value, entry ] } }
-        .join( trimmed_reads )
-        .map { it -> it.collect { _entry, map -> [ (map.key): map.value ] }.collectEntries() }
+    trimmed_reads
         .mix( shortreads.no_trim )
         .set { shortreads }
 
     ch_versions = ch_versions.mix(FASTP.out.versions)
 
     shortreads
-        .filter { it -> it.merqury }
-        .filter { it -> it.group  }
-        .map { it -> [it.meta, it.group, it.shortreads, it.meryl_k] }
+        .filter { it -> it.meta.merqury }
+        .filter { it -> it.meta.group  }
+        .map { it -> [it.meta, it.meta.group, it.meta.shortreads, it.meta.meryl_k] }
         // Create a group
         .groupTuple(by: 1)
         .map {
             it -> [
-                meta: [ id: it[1], ids: it[0].id.collect().join("+") ],
+                meta: [ id: it[1], metas: it[0] ],
                 shortreads: it[2].unique()[0],
                 meryl_k: it[3].unique()[0]
             ]
@@ -107,7 +94,7 @@ workflow PREPARE_SHORTREADS {
         .mix(shortreads
             .filter { it -> it.merqury }
             .filter { it -> !it.group  }
-            .map { it -> [meta: it.meta, shortreads: it.shortreads, meryl_k: it.meryl_k]}
+            .map { it -> [meta: it.meta, shortreads: it.meta.shortreads, meryl_k: it.meta.meryl_k]}
         )
         .multiMap { it ->
             reads: [ it.meta, it.shortreads ]
@@ -120,45 +107,32 @@ workflow PREPARE_SHORTREADS {
     MERYL_UNIONSUM(MERYL_COUNT.out.meryl_db, params.meryl_k)
 
     MERYL_UNIONSUM.out.meryl_db
-        .filter { it -> it[0].ids }
-        .flatMap { it ->
-            it[0].ids
-                .tokenize("+")
-                .collect { sample -> [ [ id: sample ], it[1] ] }
-            }
+        .filter { it -> it[0].metas }
+        .flatMap { it -> // looks like [meta <[id, metas]>, output_path]
+            it[0].metas
+                  .collect { meta -> [ meta, it[1] ] }
+        }
         .mix(MERYL_UNIONSUM.out.meryl_db
             .filter { it -> !it[0].ids }
             .map {
-                it -> [ [ id: it[0].id ], it[1] ]
+                it -> [ it[0], it[1] ]
             }
         ).set { meryl_kmers }
 
-    shortreads_in
-        .map {
-            it -> it - it.subMap('shortread_F', 'shortread_R', 'paired')
-        }
-        .map { it -> it.collect { entry -> [ entry.value, entry ] } }
-        .join(
-            shortreads
-                .map { it -> [meta: [id: it.meta.id], shortreads: it.shortreads]}
-                .map { it -> it.collect { entry -> [ entry.value, entry ] } }
-        )
-        .map { it -> it.collect { _entry, map -> [ (map.key): map.value ] }.collectEntries() }
-        .set { main_out }
+
 
     versions = ch_versions.mix(MERYL_COUNT.out.versions).mix(MERYL_UNIONSUM.out.versions)
 
     emit:
-    main_out
+    main_out        = shortreads
     meryl_kmers
     versions
-    fastp_json = FASTP.out.json
+    fastp_json      = FASTP.out.json
 }
 
-def create_shortread_channel(row) {
+def create_shortread_channel(row) { // This function expects a meta map as input
     // create meta map
-    def meta = [:]
-    meta.id = row.meta.id
+    def meta = row
     meta.paired = row.paired.toBoolean()
     meta.single_end = !meta.paired
 
@@ -168,13 +142,13 @@ def create_shortread_channel(row) {
         exit(1, "ERROR: shortread_F fastq file does not exist!\n${row.shortread_F}")
     }
     if (!meta.paired) {
-        shortreads = [meta, [file(row.shortread_F)]]
+        shortreads = [meta: meta + [shortreads: [file(row.shortread_F)]]]
     }
     else {
         if (!file(row.shortread_R).exists()) {
             exit(1, "ERROR: shortread_R fastq file does not exist!\n${row.shortread_R}")
         }
-        shortreads = [meta, [file(row.shortread_F), file(row.shortread_R)]]
+        shortreads = [ meta: meta + [shortreads:  [file(row.shortread_F), file(row.shortread_R)]] ]
     }
     return shortreads
 }

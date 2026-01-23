@@ -15,18 +15,18 @@ workflow RUN_QUAST {
 
     ch_main
         .filter {
-            it -> it.quast
+            it -> it.meta.quast
         }
         .multiMap { it ->
                 quast_in: [
                     it.meta,
-                    it.qc_target,
-                    it.ref_fasta ?: [],
-                    it.ref_gff ?: [],
-                    it.ref_map_bam ?: [],
-                    it.assembly_map_bam
+                    it.meta.qc_target,
+                    it.meta.ref_fasta ?: [],
+                    it.meta.ref_gff ?: [],
+                    it.meta.ref_map_bam ?: [],
+                    it.meta.assembly_map_bam
                 ]
-                use_ref: it.use_ref
+                use_ref: it.meta.use_ref
             }
         .set { quast_in }
     /*

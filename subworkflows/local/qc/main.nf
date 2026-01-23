@@ -18,18 +18,18 @@ workflow QC {
     ch_main
         .branch {
             it ->
-            shortread: it.use_short_reads
-            no_shortread: !it.use_short_reads
+            shortread: it.meta.use_short_reads
+            no_shortread: !it.meta.use_short_reads
         }
         .set { ch_shortread_branched }
 
     ch_shortread_branched
         .shortread
-        .filter { it -> it.merqury }
-        .map { it -> [it.meta] }
+        .filter { it -> it.meta.merqury }
+        .map { it -> [it.meta.id, it.meta] }
         .join(scaffolds)
         .join(meryl_kmers)
-        .multiMap { meta, scaffs, kmers ->
+        .multiMap { _id, meta, scaffs, kmers ->
                 scaffolds: [ meta, scaffs ]
                 kmers: [ meta, kmers ]
             }
@@ -42,53 +42,37 @@ workflow QC {
     ch_main
         .branch {
             it ->
-            map_to_assembly: it.quast && !it.assembly_map_bam
-            no_map_to_assembly: !it.quast || (it.quast && it.assembly_map_bam)
+            map_to_assembly: it.meta.quast && !it.meta.assembly_map_bam
+            no_map_to_assembly: !it.meta.quast || (it.meta.quast && it.meta.assembly_map_bam)
         }
         .set { ch_map_branched }
 
     ch_map_branched
         .map_to_assembly
         .map {
-            it -> [ it.meta, it.qc_reads_path, it.qc_reads ]
+            it -> [ it.meta.id, it.meta ]
         }
         .join(scaffolds)
         .map {
-            meta, reads, qc_reads, target_scaffolds ->
+            _id, meta, target_scaffolds ->
             [
-                [
-                    id: meta.id,
-                    qc_reads:qc_reads
-                ],
-                reads,
+                meta,
+                meta.qc_reads_path,
                 target_scaffolds
             ]
         }
         .set { map_assembly_in }
 
-     MAP_TO_ASSEMBLY(map_assembly_in)
+    MAP_TO_ASSEMBLY(map_assembly_in)
 
      // create main channel with mappings
-     ch_map_branched
-        .map_to_assembly
-        .map { it -> it - it.subMap("assembly_map_bam") }
-        .map { it -> it.collect { entry -> [ entry.value, entry ] } }
-        .join(
-            MAP_TO_ASSEMBLY.out.aln_to_assembly_bam
-                .map { it -> [meta: it[0], assembly_map_bam: it[1]] }
-                .map { it -> it.collect { entry -> [ entry.value, entry ] } }
-        )
-        .map { it -> it.collect { _entry, map -> [ (map.key): map.value ] }.collectEntries() }
+    MAP_TO_ASSEMBLY.out.aln_to_assembly_bam
+        .map { meta, assembly_map_bam ->
+            [
+                meta: meta + [ assembly_map_bam: assembly_map_bam ]
+            ]
+        }
         .mix(ch_map_branched.no_map_to_assembly)
-        .map { it -> it.collect { entry -> [ entry.value, entry ] } }
-        .join(
-            scaffolds
-                .map {
-                    it -> [meta: it[0], qc_target: it[1] ]
-                }
-                .map { it -> it.collect { entry -> [ entry.value, entry ] } }
-        )
-        .map { it -> it.collect { _entry, map -> [ (map.key): map.value ] }.collectEntries() }
         .set { ch_qc }
 
 
