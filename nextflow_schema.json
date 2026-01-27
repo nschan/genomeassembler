@@ -377,6 +377,10 @@
                 "assembly_map_bam": {
                     "type": "string",
                     "description": "A mapping (bam) of reads mapped to the provided assembly can be specified for QC. If provided, alignment to the provided assembly fasta will not run"
+                },
+                "csi_index_size": {
+                    "type": "integer",
+                    "description": "Index size to use for csi index (default: 14), creating and index of size 2^csi_index_size. See samtools index documentation for details. "
                 }
             }
         },
