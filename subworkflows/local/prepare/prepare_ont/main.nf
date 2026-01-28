@@ -53,7 +53,7 @@ workflow PREPARE_ONT {
         }
         .mix(
             COLLECT.out.reads
-                .filter { it -> !it[0].ids }
+                .filter { it -> !it[0].metas }
                 .map {
                     it -> [ meta: it[0] + [ontreads: it[1]] ]
                 }
@@ -70,7 +70,7 @@ workflow PREPARE_ONT {
 
     // ch_collected is the same samples as the input channel
     ch_collected
-        .filter { it -> it.group }
+        .filter { it -> it.meta.group }
         .map { it -> [it.meta, it.meta.group, it.meta.ont_trim, it.meta.ontreads, it.meta.ont_adaptors, it.meta.ont_fastplong_args] }
         .groupTuple(by: 1)
         .map {
@@ -88,7 +88,7 @@ workflow PREPARE_ONT {
         }
         .mix(
             ch_collected
-                .filter { it -> !it.group }
+                .filter { it -> !it.meta.group }
                 .map {
                     it ->
                     [
@@ -113,12 +113,12 @@ workflow PREPARE_ONT {
         .filter { it -> it[0].metas }
         .flatMap { it -> // it looks like [meta, output_path]
             it[0].metas
-                  .collect { meta -> [ meta: meta + [ontreads: it[1]] ] }
+                  .collect { metas -> [ meta: metas + [ ontreads: it[1] ] ] }
         }
         .mix(FASTPLONG_ONT.out.reads
-            .filter { it -> !it[0].ids }
+            .filter { it -> !it[0].metas }
             .map {
-                it -> [ meta: [ id: it[0] ] + [ ontreads: it[1] ] ]
+                it -> [ meta: it[0] + [ ontreads: it[1] ] ]
             }
         )
         .set { fastplong_reads_out }
@@ -129,7 +129,7 @@ workflow PREPARE_ONT {
         .filter { it -> it[0].metas }
         .flatMap { it -> // it looks like [meta, output_path]
             it[0].metas
-                  .collect { meta -> [ meta, + it[1] ] }
+                  .collect { metas -> [metas, it[1] ] }
         }
         .mix(
             FASTPLONG_ONT.out.json

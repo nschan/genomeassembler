@@ -35,44 +35,120 @@ workflow SCAFFOLD {
 
     ch_main
         .filter {
-            it ->  it.scaffold_longstitch
+            it ->  it.meta.scaffold_longstitch
         }
     .set { longstitch_in }
 
     RUN_LONGSTITCH(longstitch_in, meryl_kmers)
     RUN_LONGSTITCH.out.ch_main
-        .map { it -> it.subMap("meta", "scaffolds_longstitch")}
-        .map { it -> it.collect { entry -> [ entry.value, entry ] } }
         .set { longstitch_out }
 
     ch_main
         .filter {
-            it ->  it.scaffold_ragtag
+            it ->  it.meta.scaffold_ragtag
         }
     .set { ragtag_in }
 
     RUN_RAGTAG(ragtag_in, meryl_kmers)
     RUN_RAGTAG.out.ch_main
-        .map { it -> it.subMap("meta","scaffolds_ragtag")}
-        .map { it -> it.collect { entry -> [ entry.value, entry ] } }
         .set { ragtag_out }
 
-    ch_main
-        .map { it -> it.collect { entry -> [ entry.value, entry ] } }
-        .join(links_out)
-        .join(longstitch_out)
-        .join(ragtag_out)
-        .map { it -> it.collect { _entry, map -> [ (map.key): map.value ] }.collectEntries() }
-        .map {
-            it -> it - it.subMap("scaffolds_links","scaffolds_longstitch", "scaffolds_ragtag") +
-            [
-                scaffolds: [
-                    links: it.scaffold_links ?: null,
-                    longstitch: it.scaffold_longstitch ?: null,
-                    ragtag: it.scaffolds_ragtag ?: null
-                ]
-            ]
-        }
+
+    // CONTINUE HERE
+    // Deal with cases that are single scaffold
+    links_out
+        .filter {it -> !it.meta.scaffold_longstitch && !it.meta.scaffold_ragtag }
+        .map { meta -> [ meta: meta - meta.subMap("links_scaffold") + [ scaffolds: [ links: meta.scaffolds_links ] ]  ]}
+        .mix(
+            longstitch_out
+                .filter {it -> !it.meta.scaffold_links && !it.meta.scaffold_ragtag }
+                .map { meta -> [ meta: meta - meta.subMap("scaffolds_longstitch") + [ scaffolds: [ longstitch: meta.scaffolds_longstitch ] ]  ]}
+        )
+        .mix(
+            ragtag_out
+                .filter {it -> !it.meta.scaffold_links && !it.meta.scaffold_longstitch }
+                .map { meta -> [ meta: meta - meta.subMap("scaffolds_ragtag") + [ scaffolds: [ ragtag: meta.scaffolds_ragtag ] ]  ]}
+        )
+        // mix in those that are double scaffolded: , links-ragtag, longstitch-ragtag
+        // links-longstitch
+        .mix(
+            links_out
+                .filter {it -> it.meta.scaffold_longstitch && !it.meta.scaffold_ragtag }
+                .map {meta -> [meta.id, meta]}
+                // Join without filtering, inner-join
+                .join(
+                    longstitch_out
+                        .map {meta -> [meta.id, meta]}
+                )
+                .map {
+                    _id, meta_links, meta_longstitch -> [
+                        meta: meta_links -
+                         meta_links.subMap("scaffolds_links") +
+                         [scaffolds: [links: meta_links.scaffolds_links, longstitch: meta_longstitch.scaffolds_longstitch]] ]
+                }
+        )
+        //links-ragtag
+        .mix(
+            links_out
+                .filter {it -> !it.meta.scaffold_longstitch && it.meta.scaffold_ragtag }
+                .map {meta -> [meta.id, meta]}
+                // Join without filtering, inner-join
+                .join(
+                    ragtag_out
+                        .map {meta -> [meta.id, meta]}
+                )
+                .map {
+                    _id, meta_links, meta_ragtag -> [
+                        meta: meta_links -
+                         meta_links.subMap("scaffolds_links") +
+                         [scaffolds: [links: meta_links.scaffolds_links, ragtag: meta_ragtag.scaffolds_ragtag]] ]
+                }
+        )
+        //longstitch-ragtag
+        .mix(
+            longstitch_out
+                .filter {it -> !it.meta.scaffold_links && it.meta.scaffold_ragtag }
+                .map {meta -> [meta.id, meta]}
+                // Join without filtering, inner-join
+                .join(
+                    ragtag_out
+                        .map {meta -> [meta.id, meta]}
+                )
+                .map {
+                    _id, meta_longstitch, meta_ragtag -> [
+                        meta: meta_longstitch -
+                         meta_longstitch.subMap("scaffolds_longstitch") +
+                         [scaffolds: [longstitch: meta_longstitch.scaffolds_longstitch, ragtag: meta_ragtag.scaffolds_ragtag]] ]
+                }
+        )
+        // mix in triple-scaffolded
+        .mix(
+            links_out
+                .filter {it -> it.meta.scaffold_longstitch && it.meta.scaffold_ragtag }
+                .map {meta -> [meta.id, meta]}
+                // Join without filtering, inner-join
+                .join(
+                    longstitch_out
+                        .map {meta -> [meta.id, meta]}
+                )
+                .join(
+                    ragtag_out
+                        .map {meta -> [meta.id, meta]}
+                )
+                .map {
+                    _id, meta_links, meta_longstitch, meta_ragtag -> [
+                        meta: meta_links -
+                         meta_links.subMap("scaffolds_links") +
+                            [
+                                scaffolds: [
+                                links: meta_links.scaffolds_links,
+                                longstitch: meta_longstitch.scaffolds_longstitch,
+                                ragtag: meta_ragtag.scaffolds_ragtag
+                                ]
+                            ]
+                             ]
+                }
+        )
         .set { ch_main }
 
 

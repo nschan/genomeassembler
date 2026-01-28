@@ -1,7 +1,7 @@
 include { MAP_TO_ASSEMBLY } from '../mapping/map_to_assembly/main'
 include { RUN_BUSCO } from './busco/main.nf'
 include { RUN_QUAST } from './quast/main.nf'
-include { MERQURY_QC } from './merqury/main.nf'
+include { MERQURY_MERQURY as MERQURY } from '../../../modules/nf-core/merqury/merqury/main'
 
 workflow QC {
     take:
@@ -29,13 +29,12 @@ workflow QC {
         .map { it -> [it.meta.id, it.meta] }
         .join(scaffolds)
         .join(meryl_kmers)
-        .multiMap { _id, meta, scaffs, kmers ->
-                scaffolds: [ meta, scaffs ]
-                kmers: [ meta, kmers ]
+        .map { _id, meta, scaffs, kmers ->
+                [ meta, kmers, scaffs ]
             }
         .set { merqury_in }
 
-    MERQURY_QC(merqury_in.scaffolds, merqury_in.kmers)
+    MERQURY(merqury_in)
 
     // Make sure that Polish and Scaffold main channels do not contain assembly_map_bam
 
@@ -56,7 +55,7 @@ workflow QC {
         .map {
             _id, meta, target_scaffolds ->
             [
-                meta,
+                meta + [qc_target: target_scaffolds], // QC Target only exists in QC channel, and takes the scaffold that should be qc'ed
                 meta.qc_reads_path,
                 target_scaffolds
             ]
@@ -88,19 +87,19 @@ workflow QC {
 
     ch_versions = ch_versions.mix(RUN_BUSCO.out.versions)
 
-    MERQURY_QC.out.stats
+    MERQURY.out.stats
         .join(
-            MERQURY_QC.out.spectra_asm_hist
+            MERQURY.out.spectra_asm_hist
         )
         .join(
-            MERQURY_QC.out.spectra_cn_hist
+            MERQURY.out.spectra_cn_hist
         )
         .join(
-            MERQURY_QC.out.assembly_qv
+            MERQURY.out.assembly_qv
         )
         .set { merqury_report_files }
 
-    ch_versions = ch_versions.mix(MERQURY_QC.out.versions)
+    ch_versions = ch_versions.mix(MERQURY.out.versions)
 
     emit:
     ch_main     // QC does not (and should not) modify ch_main but returns the input.

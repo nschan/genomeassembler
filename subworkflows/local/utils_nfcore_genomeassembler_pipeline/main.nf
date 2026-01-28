@@ -107,24 +107,18 @@ workflow PIPELINE_INITIALISATION {
 
             def hifireads       =   it.hifireads ?: params.hifireads
 
-            def assembler       =   it.strategy == "single" ?
-                                    ( it.assembler ?:
-                                        (it.ontreads && it.assembler_ont) ? it.assembler_ont :
-                                        (it.hifireads && it.assembler_hifi) ? it.assembler_hifi :
-                                        params.assembler
-                                    ) :
-                                    params.assembler
+            def assembler       =   it.assembler ?: params.assembler
 
-            def assembler_ont      =   it.assembler_ont ?:
+            def assembler_ont   =   it.assembler_ont ?:
+                                    (strategy == "single" && assembler && ontreads && !hifireads) ? assembler :
                                     params.assembler_ont ?:
-                                    (strategy == "single" && ontreads && !hifireads) ? assembler :
                                     (strategy == "hybrid" && assembler == "hifiasm") ? assembler :
                                     assembler.contains("_") ? assembler.tokenize("_")[0] :
                                     null
 
-            def assembler_hifi      =   it.assembler_hifi ?:
+            def assembler_hifi  =   it.assembler_hifi ?:
+                                    (strategy == "single" && assembler && hifireads && !ontreads) ? assembler :
                                     params.assembler_hifi ?:
-                                    (strategy == "single" && !ontreads && hifireads) ? assembler :
                                     assembler.contains("_") ? assembler.tokenize("_")[1] :
                                     null
 
@@ -134,9 +128,8 @@ workflow PIPELINE_INITIALISATION {
                                     (params.polish_pilon && (it.shortread_F || params.shortread_F)) ? "pilon" :
                                     null
 
-            // Hard exit here if assembler cannot be determined.
-            /*
-            strategy == "single" && ontreads && hifireads && !(assembler_ont || assembler_hifi) ?
+
+            strategy == "single" && ontreads && hifireads && ((!assembler_ont && assembler_hifi) || (assembler_ont && !assembler_hifi)) ?
                 error(
                     """
                     [$it.sample]: Strategy is 'single', but ONT and HiFi reads are provided.
@@ -144,7 +137,7 @@ workflow PIPELINE_INITIALISATION {
                     """
                 ) :
                 null
-            */
+
             // Build the map. Everything goes into meta.
             [
                 meta: [
@@ -155,7 +148,7 @@ workflow PIPELINE_INITIALISATION {
                     hifireads: hifireads,
                     // new in refactor-assemblers
                     strategy: strategy,
-                    // The "assembler" value is mainly to ease input, all actual workflow logic should use assembler_ont/2.
+                    // The "assembler" value is mainly to ease input, all actual workflow logic should use assembler_ont/_hifi.
                     // Could still be useful for debugging.
                     assembler: assembler,
                     // assembler_ont: ONT, assembler_hifi: HiFi
@@ -165,19 +158,17 @@ workflow PIPELINE_INITIALISATION {
                     assembler_ont_args: it.assembler_ont_args ?: params.assembler_ont_args ?:
                         (assembler_ont == "hifiasm") ? (it.hifiasm_args ?: params.hifiasm_args) :
                         (assembler_ont == "flye") ? (it.flye_args ?: params.flye_args) :
-                        null,
+                        "",
                     assembler_hifi_args: it.assembler_hifi_args ?: params.assembler_hifi_args ?:
                         (assembler_hifi == "hifiasm") ? (it.hifiasm_args ?: params.hifiasm_args) :
                         (assembler_hifi == "flye") ? (it.flye_args ?: params.flye_args) :
-                        null,
+                        "",
                     polish: polish,
                     ont_collect: it.ont_collect ?: params.ont_collect,
-                    ont_trim: it.ont_trim ?: params.ont_trim,
                     ont_adapters: it.ont_adapters ?: params.ont_adapters,
                     ont_fastplong_args: it.ont_fastplong_args ?: params.ont_fastplong_args,
                     jellyfish: it.jellyfish ?: params.jellyfish,
                     jellyfish_k: it.ont_jellyfish_k ?: params.jellyfish_k,
-                    hifi_trim: it.hifi_trim ?: params.hifi_trim,
                     hifi_adapters: it.hifi_adapters ?: params.hifi_adapters,
                     hifi_fastplong_args: it.hifi_fastplong_args ?: params.hifi_fastplong_args,
                     medaka_model: it.medaka_model ?: params.medaka_model,
@@ -224,6 +215,7 @@ workflow PIPELINE_INITIALISATION {
     // sample-level checks
     // if a check fails, map returns a list that prints what fails, and contains "invalid"
     // error is raised by subscribe if there is more than one "invalid"
+    /*
     ch_samplesheet
         .map {
             it ->
@@ -300,6 +292,7 @@ workflow PIPELINE_INITIALISATION {
                 ? log.warn("Invalid combination in samplesheet")
                 : null
         }
+    */
 
     emit:
     samplesheet = ch_samplesheet

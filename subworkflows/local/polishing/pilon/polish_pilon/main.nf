@@ -49,7 +49,7 @@ workflow POLISH_PILON {
 
     ch_main
         .filter {
-            it -> it.lift_annotations
+            it -> it.meta.lift_annotations
         }
         .map { it ->
                 [

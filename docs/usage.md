@@ -60,7 +60,7 @@ Assembly strategy is controlled via `strategy` (either pipeline parameter or sam
 
 Assembler specific arguments can be provided for the assembler via `hifiasm_args` or `flye_args`, or with more fine-grained control via `assembler_ont_args` and `assembler_hifi_args` for scaffolding.
 `assembler_ont_args` controls the parameters for the assembler in `single` and `hybrid` strategies, or for the assembler used for ONT reads when using `scaffold`. `assembler_hifi_args` can be used to pass arguments to the assembler used for HiFi reads in `scaffold` mode.
-`assembler[1,2]_args` can only be set via the samplesheet and are not available as global pipeline parameters.
+`assembler_[ont,hifi]_args` can only be set via the samplesheet and are not available as global pipeline parameters.
 
 ## Samplesheet input
 
@@ -284,34 +284,38 @@ Options controlling pipeline behavior
 
 Options controlling assembly
 
-| Parameter                                         | Description                                                                                                                                                                                                                                         | Type     |
-| ------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- |
-| `strategy`                                        | Assembly strategy to use. Valid choices are `'single'`, `'hybrid'` and `'scaffold'`                                                                                                                                                                 | `string` |
-| `assembler`                                       | Assembler to use. Valid choices depend on strategy; for single either `flye` or `hifiasm`, hybrid can be done with `hifiasm` and for scaffolded assembly provide the names of the assemblers separated with an underscore. The first assembler will |
-| be used for ONT reads, the second for HiFi reads. | `string`                                                                                                                                                                                                                                            |
-| `assembly_scaffolding_order`                      | When strategy is "scaffold", which assembly should be scaffolded onto which?                                                                                                                                                                        | `string` |
-| `genome_size`                                     | expected genome size, optional                                                                                                                                                                                                                      | `string` |
-| `flye_mode`                                       | flye mode                                                                                                                                                                                                                                           | `string` |
-| `flye_args`                                       | additional args for flye                                                                                                                                                                                                                            | `string` |
-| `hifiasm_args`                                    | Extra arguments passed to `hifiasm`                                                                                                                                                                                                                 | `string` |
-| `assembler_ont_args`                              | Extra arguments passed to assembler_ont; assembling ONT reads in `scaffold` strategy                                                                                                                                                                | `string` |
-| `assembler_hifi_args`                             | Extra arguments passed to assembler_hifi; assembling HiFi reads in `scaffold` strategy                                                                                                                                                              | `string` |
+| Parameter                                         | Description                                                                                                                                                                                                                                                                              | Type     |
+| ------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- |
+| `strategy`                                        | Assembly strategy to use. Valid choices are `'single'`, `'hybrid'` and `'scaffold'`                                                                                                                                                                                                      | `string` |
+| `assembler`                                       | Assembler to use. Valid choices depend on strategy; for single either `flye` or `hifiasm`, hybrid can be done with `hifiasm` and for scaffolded assembly provide the names of the assemblers separated with an underscore. The first assembler will                                      |
+| be used for ONT reads, the second for HiFi reads. | `string`                                                                                                                                                                                                                                                                                 |
+| `assembler_ont`                                   | Assembler to use for ONT reads. Often determined automatically, but required for complex runs, where both ONT and HiFi reads are provided, but some assemblies should be done using `strategy: "single"` using only ONT reads. Such cases can not unambiguously be resolved otherwise.   | `string` |
+| `assembler_hifi`                                  | Assembler to use for HiFi reads. Often determined automatically, but required for complex runs, where both ONT and HiFi reads are provided, but some assemblies should be done using `strategy: "single"` using only HiFi reads. Such cases can not unambiguously be resolved otherwise. | `string` |
+| `assembly_scaffolding_order`                      | When strategy is "scaffold", which assembly should be scaffolded onto which?                                                                                                                                                                                                             | `string` |
+| `genome_size`                                     | expected genome size, optional                                                                                                                                                                                                                                                           | `string` |
+| `flye_mode`                                       | flye mode                                                                                                                                                                                                                                                                                | `string` |
+| `flye_args`                                       | additional args for flye                                                                                                                                                                                                                                                                 | `string` |
+| `hifiasm_args`                                    | Extra arguments passed to `hifiasm`                                                                                                                                                                                                                                                      | `string` |
+| `assembler_ont_args`                              | Extra arguments passed to assembler_ont; assembling ONT reads in `scaffold` strategy                                                                                                                                                                                                     | `string` |
+| `assembler_hifi_args`                             | Extra arguments passed to assembler_hifi; assembling HiFi reads in `scaffold` strategy                                                                                                                                                                                                   | `string` |
 
 ## Long-read preprocessing
 
+All long-reads will be passed to `fastplong` for trimming and quality control.
+If reads should not be modified by `fastplong`, adaptor trimming can be disabled using `-A`, quality filtering can be disabled with `-Q`.
+These arguments can be passed via `<hifi/ont>_fastplot_args` for the different read types.
+
 | Parameter             | Description                                               | Type      |
-| --------------------- | --------------------------------------------------------- | --------- | --- |
+| --------------------- | --------------------------------------------------------- | --------- |
 | `ontreads`            | Path to ONT reads                                         | `string`  |
 | `ont_collect`         | Collect ONT reads from several files?                     | `boolean` |
-| `ont_trim`            | Trim ont reads with `fastplong`?                          | `boolean` |
 | `ont_adapters`        | Adaptors for ONT read-trimming                            | `string`  |
 | `ont_fastplong_args`  | Additional args to be passed to `fastplong` for ONT reads | `string`  |
 | `hifireads`           | Path to HiFi reads                                        | `string`  |
-| `hifi_trim`           | Trim HiFi reads with `fastplong`                          | `boolean` |
 | `hifi_adapters`       | Adaptors for HiFi read-trimming                           | `string`  |
 | `hifi_fastplong_args` | Additional args to be passed to fastplong for HiFi reads  | `string`  |
 | `jellyfish`           | Run jellyfish and genomescope (recommended)               | `boolean` |
-| `jellyfish_k`         | Value of k used during k-mer analysis with jellyfish      | `integer` | 21  |
+| `jellyfish_k`         | Value of k used during k-mer analysis with jellyfish      | `integer` |
 | `dump`                | dump jellyfish output                                     | `boolean` |
 
 ## Short read options

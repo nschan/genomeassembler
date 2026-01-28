@@ -48,7 +48,7 @@ workflow POLISH_MEDAKA {
 
     ch_medaka_out
         .filter {
-            it -> it.lift_annotations
+            it -> it.meta.lift_annotations
         }
         .map { it ->
                 [

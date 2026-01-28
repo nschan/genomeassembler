@@ -44,7 +44,7 @@ workflow PREPARE_SHORTREADS {
                 ]
         }
         .mix(shortreads.trim
-            .filter { it -> !it.group }
+            .filter { it -> !it.meta.group }
             .map {
                 it -> [ it.meta, it.meta.shortreads, [] ]
             }
@@ -63,7 +63,7 @@ workflow PREPARE_SHORTREADS {
         }
         .mix(
             FASTP.out.reads
-                .filter { it -> !it[0].ids }
+                .filter { it -> !it[0].metas }
                 .map { it -> [ meta: it[0] + [ shortreads: it[1] ] ] }
         )
         .set { trimmed_reads }
@@ -87,13 +87,13 @@ workflow PREPARE_SHORTREADS {
         .map {
             it -> [
                 meta: [ id: it[1], metas: it[0] ],
-                shortreads: it[2].unique()[0],
-                meryl_k: it[3].unique()[0]
+                shortreads: it[2][0],
+                meryl_k: it[3][0]
             ]
         }
         .mix(shortreads
-            .filter { it -> it.merqury }
-            .filter { it -> !it.group  }
+            .filter { it -> it.meta.merqury }
+            .filter { it -> !it.meta.group  }
             .map { it -> [meta: it.meta, shortreads: it.meta.shortreads, meryl_k: it.meta.meryl_k]}
         )
         .multiMap { it ->
@@ -113,11 +113,13 @@ workflow PREPARE_SHORTREADS {
                   .collect { meta -> [ meta, it[1] ] }
         }
         .mix(MERYL_UNIONSUM.out.meryl_db
-            .filter { it -> !it[0].ids }
+            .filter { it -> !it[0].metas }
             .map {
                 it -> [ it[0], it[1] ]
             }
-        ).set { meryl_kmers }
+        )
+        .map {meta , kmers -> [meta.id, kmers]}
+        .set { meryl_kmers }
 
 
 

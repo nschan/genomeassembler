@@ -4,67 +4,6 @@ include { PREPARE_SHORTREADS as SHORTREADS } from './prepare_shortreads/main'
 include { JELLYFISH } from './jellyfish/main'
 
 workflow PREPARE {
-    /*
-                        Grouped preparations
-
-    Generally, I expect that a group will contain the same set of input.
-    To reduce redundant work on the inputs that belong one group, in all
-    prepare_* subworkflows groups will be used as meta.id, if a group is
-    set. After the preparations are done, results are joined back to all
-    members of the group. This needs to account for sample level setting
-    of additional args. For preparation no arg can be set at the sample-
-    level, so here everything group only.
-
-    The pattern for grouping/ungrouping and mixing samples is:
-
-    Grouping:
-    channel_grouped is a map that contains at least meta, group and path
-    within one group the path is expected to be the same for all members
-
-    channel_grouped
-        .filter { it -> it.group  }
-        .map { it -> [it.meta, it.group, it.path] }
-        .groupTuple(by: 1)
-        .map {
-            it ->
-                [
-                    [id: it[1], ids: it[0].id.collect().join("+")],
-                    it[2].unique()[0]
-                ]
-        }
-        .mix(
-            groups
-                .filter { it -> !it.group }
-                .map {
-                    it -> [ it.meta, it.path ]
-                }
-        )
-        .set { collected_groups }
-
-    This produces one channel that contains meta and path ready to go in
-    a process.
-
-    For a process that again returns [meta, path] split group in samples
-    and merge with ungrouped samples:
-
-    PROCESS(collected_groups)
-
-    PROCESS.out
-        .filter { it -> it[0].ids }
-        .flatMap { it ->
-            it[0].ids
-                .tokenize("+")
-                .collect { sample -> [ meta: [ id: sample ], path: it[1] ] }
-            }
-        .mix(PROCESS.out
-            .filter { it -> !it[0].ids }
-            .map {
-                it -> [ meta: [ id: it[0].id ], path: it[1] ]
-            }
-        )
-        .set { process_output }
-    */
-
     take: ch_main
 
     main:
@@ -119,7 +58,7 @@ workflow PREPARE {
     ch_main_shortreaded
         // ADD ONT READS
         .filter {
-            it -> it.ontreads ? true : false
+            it -> it.meta.ontreads ? true : false
         }
         .map { it -> [it.meta.id, it.meta - it.meta.subMap("ontreads")]}
         .join(
@@ -146,7 +85,7 @@ workflow PREPARE {
 
     ch_main_sr_ont
         .filter {
-            it -> it.hifireads ? true : false
+            it -> it.meta.hifireads ? true : false
         }
         .map { it -> [it.meta.id, it.meta - it.meta.subMap("hifireads")]}
         .join(
@@ -162,13 +101,13 @@ workflow PREPARE {
         // mix back in those samples where nothing was done to the hifireads reads
         .mix(ch_main_sr_ont
             .filter {
-                it -> it.hifireads ? false : true
+                it -> it.meta.hifireads ? false : true
             }
         )
         .set {
             ch_main_prepared
         }
-
+    //ch_main_prepared.view {"CH_MAIN_PREPARED: $it"}
     // Get average read length of the QC reads from fastplong json report
     def slurp = new groovy.json.JsonSlurper()
 
@@ -189,7 +128,7 @@ workflow PREPARE {
         }
         .mix(
             ch_main_prepared
-            .filter { it -> it.qc_reads.toLowerCase() == "hifi" }
+            .filter { it -> it.meta.qc_reads.toLowerCase() == "hifi" }
             .map {
                 it -> [
                     it.meta.id, it.meta - it.meta.subMap("fastplong_json")]}

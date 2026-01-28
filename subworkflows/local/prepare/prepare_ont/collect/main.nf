@@ -11,7 +11,7 @@ workflow COLLECT {
         .filter {
             it -> it.ont_collect
         }
-        .map { row -> [row.meta, row.ontreads] }
+        .map { row -> [row.meta, row.meta.ontreads] }
         .set { reads }
 
     COLLECT_READS(reads)
@@ -19,16 +19,6 @@ workflow COLLECT {
     ch_versions.mix(COLLECT_READS.out.versions)
 
     versions = ch_versions
-
-    ch_input
-        .map { it -> it - it.submap('ontreads') }
-        .map { it -> it.collect { entry -> [ entry.value, entry ] } }
-        .join(reads
-            .map { it -> [meta: it[0], ontreads:it[1]] }
-            .map { it -> it.collect { entry -> [ entry.value, entry ] } }
-        )
-        .map { it -> it.collect { _entry, map -> [ (map.key): map.value ] }.collectEntries() }
-        .set { reads }
 
     emit:
     reads

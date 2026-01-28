@@ -16,7 +16,7 @@ workflow JELLYFISH {
         it ->
             [
                 meta: it.meta,
-                reads: it.ontreads
+                reads: it.meta.ontreads
             ]
         }
     .set { samples }
@@ -24,11 +24,6 @@ workflow JELLYFISH {
     COUNT.out.kmers.set { kmers }
 
     ch_versions = ch_versions.mix(COUNT.out.versions)
-
-    if (params.dump) {
-        DUMP(kmers)
-        ch_versions = ch_versions.mix(DUMP.out.versions)
-    }
 
     HISTO(kmers)
     ch_versions = ch_versions.mix(HISTO.out.versions)

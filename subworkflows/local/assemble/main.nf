@@ -23,6 +23,7 @@ workflow ASSEMBLE {
     Samples are split into those that need assembly, and those that will not be assembled (i.e. assemblies are provided)
     */
     ch_main.dump(tag: "Assemble - Inputs")
+
     ch_main
         .branch {
             it ->
@@ -54,6 +55,7 @@ workflow ASSEMBLE {
         .dump(tag: "Assemble: Branched: Single")
     ch_main_assemble_branched
         .hybrid
+        //.view {"Assemble: Hybrid: $it"}
         .dump(tag: "Assemble: Branched: Hybrid")
     ch_main_assemble_branched
         .scaffold
@@ -137,6 +139,7 @@ workflow ASSEMBLE {
             - Hybrid assembly
             - Scaffold samples where assembler_hifi (hifi assembler) is hifiasm
     */
+    //ch_main_assemble_branched.hybrid.view {"ASSEMBLE: Branched: Hybrid"}
     ch_main_assemble_branched
             .single
             .filter {
@@ -146,7 +149,7 @@ workflow ASSEMBLE {
                 ch_main_assemble_branched
                     .hybrid
                     .filter {
-                        it -> it.meta.assembler_hifi == "hifiasm"
+                        it -> it.meta.assembler_ont == "hifiasm"
                     }
             )
             .mix(ch_main_assemble_branched
@@ -154,22 +157,23 @@ workflow ASSEMBLE {
                     .filter {
                          it -> it.meta.assembler_hifi == "hifiasm"
                     }
-                    // the samples for scaffolding should not have ONT reads, otherwise hifiasm will run in --ul mode
-                    .map { it -> [meta: it.meta - it.meta.subMap("ontreads")] }
             )
-            .set { ch_main_assemble_hifi_hifiasm }
-
-    ch_main_assemble_hifi_hifiasm.dump(tag: "Assemble: hifiasm HIFI inputs")
-
-    HIFIASM(ch_main_assemble_hifi_hifiasm
-                .map {
+            .map {
                     it -> [
                         it.meta,
                         it.meta.hifireads,
                         // for hybrid samples include ONT reads in 3rd slot of first input (see hifiasm module)
                         (it.meta.strategy == "hybrid" && it.meta.ontreads) ? it.meta.ontreads : []
                         ]
-                    },
+                    }
+            .set { ch_main_assemble_hifi_hifiasm }
+
+    ch_main_assemble_hifi_hifiasm.dump(tag: "Assemble: hifiasm HIFI inputs")
+
+
+    //ch_main_assemble_hifi_hifiasm.view { "Assemble: hifiasm HIFI inputs: $it" }
+
+    HIFIASM(ch_main_assemble_hifi_hifiasm,
             [[], [], []],
             [[], [], []],
             [[], []])
@@ -501,7 +505,7 @@ workflow ASSEMBLE {
         .to_map
         .map {
             it ->
-            [ [it.meta], it.meta.qc_reads_path, it.meta.ref_fasta ]
+            [ it.meta, it.meta.qc_reads_path, it.meta.ref_fasta ]
         }
         .set { map_to_ref_in }
 

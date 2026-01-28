@@ -247,10 +247,6 @@
                     "type": "boolean",
                     "description": "Collect ONT reads from several files?"
                 },
-                "ont_trim": {
-                    "type": "boolean",
-                    "description": "Trim ont reads with fastplong?"
-                },
                 "ont_adapters": {
                     "type": "string",
                     "default": "[]",
@@ -264,10 +260,6 @@
                 "hifireads": {
                     "type": "string",
                     "description": "Path to HiFi reads"
-                },
-                "hifi_trim": {
-                    "type": "boolean",
-                    "description": "Trim HiFi reads with fastplonng"
                 },
                 "hifi_adapters": {
                     "type": "string",

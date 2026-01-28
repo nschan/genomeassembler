@@ -185,6 +185,8 @@ workflow GENOMEASSEMBLER {
 
     PREPARE.out.meryl_kmers.set { meryl_kmers }
 
+
+    //ch_main_prepared.view{"Main WF: Prepared out: $it "}
     /*
     Assembly
     */

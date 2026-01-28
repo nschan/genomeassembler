@@ -55,12 +55,12 @@ workflow PREPARE_HIFI {
         .filter { it -> it[0].metas }
         .flatMap { it -> // it looks like [meta, output_path]
             it[0].metas
-                  .collect { meta -> [ meta: meta.clone() + [hifireads: it[1]] ] }
+                  .collect { metas -> [ meta: metas + [hifireads: it[1]] ] }
         }
         .mix(FASTPLONG_HIFI.out.reads
             .filter { it -> !it[0].metas }
             .map {
-                it -> [ meta: it[0].clone() + [ hifireads: it[1] ] ]
+                meta, hifireads -> [ meta: meta + [ hifireads: hifireads ] ]
             }
         )
         .set { fastplong_reads_out }
@@ -71,10 +71,10 @@ workflow PREPARE_HIFI {
         .filter { it -> it[0].metas }
         .flatMap { it ->
             it[0].metas
-                .collect { meta -> [ meta.clone(), it[1] ] }
+                .collect { meta -> [ meta, it[1] ] }
             }
         .mix(FASTPLONG_HIFI.out.json
-            .filter { it -> !it[0].ids }
+            .filter { it -> !it[0].metas }
         )
         .set { fastplong_json_out }
 

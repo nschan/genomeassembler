@@ -12,7 +12,7 @@ workflow RUN_BUSCO {
 
     ch_main
         .filter {
-            it -> it.busco
+            it -> it.meta.busco
         }
         .multiMap { it ->
                 fasta: [

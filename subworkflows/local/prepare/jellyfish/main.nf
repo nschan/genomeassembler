@@ -29,15 +29,15 @@ workflow JELLYFISH {
                     meta: [
                         id: it[1],
                         metas: it[0],
-                        jellyfish_k: it[2].unique()[0],
-                        qc_read_mean: it[4].unique()[0]
+                        jellyfish_k: it[2][0],
+                        qc_read_mean: it[4][0]
                     ],
-                    qc_reads_path: it[3].unique()[0]
+                    qc_reads_path: it[3][0]
                 ]
         }
         .mix(
             ch_main
-                .filter { it -> !it.group }
+                .filter { it -> !it.meta.group }
                 .map {
                     it ->
                     [
@@ -60,9 +60,10 @@ workflow JELLYFISH {
         .map { meta, hist ->
                     [
                         meta,
+                        hist,
                         meta.jellyfish_k,
-                        meta.qc_read_mean,
-                        hist
+                        meta.qc_read_mean
+
                     ]
         }
         .set { genomescope_in }
@@ -82,7 +83,7 @@ workflow JELLYFISH {
                 .collect { meta -> [ meta: meta + [ genome_size: it[1] ] ] }
         }
         .mix(GENOMESCOPE.out.estimated_hap_len
-            .filter { it -> !it[0].ids }
+            .filter { it -> !it[0].metas }
             .map {
                 it -> [ meta: it[0] + [ genome_size: it[1] ] ]
             }
