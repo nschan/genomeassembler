@@ -14,6 +14,7 @@ quast_stats <- list.files(paste0(data_base, "quast"),
         stage = case_when(
           str_detect(x, "_ragtag") ~ "RagTag",
           str_detect(x, "_medaka") ~ "medaka",
+          str_detect(x, "_dorado") ~ "dorado",
           str_detect(x, "_pilon") ~ "pilon",
           str_detect(x, "_longstitch") ~ "longstitch",
           str_detect(x, "_links") ~ "LINKS",

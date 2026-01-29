@@ -333,15 +333,15 @@ Options for short reads
 
 ## Polishing options
 
-Polishing options. When using `polish` with either `dorado+pilon` or `medaka+pilon`, the assembly will be polished using ONT reads first, and then the ONT-polished assembly will be polished with short reads using `pilon`. `dorado` and `medaka` are mutually exclusive.
+Polishing options. When using `polish` with either `dorado+pilon` or `medaka+pilon`, the assembly will be polished using ONT reads first, and then the ONT-polished assembly will be polished with short reads using `pilon`. `dorado` and `medaka` are mutually exclusive. `dorado` is not available via conda.
 
-| Parameter       | Description                                                                                                                                                            | Type      |
-| --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- |
-| `polish_pilon`  | Polish assembly with pilon? Requires short reads                                                                                                                       | `boolean` |
-| `polish_medaka` | Polish assembly with medaka (ONT only)                                                                                                                                 | `boolean` |
-| `polish_dorado` | Polish assembly with dorado (ONT only)                                                                                                                                 | `boolean` |
-| `medaka_model`  | model to use with medaka                                                                                                                                               | `string`  |
-| `polish`        | Alternative polish interface: can be 'pilon','medaka', 'dorado', 'dorado+pilon' or 'medaka+pilon'. Only available through samplesheet, takes priority over `polish_*`. | `string`  |
+| Parameter       | Description                                                                                                                                                                                            | Type      |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------- |
+| `polish_pilon`  | Polish assembly with pilon? Requires short reads                                                                                                                                                       | `boolean` |
+| `polish_medaka` | Polish assembly with medaka (ONT only)                                                                                                                                                                 | `boolean` |
+| `polish_dorado` | Polish assembly with dorado (ONT only)                                                                                                                                                                 | `boolean` |
+| `medaka_model`  | model to use with medaka                                                                                                                                                                               | `string`  |
+| `polish`        | Alternative polish interface: can be 'pilon','medaka', 'dorado', 'dorado+pilon' or 'medaka+pilon', do not include quotation marks. Only available through samplesheet, takes priority over `polish_*`. | `string`  |
 
 ## Scaffolding options
 

@@ -71,6 +71,7 @@ read_busco_batch <- \(x) {read_tsv(x, show_col_types = F) %>%
       stage = case_when(
         str_detect(x, "ragtag") ~ "RagTag",
         str_detect(x, "medaka") ~ "medaka",
+        str_detect(x, "dorado") ~ "dorado",
         str_detect(x, "pilon") ~ "pilon",
         str_detect(x, "longstitch") ~ "longstitch",
         str_detect(x, "links") ~ "LINKS",

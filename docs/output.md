@@ -141,6 +141,13 @@ Annotation `gff3` and `unmapped.txt` files are only created if a reference for a
       - `<SampleName>_medaka.fa.gz` Polished assembly
       - `<SampleName>_medaka.gff3` annotation liftover
       - `<SampleName>_medaka.unnapped.txt` annotations that could not be lifted over during annotation liftover
+    - `dorado/`: output from dorado
+      - `<SampleName>_dorado.fa.gz` Polished assembly
+      - `<SampleName>_dorado.gff3` annotation liftover
+      - `<SampleName>_dorado.unnapped.txt` annotations that could not be lifted over during annotation liftover
+      - `alignments/` output from dorado aligner
+        - `<SampleName>_dorado_aligned.bam` Alignment
+        - `<SampleName>_dorado_aligned.bai` Alignment index
 
 </details>
 

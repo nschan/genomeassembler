@@ -9,6 +9,7 @@ merqury_stats <- list.files(paste0(data_base, "merqury"), full.names = T, patter
         stage = case_when(
           str_detect(x, "_ragtag") ~ "RagTag",
           str_detect(x, "_medaka") ~ "medaka",
+          str_detect(x, "_dorado") ~ "dorado",
           str_detect(x, "_pilon") ~ "pilon",
           str_detect(x, "_longstitch") ~ "longstitch",
           str_detect(x, "_links") ~ "LINKS",
@@ -27,6 +28,7 @@ merqury_asm_hists <- list.files(paste0(data_base, "/merqury"), full.names = T, p
         stage = case_when(
           str_detect(x, "_ragtag") ~ "RagTag",
           str_detect(x, "_medaka") ~ "medaka",
+          str_detect(x, "_dorado") ~ "dorado",
           str_detect(x, "_pilon") ~ "pilon",
           str_detect(x, "_longstitch") ~ "longstitch",
           str_detect(x, "_links") ~ "LINKS",
@@ -51,6 +53,7 @@ merqury_cn_hists <- list.files(paste0(data_base, "merqury"), full.names = T, pat
         stage = case_when(
           str_detect(x, "_ragtag") ~ "RagTag",
           str_detect(x, "_medaka") ~ "medaka",
+          str_detect(x, "_dorado") ~ "dorado",
           str_detect(x, "_pilon") ~ "pilon",
           str_detect(x, "_longstitch") ~ "longstitch",
           str_detect(x, "_links") ~ "LINKS",
@@ -77,6 +80,7 @@ merqury_qv <- list.files(paste0(data_base, "merqury"), full.names = T, pattern =
         stage = case_when(
           str_detect(x, "_ragtag") ~ "RagTag",
           str_detect(x, "_medaka") ~ "medaka",
+          str_detect(x, "_dorado") ~ "dorado",
           str_detect(x, "_pilon") ~ "pilon",
           str_detect(x, "_longstitch") ~ "longstitch",
           str_detect(x, "_links") ~ "LINKS",

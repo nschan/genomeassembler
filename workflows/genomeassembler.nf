@@ -203,17 +203,27 @@ workflow GENOMEASSEMBLER {
     ch_main_assembled
         .branch {
             it ->
-            polish:     ["pilon","medaka","medaka+pilon","dorado","dorado+pilon"].contains(it.meta.polish)
-            no_polish: !["pilon","medaka","medaka+pilon","dorado","dorado+pilon"].contains(it.meta.polish)
+            def polishers = ["pilon", "medaka", "medaka+pilon", "dorado", "dorado+pilon"]
+            /*debug
+            def polishValue = it.meta.polish
+            def inList = polishers.contains(polishValue)
+            println "DEBUG: polish='${polishValue}' (type: ${polishValue.class.name}), inList=${inList}"
+            polish:     inList
+            no_polish:  !inList
+            DEBUG: polish='"medaka+pilon"' (type: java.lang.String), inList=false
+            No quotes in samplesheet?
+            */
+            polish:     polishers.contains(it.meta.polish) == true
+            no_polish:  true
         }
-        .set { ch_main_assembled }
+        .set { ch_main_assembled_branched }
 
-    ch_main_assembled.polish.view {"ch_main_assembled.polish: $it"}
-    ch_main_assembled.no_polish.view {"ch_main_assembled.no_polish: $it"}
+    ch_main_assembled_branched.polish.view {"ch_main_assembled_branched.polish: $it"}
+    ch_main_assembled_branched.no_polish.view {"ch_main_assembled_branched.no_polish: $it"}
 
-    POLISH(ch_main_assembled.polish, meryl_kmers)
+    POLISH(ch_main_assembled_branched.polish, meryl_kmers)
 
-    ch_main_assembled.no_polish
+    ch_main_assembled_branched.no_polish
         .mix(POLISH.out.ch_main)
         .set { ch_main_polished }
 
@@ -227,16 +237,16 @@ workflow GENOMEASSEMBLER {
             no_scaffold: !it.meta.scaffold_links && !it.meta.scaffold_longstitch && !it.meta.scaffold_ragtag
         }
     .set {
-        ch_main_polished
+        ch_main_polished_branched
     }
     /*
     Scaffolding
     */
-    SCAFFOLD(ch_main_polished.scaffold, meryl_kmers)
+    SCAFFOLD(ch_main_polished_branched.scaffold, meryl_kmers)
 
     // Recreate ch_main, even though it is not used since there are no later steps.
 
-    ch_main_polished
+    ch_main_polished_branched
         .no_scaffold
         .mix(SCAFFOLD.out.ch_main)
         .set { ch_main_scaffolded }
