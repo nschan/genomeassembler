@@ -24,7 +24,7 @@ workflow RUN_LONGSTITCH {
             it ->
             [
                 it.meta,
-                it.meta.polished ? (it.polished.pilon ?: it.polished.medaka) : it.assembly,
+                it.meta.polished ? (it.meta.polished.pilon ?: it.meta.polished.medaka ?: it.meta.polished.dorado) : it.meta.assembly,
                 it.meta.qc_reads_path,
                 it.meta.genome_size
             ]

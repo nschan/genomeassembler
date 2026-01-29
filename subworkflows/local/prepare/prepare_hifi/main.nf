@@ -55,12 +55,12 @@ workflow PREPARE_HIFI {
         .filter { it -> it[0].metas }
         .flatMap { it -> // it looks like [meta, output_path]
             it[0].metas
-                  .collect { metas -> [ meta: metas + [hifireads: it[1]] ] }
+                  .collect { metas -> [ meta: metas - metas.subMap("hifireads") + [hifireads: it[1]] ] }
         }
         .mix(FASTPLONG_HIFI.out.reads
             .filter { it -> !it[0].metas }
             .map {
-                meta, hifireads -> [ meta: meta + [ hifireads: hifireads ] ]
+                meta, hifireads -> [ meta: meta - meta.subMap("hifireads") + [ hifireads: hifireads ] ]
             }
         )
         .set { fastplong_reads_out }

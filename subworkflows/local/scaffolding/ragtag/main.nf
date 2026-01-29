@@ -16,7 +16,7 @@ workflow RUN_RAGTAG {
                     assembly:
                         [
                             it.meta,
-                            it.meta.polished ? (it.meta.polished.pilon ?: it.meta.polished.medaka) : it.meta.assembly
+                            it.meta.polished ? (it.meta.polished.pilon ?: it.meta.polished.medaka ?: it.meta.polished.dorado) : it.meta.assembly
                         ]
                     reference: [it.meta, it.meta.ref_fasta]
                     }

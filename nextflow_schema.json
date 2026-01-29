@@ -292,6 +292,10 @@
                     "type": "boolean",
                     "description": "Polish assembly with pilon? Requires short reads"
                 },
+                "polish_dorado": {
+                    "type": "boolean",
+                    "description": "Polish assembly with dorado (ONT only)"
+                },
                 "polish_medaka": {
                     "type": "boolean",
                     "description": "Polish assembly with medaka (ONT only)"

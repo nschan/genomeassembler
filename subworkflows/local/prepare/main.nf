@@ -108,6 +108,8 @@ workflow PREPARE {
             ch_main_prepared
         }
     //ch_main_prepared.view {"CH_MAIN_PREPARED: $it"}
+
+
     // Get average read length of the QC reads from fastplong json report
     def slurp = new groovy.json.JsonSlurper()
 
@@ -155,6 +157,7 @@ workflow PREPARE {
                     ]
             ]
         }
+        // branch this channel for jellyfish
         .branch {
             it ->
                 jelly: it.meta.jellyfish

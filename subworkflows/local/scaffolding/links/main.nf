@@ -12,7 +12,7 @@ workflow RUN_LINKS {
     ch_main.dump(tag: "SCAFFOLD: LINKS: WORKFLOW inputs")
     ch_main
         .multiMap { it ->
-            assembly:   [it.meta, it.meta.polished ? (it.meta.polished.pilon ?: it.meta.polished.medaka) : it.meta.assembly]
+            assembly:   [it.meta, it.meta.polished ? (it.meta.polished.pilon ?: it.meta.polished.medaka ?: it.meta.polished.dorado) : it.meta.assembly]
             reads:      [it.meta, it.meta.qc_reads_path]
         }
         .set { links_in }

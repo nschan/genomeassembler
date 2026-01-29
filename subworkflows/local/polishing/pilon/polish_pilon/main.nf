@@ -32,11 +32,7 @@ workflow POLISH_PILON {
         .set { pilon_polished }
 
     pilon_polished
-        .map { meta, polished_pilon -> [ meta: meta, polished_pilon: polished_pilon ] }
-        .map { it -> [ meta: it.meta +
-                        [ polished: [it.polished_pilon] ]
-            ]
-        }
+        .map { meta, polished_pilon -> [ meta: meta + [ polished: [pilon: polished_pilon] ] ]  }
         .set { ch_main }
 
     ch_versions = ch_versions.mix(RUN_PILON.out.versions)

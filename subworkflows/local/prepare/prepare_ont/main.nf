@@ -113,12 +113,12 @@ workflow PREPARE_ONT {
         .filter { it -> it[0].metas }
         .flatMap { it -> // it looks like [meta, output_path]
             it[0].metas
-                  .collect { metas -> [ meta: metas + [ ontreads: it[1] ] ] }
+                  .collect { metas -> [ meta: metas - metas.subMap("ontreads") + [ ontreads: it[1] ] ] }
         }
         .mix(FASTPLONG_ONT.out.reads
             .filter { it -> !it[0].metas }
             .map {
-                it -> [ meta: it[0] + [ ontreads: it[1] ] ]
+                it -> [ meta: it[0] - it[0].subMap("ontreads") + [ ontreads: it[1] ] ]
             }
         )
         .set { fastplong_reads_out }

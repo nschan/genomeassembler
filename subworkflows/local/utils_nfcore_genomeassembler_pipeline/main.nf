@@ -122,14 +122,17 @@ workflow PIPELINE_INITIALISATION {
                                     assembler.contains("_") ? assembler.tokenize("_")[1] :
                                     null
 
-            def polish          =   it.polish ?:
+            def polish          =   it.polish ? it.polish :
+                                    (params.polish_medaka && params.polish_dorado) ? error("Both polish_medaka and polish_dorado are set.") :
                                     (params.polish_medaka && params.polish_pilon && ontreads) ? "medaka+pilon" :
+                                    (params.polish_dorado && params.polish_pilon && ontreads) ? "dorado+pilon" :
                                     (params.polish_medaka && ontreads) ? "medaka" :
+                                    (params.polish_dorado && ontreads) ? "dorado" :
                                     (params.polish_pilon && (it.shortread_F || params.shortread_F)) ? "pilon" :
                                     null
 
 
-            strategy == "single" && ontreads && hifireads && ((!assembler_ont && assembler_hifi) || (assembler_ont && !assembler_hifi)) ?
+            strategy == "single" && ontreads && hifireads && !((!assembler_ont && assembler_hifi) || (assembler_ont && !assembler_hifi)) ?
                 error(
                     """
                     [$it.sample]: Strategy is 'single', but ONT and HiFi reads are provided.

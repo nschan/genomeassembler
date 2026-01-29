@@ -11,9 +11,6 @@ workflow POLISH_MEDAKA {
     channel.empty().set { ch_versions }
 
     ch_main
-        .filter {
-            it -> it.meta.polish_medaka
-        }
         .multiMap {
             it ->
             reads: [it.meta, it.meta.ontreads]
@@ -30,9 +27,7 @@ workflow POLISH_MEDAKA {
         // After joining re-create the maps from the stored map
         .set { ch_medaka_out }
 
-    ch_main
-        .filter { it -> !it.polish_medaka }
-        .mix(ch_medaka_out)
+    ch_medaka_out
         .set { ch_main_out }
 
     ch_versions = ch_versions.mix(RUN_MEDAKA.out.versions)

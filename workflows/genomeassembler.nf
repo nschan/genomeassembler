@@ -203,10 +203,13 @@ workflow GENOMEASSEMBLER {
     ch_main_assembled
         .branch {
             it ->
-            polish: it.meta.polish_medaka || it.meta.polish_pilon
-            no_polish: !it.meta.polish_medaka && !it.meta.polish_pilon
+            polish:     ["pilon","medaka","medaka+pilon","dorado","dorado+pilon"].contains(it.meta.polish)
+            no_polish: !["pilon","medaka","medaka+pilon","dorado","dorado+pilon"].contains(it.meta.polish)
         }
         .set { ch_main_assembled }
+
+    ch_main_assembled.polish.view {"ch_main_assembled.polish: $it"}
+    ch_main_assembled.no_polish.view {"ch_main_assembled.no_polish: $it"}
 
     POLISH(ch_main_assembled.polish, meryl_kmers)
 
