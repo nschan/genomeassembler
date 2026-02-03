@@ -30,7 +30,7 @@ read_busco_report <- function(file) {
       show_col_types = FALSE
     )  %>%
       magrittr::set_colnames(c("count", "stat")) %>%
-      dplyr::filter(!stat == "Percent gaps") %>%
+      dplyr::filter(!stat %in% c("Scaffold N50", "Contigs N50", "Percent gaps", "Number of scaffolds", "Percent gaps")) %>%
       mutate(
         count = case_when(
           str_detect(count, "MB") ~ count %>% str_extract("[0-9]+") %>% as.double() %>% {
