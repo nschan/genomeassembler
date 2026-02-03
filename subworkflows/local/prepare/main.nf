@@ -4,6 +4,50 @@ include { PREPARE_SHORTREADS as SHORTREADS } from './prepare_shortreads/main'
 include { JELLYFISH } from './jellyfish/main'
 
 workflow PREPARE {
+    /*
+    Subworkflows in prepare implement sample grouping.
+    SHORTREADS, JELLYFISH, ONT and HIFI each implement
+    the same logic for sample grouping.
+    Grouping needs to be specified by the user, and can
+    be used to create sample groups that share inputs, to
+    minimize redundant input preparations.
+    Reads of samples from the same group will be prepared
+    only once, and then the original channel is restored.
+
+    Brief description how this works:
+        // Move group information into channel, if it exists
+        .filter { it -> it.meta.group }
+        .map { it -> [it.meta, it.meta.group, it.meta.ontreads] }
+        // Group by group
+        .groupTuple(by: 1)
+        // Collect all sample-meta into a group meta slot named metas
+        // Use unique reads; user responsible to group correctly
+        .map {
+            it ->
+                [
+                    [
+                        id: it[1], // the group
+                        metas: it[0]
+                    ],
+                    it[2].unique()[0] // Ontreads
+                ]
+        }
+
+    After this input channel has been processed, the samples are
+    recreated from meta[metas]:
+
+    process.OUT
+        // Take samples with metas in slot [0]
+        .filter { it -> it[0].metas }
+        .flatMap { it ->
+            // $it looks like [meta, output_path]
+            // recreate meta from metas and update path.
+            it[0].metas
+                  .collect { meta -> [ meta: meta + [ontreads: it[1]] ] }
+        }
+
+
+    */
     take: ch_main
 
     main:

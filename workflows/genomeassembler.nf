@@ -38,126 +38,14 @@ workflow GENOMEASSEMBLER {
     ch_input.set { ch_main }
 
     /*
+    This pipeline uses a "meta-stuffing" appraoch. All information
+    about a sample is always stored in a map stored in [0]/"meta".
+    Values are extracted from the map to create input channels.
+    The correspoding key is created or updated from outputs.
+    This largely eliminates the need for joins.
 
-    The "main" channel, contains all sample-wise information.
-    This channel should be the main input of all subworkflows
-    and the subworkflows should make changes to this map. The
-    main channel should stay a map whenever possible and this
-    main channel reflects all pipeline parameters.
-    I will make use of the meta map to pass additional infor-
-    mation into processes. This is neccessary to provide fine
-    control for parameterization of processes. This is passed
-    via ext.args to the process and fetched from meta.
-
-    The keys are defined in
+    The initial keys are defined in
     ./subworkflows/local/utils_nfcore_genomeassembler/main.nf
-
-        meta: [
-            id: string,
-            ontreads: path,
-            hifireads: path,
-            strategy: string,
-            assembler_ont: string,
-            assembler_hifi: string,
-            scaffolding: string,
-            genome_size: integer,
-            assembler_ont_args: string,
-            assembler_hifi_args: string,
-            ref_fasta: path,
-            ref_gff: path,
-            shortread_F: path,
-            shortread_R: path,
-            paired: bool
-            ont_collect: bool,
-            ont_trim: bool,
-            ont_jellyfish: bool,
-            hifi_trim: bool,
-            hifi_primers: path,
-            polish_medaka: bool,
-            medaka_model: string,
-            polish_pilon: bool,
-            scaffold_longstitch: bool,
-            scaffold_links: bool,
-            scaffold_ragtag: bool,
-            use_ref: bool,
-            flye_mode: string,
-            assembly: path,
-            ref_map_bam: path,
-            assembly_map_bam: path,
-            qc_reads: string ["ont","hifi"],
-            qc_reads_path: path,
-            quast: bool,
-            busco: bool,
-            busco_lineage: string,
-            busco_db: path,
-            lift_annotations: bool,
-            shortread_F: path,
-            shortread_R: path,
-            paired: bool,
-            use_short_reads: bool,
-            shortread_trim: bool
-        ]
-
-
-
-    ===========
-       JOINS
-    ===========
-
-    Since this channel needs to stay a map so I can pull out the correct elements, joining is difficult:
-    Nextflow's join operator only works on list-typed channels, but the channels here are maps.
-    For this reason, there are some confuding map operations involved where each map-element is converted to a list,
-    containing the value and the previous map. The whole channel is turned into a list this way:
-
-    Something like
-
-    [
-        meta: [id: something1],
-        somepath: "/path"
-    ]
-
-    becomes
-
-    [
-        [id: something, meta: [id: something]],
-        ["/path", somepath: "/path"]
-    ]
-
-    This can be joined to
-
-    [
-        [id: something, meta: [id: something]],
-        ["different_path", otherpath: "different_path"]
-    ]
-
-    This makes it possible to join on the first element (the one containing meta):
-
-    [
-        [id: something, meta: [id: something]],
-        ["path", somepath: "path"],
-        ["different_path", otherpath: "different_path"]
-    ]
-
-    After joining, the map is recreated from the second list element, to create:
-
-    [
-        meta: [id: something],
-        somepath: "path",
-        otherpath: "different_path"
-    ]
-
-    This is (sadly) a somewhat frequent pattern in this pipeline and
-    it is done like this:
-
-    map_channel_1
-            // Convert to list for join
-            .map { it -> it.collect { entry -> [ entry.value, entry ] } }
-            .join( map_channel_2
-                     // Convert to list for join
-                    .map { it -> it.collect { entry -> [ entry.value, entry ] } }
-            )
-            // After joining re-create the maps from the stored map
-            .map { it -> it.collect { _entry, map -> [ (map.key): map.value ] }.collectEntries() }
     */
     channel.empty().set { meryl_kmers }
 

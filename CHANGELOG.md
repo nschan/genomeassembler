@@ -5,17 +5,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## v2.0.0 'Saffron Vulture' - [2026-xx-xx]
 
-v2.0.0 of this pipeline is a large refactor of the pipeline to facilitate sample-level parameteristation. This allows to either parameterise the _pipeline_ using `params`, or parameterise _samples_ via the `input` samplesheet. In case both types of parameterisations are used, sample parameters will overwrite the pipeline parameters for that sample.
+This is a major release, with breaking changes.
+v2.0.0 of genomeassembler is a large refactor of the pipeline to facilitate sample-level parameteristation. This allows to either parameterise the _pipeline_ using `params`, or parameterise _samples_ via the `input` samplesheet. In case both types of parameterisations are used, sample parameters will take priority.
+
+Since this workflow follows a sample-centric implementation, nextflow will always render the full pipeline dag, but depending on configuration samples may not travel through the whole pipeline. This may also cause terminal output to show steps that will never become an active process.
+
 In addition, v2.0.0 contains these changes:
 
 ### `Added`
 
 - fastplong for long-read trimming and qc
+- fastp for short-read trimming and qc
 - migration to nf-test
 - increased flexibility of the scaffolding strategy
 - added option to group samples
-- fastp for short-read trimming and qc
-- `dorado polish` added for ONT polishing
+- `dorado polish` added as an alternative to `medaka` for ONT polishing. This is an **experimental feature** and not further documented, due to `dorado polish` being under active development.
 
 ### `Fixed`
 

@@ -49,13 +49,13 @@ workflow PREPARE_ONT {
         .filter { it -> it[0].metas }
         .flatMap { it -> // it looks like [meta, output_path]
             it[0].metas
-                  .collect { meta -> [ meta: meta + [ontreads: it[1]] ] }
+                  .collect { meta -> [ meta: meta - meta.subMap("ontreads") + [ontreads: it[1]] ] }
         }
         .mix(
             COLLECT.out.reads
                 .filter { it -> !it[0].metas }
                 .map {
-                    it -> [ meta: it[0] + [ontreads: it[1]] ]
+                    it -> [ meta: it[0] - meta.subMap("ontreads") + [ontreads: it[1]] ]
                 }
         )
         .set { ch_collected_reads }
