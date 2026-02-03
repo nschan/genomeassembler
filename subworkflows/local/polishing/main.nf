@@ -16,11 +16,17 @@ workflow POLISH {
 
     ch_main
         .branch { it ->
-            medaka: ["medaka","medaka+pilon"].contains(it.meta.polish)
-            dorado: ["dorado","dorado+pilon"].contains(it.meta.polish)
-            no_ont_polish: !["medaka","medaka+pilon","dorado","dorado+pilon"].contains(it.meta.polish)
+            def medaka_polishers = ["medaka","medaka+pilon"]
+            def dorado_polishers = ["dorado","dorado+pilon"]
+            medaka: medaka_polishers.contains(it.meta.polish)
+            dorado: dorado_polishers.contains(it.meta.polish)
+            no_ont_polish: !medaka_polishers.contains(it.meta.polish) && !dorado_polishers.contains(it.meta.polish)
         }
         .set { ch_main_polish }
+
+    //ch_main_polish.medaka.view { "ch_main_polish.medaka: $it"}
+    //ch_main_polish.dorado.view { "ch_main_polish.dorado: $it"}
+    //ch_main_polish.no_ont_polish.view { "ch_main_polish.no_ont_polish: $it"}
 
     POLISH_MEDAKA(ch_main_polish.medaka, meryl_kmers)
 
@@ -54,10 +60,15 @@ workflow POLISH {
     ch_main_polish_pilon
         .branch {
             it ->
-            pilon: ["pilon","medaka+pilon", "dorado+pilon"].contains(it.meta.polish)
-            no_pilon: !["pilon","medaka+pilon","dorado+pilon"].contains(it.meta.polish)
+            def pilon_polishers = ["pilon","medaka+pilon", "dorado+pilon"]
+            pilon: pilon_polishers.contains(it.meta.polish)
+            no_pilon: true
         }
         .set { ch_main_polish_pilon_in }
+
+    //ch_main_polish_pilon_in.pilon.view {"ch_main_polish_pilon_in.pilon: $it"}
+
+    //ch_main_polish_pilon_in.no_pilon.view {"ch_main_polish_pilon_in.no_pilon: $it"}
 
     POLISH_PILON(ch_main_polish_pilon_in.pilon, meryl_kmers)
 

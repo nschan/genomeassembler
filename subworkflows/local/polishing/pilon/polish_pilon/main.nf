@@ -17,10 +17,13 @@ workflow POLISH_PILON {
             shortreads: [it.meta, it.meta.shortreads]
             assembly: [
                 it.meta,
-                it.meta.polish == "medaka+pilon" ? it.meta.polished.medaka : it.meta.assembly
+                it.meta.polish == "medaka+pilon" ? it.meta.polished.medaka : it.meta.polish == "dorado+pilon" ? it.meta.polished.dorado : it.meta.assembly
                 ]
         }
         .set { map_sr_in }
+
+    //map_sr_in.shortreads.view {"POLISH_PILON: map_sr_in.shortreads: $it"}
+    //map_sr_in.assembly.view {"POLISH_PILON: map_sr_in.assembly: $it"}
 
     MAP_SR(map_sr_in.shortreads, map_sr_in.assembly)
 

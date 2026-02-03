@@ -2,7 +2,7 @@ process DORADO_POLISH {
     tag "${meta.id}"
     label 'process_high'
 
-    container "docker.io/nanoporetech/dorado:shaf2aed69855de85e60b363c9be39558ef469ec365"
+    container "docker.io/nanoporetech/dorado:sha00aa724a69ddc5f47d82bd413039f912fdaf4e77"
 
     input:
     tuple val(meta), path(assembly), path(alignment), path(index)
@@ -19,7 +19,7 @@ process DORADO_POLISH {
     script:
     def args = task.ext.args ?: ''
     def variants = ["vcf","gvcf"].contains(variant_call_format) ? "--${variant_call_format}" : ""
-    def outfile = variants ? "> ${meta.id}_dorado_polished.${variants}" : "| bgzip | ${meta.id}_dorado_polished.fa.gz"
+    def outfile = variants ? "> ${meta.id}_dorado_polished.${variants}" : "| bgzip > ${meta.id}_dorado_polished.fa.gz"
     """
     dorado polish \\
         -t ${task.cpus} \\

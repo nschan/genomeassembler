@@ -2,14 +2,14 @@ process DORADO_ALIGNER {
     tag "${meta.id}"
     label 'process_high'
 
-    container "docker.io/nanoporetech/dorado:shaf2aed69855de85e60b363c9be39558ef469ec365"
+    container "docker.io/nanoporetech/dorado:sha00aa724a69ddc5f47d82bd413039f912fdaf4e77"
 
     input:
     tuple val(meta), path(ref), path(reads)
 
     output:
     tuple val(meta), path("${meta.id}_dorado_aligned.bam"), emit: bam
-    tuple val(meta), path("${meta.id}_dorado_aligned.bai"), emit: bai
+    tuple val(meta), path("${meta.id}_dorado_aligned.bam.bai"), emit: bai
     path "versions.yml", emit: versions
 
     when:
@@ -24,8 +24,10 @@ process DORADO_ALIGNER {
         ${ref} \\
         ${reads} \\
         ${args} \\
+        | samtools sort --threads ${task.cpus}\\
         > ${meta.id}_dorado_aligned.bam
-    samtools index ${meta.id}_dorado_aligned.bam
+
+    samtools index ${meta.id}_dorado_aligned.bam > ${meta.id}_dorado_aligned.bam.bai
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

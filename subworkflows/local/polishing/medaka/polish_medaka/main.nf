@@ -23,7 +23,7 @@ workflow POLISH_MEDAKA {
     RUN_MEDAKA.out.medaka_out.set { polished_assembly }
 
     polished_assembly
-        .map { meta, polished_medaka -> [meta: meta + [ polished: [polished_medaka: polished_medaka ] ] ]}
+        .map { meta, polished_medaka -> [meta: meta + [ polished: [medaka: polished_medaka ] ] ]}
         // After joining re-create the maps from the stored map
         .set { ch_medaka_out }
 
