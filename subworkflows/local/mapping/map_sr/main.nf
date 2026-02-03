@@ -10,7 +10,6 @@ workflow MAP_SR {
     channel.empty().set { ch_versions }
     // map reads to assembly
     in_reads
-        .map { meta, reads -> [[id: meta.id], reads] }
         .join(genome_assembly)
         .set { map_assembly }
 

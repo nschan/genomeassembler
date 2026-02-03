@@ -213,13 +213,10 @@ workflow GENOMEASSEMBLER {
             DEBUG: polish='"medaka+pilon"' (type: java.lang.String), inList=false
             No quotes in samplesheet?
             */
-            polish:     polishers.contains(it.meta.polish) == true
+            polish:     polishers.contains(it.meta.polish)
             no_polish:  true
         }
         .set { ch_main_assembled_branched }
-
-    ch_main_assembled_branched.polish.view {"ch_main_assembled_branched.polish: $it"}
-    ch_main_assembled_branched.no_polish.view {"ch_main_assembled_branched.no_polish: $it"}
 
     POLISH(ch_main_assembled_branched.polish, meryl_kmers)
 
