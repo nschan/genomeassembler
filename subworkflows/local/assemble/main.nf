@@ -170,7 +170,6 @@ workflow ASSEMBLE {
 
     ch_main_assemble_hifi_hifiasm.dump(tag: "Assemble: hifiasm HIFI inputs")
 
-
     //ch_main_assemble_hifi_hifiasm.view { "Assemble: hifiasm HIFI inputs: $it" }
 
     HIFIASM(ch_main_assemble_hifi_hifiasm,

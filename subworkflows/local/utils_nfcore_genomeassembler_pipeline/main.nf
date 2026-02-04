@@ -131,7 +131,6 @@ workflow PIPELINE_INITIALISATION {
                                     (params.polish_pilon && (it.shortread_F || params.shortread_F)) ? "pilon" :
                                     null
 
-
             strategy == "single" && ontreads && hifireads && !((!assembler_ont && assembler_hifi) || (assembler_ont && !assembler_hifi)) ?
                 error(
                     """
@@ -179,6 +178,11 @@ workflow PIPELINE_INITIALISATION {
                     scaffold_links: it.scaffold_links ?: params.scaffold_links,
                     scaffold_ragtag: it.scaffold_ragtag ?: params.scaffold_ragtag,
                     use_ref: it.use_ref ?: params.use_ref,
+                    // hic
+                    hic_aligner: it.hic_aligner ?: params.hic_aligner,
+                    hic_F: it.hic_F ?: params.hic_F,
+                    hic_R: it.hic_R ?: params.hic_R,
+                    hic_trim: it.hic_trim ?: params.hic_trim,
                     // not new
                     genome_size: it.genome_size ?: params.genome_size,
                     ref_fasta: it.ref_fasta ?: params.ref_fasta,

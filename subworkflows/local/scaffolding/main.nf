@@ -1,6 +1,7 @@
-include { RUN_LINKS } from './links/main'
-include { RUN_LONGSTITCH } from './longstitch/main'
-include { RUN_RAGTAG } from './ragtag/main'
+include { RUN_LINKS         } from './links/main'
+include { RUN_LONGSTITCH    } from './longstitch/main'
+include { RUN_RAGTAG        } from './ragtag/main'
+include { HIC               } from './hic/main'
 
 workflow SCAFFOLD {
     take:
@@ -45,16 +46,27 @@ workflow SCAFFOLD {
 
     ch_main
         .filter {
-            it ->  it.meta.scaffold_ragtag
+            it ->  it.meta.scaffold_hic
         }
+    .set { hic_in }
+
+    HIC(hic_in, meryl_kmers)
+    HIC.out.ch_main
+        .set { hic_out }
+
+    ch_main
+        .filter {
+            it -> it.meta.scaffold_ragtag && !it.meta.hic_reads && !it.meta.scaffold_longstitch && !it.meta.scaffold_links
+        }
+    .mix(hic_out.filter { it -> it.meta.scaffold_ragtag } )
+    .mix(longstitch_out.filter { it -> it.meta.scaffold_ragtag } )
+    .mix(links_out.filter { it -> it.meta.scaffold_ragtag } )
     .set { ragtag_in }
 
     RUN_RAGTAG(ragtag_in, meryl_kmers)
     RUN_RAGTAG.out.ch_main
         .set { ragtag_out }
 
-
-    // CONTINUE HERE
     // Deal with cases that are single scaffold
     links_out
         .filter {it -> !it.meta.scaffold_longstitch && !it.meta.scaffold_ragtag }
@@ -69,6 +81,11 @@ workflow SCAFFOLD {
                 .filter {it -> !it.meta.scaffold_links && !it.meta.scaffold_longstitch }
                 .map { meta -> [ meta: meta - meta.subMap("scaffolds_ragtag") + [ scaffolds: [ ragtag: meta.scaffolds_ragtag ] ]  ]}
         )
+        .mix(
+            hic_out
+                .map { meta -> [ meta: meta - meta.subMap("scaffolds_hic") + [ scaffolds: [ hic: meta.scaffolds_hic ] ]  ]}
+
+            )
         // mix in those that are double scaffolded: , links-ragtag, longstitch-ragtag
         // links-longstitch
         .mix(

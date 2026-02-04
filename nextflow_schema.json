@@ -324,6 +324,10 @@
                 "scaffold_ragtag": {
                     "type": "boolean",
                     "description": "Scaffold with ragtag (requires reference)?"
+                },
+                "scaffold_hic": {
+                    "type": "boolean",
+                    "description": "Scaffold using HiC reads using yahs (requires reads)?"
                 }
             }
         },
@@ -424,6 +428,31 @@
                 "paired": {
                     "type": "string",
                     "description": "Are shortreads paired?"
+                }
+            }
+        },
+        "hic_options": {
+            "title": "HiC short read options",
+            "type": "object",
+            "description": "Options for HiC short reads",
+            "default": "",
+            "properties": {
+                "hic_aligner": {
+                    "type": "string",
+                    "enum": ["bwa-mem2", "minimap2"],
+                    "description": "Aligner to use for HiC reads; default: bwa-mem2"
+                },
+                "hic_trim": {
+                    "type": "boolean",
+                    "description": "Trim HiC short reads?"
+                },
+                "hic_F": {
+                    "type": "string",
+                    "description": "Path to forward HiC short reads"
+                },
+                "hic_R": {
+                    "type": "string",
+                    "description": "Path to reverse HiC short reads"
                 }
             }
         }

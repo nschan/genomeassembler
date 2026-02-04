@@ -67,7 +67,7 @@ For more details about the output files and reports, please refer to the
 
 ## Credits
 
-nf-core/genomeassembler was originally written by [Niklas Schandry](https://github.com/nschan), of the Faculty of Biology of the Ludwig-Maximilians University (LMU) in Munich, Germany, with funding support from the German Research Foundation (Deutsche Forschungsgemeinschaft [DFG], via Transregional Research Center TRR356 grant 491090170-A05 to Niklas Schandry).
+nf-core/genomeassembler was written, and is currently maintained by [Niklas Schandry](https://github.com/nschan), of the Faculty of Biology of the Ludwig-Maximilians University (LMU) in Munich, Germany, with funding support from the German Research Foundation (Deutsche Forschungsgemeinschaft [DFG], via Transregional Research Center TRR356 grant 491090170-A05 to Niklas Schandry).
 
 I thank the following people for their extensive assistance and constructive reviews during the development of this pipeline:
 

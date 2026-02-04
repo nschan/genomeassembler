@@ -7,7 +7,10 @@
 ## Introduction
 
 This pipeline is designed to assemble haploid (or diploid inbred) genomes from long-reads. `nf-core/genomeassembler` can take ONT and HiFi reads, and supports different assembly strategies. The pipeline can also integrate information on a reference genome (e.g. closely related individual) and short-reads for quality control.
-This pipeline can perform assembly, polishing, scaffolding and annotation lift-over from a reference genome. Phasing or HiC scaffolding are currently unsupported.
+This pipeline can perform assembly, polishing, scaffolding using long-reads, HiC data, or a reference, and annotation lift-over from a reference genome.
+
+> [!NOTE]
+> Phasing is currently not supported.
 
 ![Pipeline metromap](images/genomeassembler.light.png)
 
@@ -35,7 +38,7 @@ Sample parameters take priority over global parameters, if both are provided the
 > [!NOTE]
 > The parameter names will be used in subsequent sections. Since all parameters can be provided per-sample or pipeline wide, no examples will be given.
 
-The list of all parameters that can be provided globally is available [here](params.md), parameters that can be set per sample are provided at the [end of this page](#sample-parameters).
+The list of all parameters that can be provided globally is available [here](https://nf-co.re/genomeassembler/parameters/), parameters that can be set per sample are provided at the [end of this page](#sample-parameters).
 
 ## Samples and grouping
 
@@ -59,8 +62,7 @@ Assembly strategy is controlled via `strategy` (either pipeline parameter or sam
 - scaffold: Assemble ONT reads and HiFi indepently and scaffold one assembly onto the other. `assembler` has to be provided as `"ontAssembler_hifiAssembler"` and could for example be: "`flye_hifiasm"` to assemble ont reads with `flye` and HiFi reads with `hifiasm` or "hifiasm_hifiasm" to assemble both ont and hifi reads indepently with `hifiasm`. When running in "scaffold" mode, `assembly_scaffolding_order` can be used to control which assembly gets scaffolded onto which, the default being "ont_on_hifi" where ONT assembly is scaffolded onto HifI assembly.
 
 Assembler specific arguments can be provided for the assembler via `hifiasm_args` or `flye_args`, or with more fine-grained control via `assembler_ont_args` and `assembler_hifi_args` for scaffolding.
-`assembler_ont_args` controls the parameters for the assembler in `single` and `hybrid` strategies, or for the assembler used for ONT reads when using `scaffold`. `assembler_hifi_args` can be used to pass arguments to the assembler used for HiFi reads in `scaffold` mode.
-`assembler_[ont,hifi]_args` can only be set via the samplesheet and are not available as global pipeline parameters.
+`assembler_ont_args` controls the parameters for the assembler in `single` (with ONT) and `hybrid` strategies, or for the assembler used for ONT reads when using `scaffold`. `assembler_hifi_args` can be used to pass arguments to the assembler used for HiFi reads in `single`, or `scaffold` mode.
 
 ## Samplesheet input
 
@@ -338,9 +340,9 @@ Polishing options. When using `polish` with either `dorado+pilon` or `medaka+pil
 | Parameter       | Description                                                                                                                                                                                            | Type      |
 | --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------- |
 | `polish_pilon`  | Polish assembly with pilon? Requires short reads                                                                                                                                                       | `boolean` |
+| `medaka_model`  | model to use with medaka                                                                                                                                                                               | `string`  |
 | `polish_medaka` | Polish assembly with medaka (ONT only)                                                                                                                                                                 | `boolean` |
 | `polish_dorado` | EXPERIMENTAL: Polish assembly with dorado (ONT only)                                                                                                                                                   | `boolean` |
-| `medaka_model`  | model to use with medaka                                                                                                                                                                               | `string`  |
 | `polish`        | Alternative polish interface: can be 'pilon','medaka', 'dorado', 'dorado+pilon' or 'medaka+pilon', do not include quotation marks. Only available through samplesheet, takes priority over `polish_*`. | `string`  |
 
 ## Scaffolding options
@@ -352,6 +354,19 @@ Scaffolding options
 | `scaffold_longstitch` | Scaffold with longstitch?                  | `boolean` |
 | `scaffold_links`      | Scaffolding with links?                    | `boolean` |
 | `scaffold_ragtag`     | Scaffold with ragtag (requires reference)? | `boolean` |
+
+### HiC
+
+HiC scaffolding specific parameters. Supplying HiC reads activates HiC scaffolding.
+bwa-mem2 generally is more suitable for HiC alignments than minimap2, and is the recommended option.
+However, bwamem2 requires substantial memory for large genomes, which may prohibit use of bwamem2 in some cases.
+
+| Parameter     | Description                                                 | Type      |
+| ------------- | ----------------------------------------------------------- | --------- |
+| `hic_aligner` | Aligner to use, default "bwa-mem2", alternative: "minimap2" | `string`  |
+| `hic_F`       | Forward / \_1 HiC reads                                     | `path`    |
+| `hic_R`       | Reverse / \_2 HiC reads                                     | `path`    |
+| `hic_trim`    | Trim HiC reads? default: false                              | `boolean` |
 
 ## QC options
 

@@ -55,7 +55,7 @@ workflow PREPARE_ONT {
             COLLECT.out.reads
                 .filter { it -> !it[0].metas }
                 .map {
-                    it -> [ meta: it[0] - meta.subMap("ontreads") + [ontreads: it[1]] ]
+                    meta, ontreads -> [ meta: meta - meta.subMap("ontreads") + [ontreads: ontreads] ]
                 }
         )
         .set { ch_collected_reads }

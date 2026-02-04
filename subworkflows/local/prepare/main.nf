@@ -43,7 +43,10 @@ workflow PREPARE {
             // $it looks like [meta, output_path]
             // recreate meta from metas and update path.
             it[0].metas
-                  .collect { meta -> [ meta: meta + [ontreads: it[1]] ] }
+                  .collect { meta -> [
+                                meta: meta - meta.subMap("ontreads") + [ontreads: it[1]]
+                                ]
+                            }
         }
 
 
@@ -53,7 +56,7 @@ workflow PREPARE {
     main:
     ch_main
         .filter {
-            it -> (it.meta.shortread_F && it.meta.use_short_reads) ? true : false
+            it -> ((it.meta.shortread_F && it.meta.use_short_reads) || it.hic_trim) ? true : false
         }
         .set { shortreads }
 

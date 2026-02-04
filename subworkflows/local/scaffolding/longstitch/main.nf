@@ -65,7 +65,7 @@ workflow RUN_LONGSTITCH {
     ch_versions = ch_versions.mix(RUN_LIFTOFF.out.versions)
 
     emit:
-    ch_main
+    ch_main                 = ch_main_scaffolded
     quast_out               = QC.out.quast_out
     busco_out               = QC.out.busco_out
     merqury_report_files    = QC.out.merqury_report_files

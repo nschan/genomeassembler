@@ -13,18 +13,35 @@ workflow RUN_RAGTAG {
 
     ch_main
         .multiMap { it ->
+                    def assembly_to_scaffold =
+                                it.meta.scaffold ?
+                                (
+                                    it.meta.scaffolds_hic ?:
+                                    it.meta.scaffolds_longstitch ?:
+                                    it.meta.scaffolds_links
+                                ) :
+                                it.meta.polished ?
+                                (
+                                    it.meta.polished.pilon ?:
+                                    it.meta.polished.medaka ?:
+                                    it.meta.polished.dorado
+                                ) :
+                                it.meta.assembly
                     assembly:
                         [
                             it.meta,
-                            it.meta.polished ? (it.meta.polished.pilon ?: it.meta.polished.medaka ?: it.meta.polished.dorado) : it.meta.assembly
+                            assembly_to_scaffold
                         ]
-                    reference: [it.meta, it.meta.ref_fasta]
+                    reference:
+                        [
+                            it.meta,
+                            it.meta.ref_fasta
+                        ]
                     }
         .set { ragtag_in }
 
     ragtag_in.assembly.dump(tag: "SCAFFOLD: RAGTAG: Assembly inputs")
     ragtag_in.reference.dump(tag: "SCAFFOLD: RAGTAG: Reference inputs")
-
 
     RAGTAG_SCAFFOLD(ragtag_in.assembly, ragtag_in.reference, [[], []], [[], [], []])
 

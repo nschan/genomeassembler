@@ -10,6 +10,16 @@
                         "git_sha": "e753770db613ce014b3c4bc94f6cba443427b726",
                         "installed_by": ["modules"]
                     },
+                    "bwamem2/index": {
+                        "branch": "master",
+                        "git_sha": "d86336f3e7ae0d5f76c67b0859409769cfeb2af2",
+                        "installed_by": ["modules"]
+                    },
+                    "bwamem2/mem": {
+                        "branch": "master",
+                        "git_sha": "d86336f3e7ae0d5f76c67b0859409769cfeb2af2",
+                        "installed_by": ["modules"]
+                    },
                     "fastp": {
                         "branch": "master",
                         "git_sha": "d9ec4ef289ad39b8a662a7a12be50409b11df84b",
@@ -70,6 +80,11 @@
                         "installed_by": ["modules"],
                         "patch": "modules/nf-core/minimap2/align/minimap2-align.diff"
                     },
+                    "picard/markduplicates": {
+                        "branch": "master",
+                        "git_sha": "66d5808eaaabd9de8997c4c31a9e8cdd3b56c080",
+                        "installed_by": ["modules"]
+                    },
                     "pilon": {
                         "branch": "master",
                         "git_sha": "41dfa3f7c0ffabb96a6a813fe321c6d1cc5b6e46",
@@ -83,6 +98,11 @@
                     "ragtag/scaffold": {
                         "branch": "master",
                         "git_sha": "e753770db613ce014b3c4bc94f6cba443427b726",
+                        "installed_by": ["modules"]
+                    },
+                    "samtools/faidx": {
+                        "branch": "master",
+                        "git_sha": "9a48bce39a67e2cb34b8f125fc1d50f0ad98b616",
                         "installed_by": ["modules"]
                     },
                     "samtools/fastq": {
@@ -118,6 +138,11 @@
                     "trimgalore": {
                         "branch": "master",
                         "git_sha": "e753770db613ce014b3c4bc94f6cba443427b726",
+                        "installed_by": ["modules"]
+                    },
+                    "yahs": {
+                        "branch": "master",
+                        "git_sha": "5c3c4f4753d55bd3ba93ce29ed1100e964c52f74",
                         "installed_by": ["modules"]
                     }
                 }
