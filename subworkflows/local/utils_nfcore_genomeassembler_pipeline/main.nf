@@ -131,6 +131,15 @@ workflow PIPELINE_INITIALISATION {
                                     (params.polish_pilon && (it.shortread_F || params.shortread_F)) ? "pilon" :
                                     null
 
+            def hic_F           =   it.hic_F ?: params.hic_F
+
+            def scaffold_hic    =   hic_F ? (it.scaffold_hic != null ? it.scaffold_hic : params.scaffold_hic) : false
+
+            def hic_trim        =   !scaffold_hic ? false :
+                                    (it.hic_trim ?: params.hic_trim)
+
+
+            // Check if strategy can be inferred
             strategy == "single" && ontreads && hifireads && !((!assembler_ont && assembler_hifi) || (assembler_ont && !assembler_hifi)) ?
                 error(
                     """
@@ -177,12 +186,13 @@ workflow PIPELINE_INITIALISATION {
                     scaffold_longstitch: it.scaffold_longstitch ?: params.scaffold_longstitch,
                     scaffold_links: it.scaffold_links ?: params.scaffold_links,
                     scaffold_ragtag: it.scaffold_ragtag ?: params.scaffold_ragtag,
+                    scaffold_hic: scaffold_hic,
                     use_ref: it.use_ref ?: params.use_ref,
                     // hic
                     hic_aligner: it.hic_aligner ?: params.hic_aligner,
-                    hic_F: it.hic_F ?: params.hic_F,
-                    hic_R: it.hic_R ?: params.hic_R,
-                    hic_trim: it.hic_trim ?: params.hic_trim,
+                    hic_F: scaffold_hic ? (hic_F) : [],
+                    hic_R: scaffold_hic ? (it.hic_R ?: params.hic_R) : [],
+                    hic_trim: hic_trim,
                     // not new
                     genome_size: it.genome_size ?: params.genome_size,
                     ref_fasta: it.ref_fasta ?: params.ref_fasta,

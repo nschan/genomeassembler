@@ -13,6 +13,7 @@ The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes d
 - [**Read preparation**](#read-preparation)
   - [**Long reads**](#long-reads):
   - [**Short reads**](#short-reads):
+  - [**HiC reads**](#hic-reads):
 - [**Assembly**](#assembly), choice between assemblers
 - [**Polishing**](#polishing)
 - [**Scaffolding**](#scaffolding)
@@ -64,22 +65,44 @@ If the ONT basecalls are scattered across multiple files, `collect` can be used 
 
 #### Short reads
 
-[TrimGalore!](https://github.com/FelixKrueger/TrimGalore) can remove adapters from illumina short-reads.
+[fastp](https://github.com/OpenGene/fastp) performs shortread QC and trimming.
 [meryl](https://github.com/marbl/meryl) calculates the k-mer spectrum of short reads.
+If a group was provided, the group name will be used instead of SampleName below.
 
 <details markdown="1">
 <summary>Output files</summary>
 
 - `<SampleName>/`
   - `reads/`
-    - `trimgalore/`:
-      - `<SampleName>_val_1.fq.gz`: Trimmed forward reads
-      - `<SampleName>_val_2.fq.gz`: Trimmed reverse reads (if included)
-      - `<SampleName>_1.fastq.gz.trimming_report.txt`: Trimming report forward
-      - `<SampleName>_2.fastq.gz.trimming_report.txt`: Trimming report reverse (if included)
+    - `fastp/`:
+      - `<SampleName>_1.fastp.fastq.gz`: Trimmed forward reads
+      - `<SampleName>_2.fastp.fastq.gz`: Trimmed reverse reads (if included)
+      - `<SampleName>.fastp.html`: html report
+      - `<SampleName>.fastp.json`: json report
+      - `<SampleName>.fastp.log`: logfile
     - `meryl/`: output from meryl
       - `count/`: k-mer counts per file
       - `unionsum/`: union of k-mer counts per sample
+
+</details>
+
+### HiC reads
+
+[fastp](https://github.com/OpenGene/fastp) performs shortread QC and trimming.
+
+If a group was provided, the group name will be used instead of SampleName below.
+
+<details markdown="1">
+<summary>Output files</summary>
+
+- `<SampleName>/`
+  - `hic_reads/`
+    - `fastp/`:
+      - `<SampleName>_1.fastp.fastq.gz`: Trimmed forward reads
+      - `<SampleName>_2.fastp.fastq.gz`: Trimmed reverse reads (if included)
+      - `<SampleName>.fastp.html`: html report
+      - `<SampleName>.fastp.json`: json report
+      - `<SampleName>.fastp.log`: logfile
 
 </details>
 
@@ -182,6 +205,14 @@ Annotation `gff3` and `unmapped.txt` files are only created if a reference for a
         - `<SampleName>_ragtag_<Reference>.stats`: Scaffolding statistics
         - `<SampleName>_ragtag.gff3` annotation liftover
         - `<SampleName>_ragtag.unnapped.txt` annotations that could not be lifted over during annotation liftover
+    - `hic/`: output from HiC scaffolding workflow
+      - `bwamem2/`: bwamem2 outputs
+        - `index/`: outputs from bwamem2 index
+        - `mem/`: outputs from bwamem2 mem
+      - `minimap/`: minimap2 outputs
+      - `markdup/`: output from picard markduplicates
+      - `yahs/`: output from yahs
+        - `index/`: alignment index used with yahs
 
 </details>
 

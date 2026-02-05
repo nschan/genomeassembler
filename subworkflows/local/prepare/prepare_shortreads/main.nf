@@ -128,14 +128,15 @@ workflow PREPARE_SHORTREADS {
     shortreads
         .filter { row -> row.meta.hic_trim }
         .map { row -> [ row.meta.id, row.meta ] }
-        .join(
+        .combine(
             hic_trimmed_reads
-                .map { meta  ->
+                .map { it  ->
                     [
-                        meta.id,
-                        meta.hic_reads
+                        it.meta.id,
+                        it.meta.hic_reads
                     ]
-                }
+                },
+                by: 0
         )
         .map {
             _id, meta, trimmed_hic_reads ->
@@ -146,9 +147,9 @@ workflow PREPARE_SHORTREADS {
         .mix(
             trimmed_reads
                 .filter { row -> !row.meta.hic_trim }
+                .map { it-> [meta: it.meta - it.meta.subMap("hic_reads") + [hic_reads: null]]}
         )
         .set { shortreads }
-
 
     ch_versions = ch_versions.mix(FASTP.out.versions)
 

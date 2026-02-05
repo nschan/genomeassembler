@@ -347,19 +347,21 @@ Polishing options. When using `polish` with either `dorado+pilon` or `medaka+pil
 
 ## Scaffolding options
 
-Scaffolding options
+Options `_longstitch`, `_links` and `_hic` are mutually exclusive.
+`RagTag` scaffolding can be used to either scaffold the (polished) assembly, or can be combined with `longstitch`, `links` or `hic`, to scaffold the scaffolding results onto a reference. `RagTag` will always scaffold the most "advanced" stage of assembly; meaning that if the assembly was scaffolded, the scaffolded assembly will be used, if the assembly was polished, the polished assembly will be used, if the pipeline only carried out assembly for that sample, the assembly will be scaffolded.
 
 | Parameter             | Description                                | Type      |
 | --------------------- | ------------------------------------------ | --------- |
 | `scaffold_longstitch` | Scaffold with longstitch?                  | `boolean` |
 | `scaffold_links`      | Scaffolding with links?                    | `boolean` |
+| `scaffold_hic`        | Scaffold with yahs (requires hic reads)?   | `boolean` |
 | `scaffold_ragtag`     | Scaffold with ragtag (requires reference)? | `boolean` |
 
 ### HiC
 
-HiC scaffolding specific parameters. Supplying HiC reads activates HiC scaffolding.
-bwa-mem2 generally is more suitable for HiC alignments than minimap2, and is the recommended option.
-However, bwamem2 requires substantial memory for large genomes, which may prohibit use of bwamem2 in some cases.
+HiC scaffolding specific parameters. Supplying HiC reads activates HiC scaffolding, unless explicitly deactivated using `scaffold_hic`.
+`bwa-mem2` generally is more suitable for HiC alignments than `minimap2`, and is the recommended option.
+However, `bwamem2` requires substantial memory for large genomes, which may prohibit use of `bwamem2` in some cases.
 
 | Parameter     | Description                                                 | Type      |
 | ------------- | ----------------------------------------------------------- | --------- |

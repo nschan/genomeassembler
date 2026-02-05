@@ -48,12 +48,18 @@ workflow PREPARE {
                                 ]
                             }
         }
+        .mix(
+            process.OUT
+                .filter { it -> !it[0].metas }
+                .map {meta, ontreads -> [meta: meta -meta.subMap("ontreads") + [ontreads: ontreads]]}
+        )
 
 
     */
     take: ch_main
 
     main:
+    channel.empty().set{ ch_main_shortreaded }
     ch_main
         .filter {
             it -> ((it.meta.shortread_F && it.meta.use_short_reads) || it.hic_trim) ? true : false
@@ -83,14 +89,21 @@ workflow PREPARE {
 
     // put shortreads back together with samples without shortreads
 
-    ch_main
-        .filter {
-            it -> !it.meta.shortread_F ? true : false
-        }
-        .map { it -> it.meta - it.meta.subMap("shortread_F","shortread_R", "paired") + [shorteads: null] }
-        .mix(SHORTREADS.out.main_out)
-        .set { ch_main_shortreaded }
+    SHORTREADS.out.main_out
+        .filter{it-> it.meta.id == "test_hifiasm_hic"}
+        .view {"Prepare: Shortreads: $it"}
 
+    // Added mix with empty to make sure that the channel exists
+    ch_main_shortreaded
+        .mix(
+            ch_main
+                .filter {
+                    it -> !it.meta.shortread_F && !it.meta.hic_F
+                }
+                .map { it -> [meta: it.meta - it.meta.subMap("shortread_F","shortread_R", "paired") + [shorteads: null] ]}
+                .mix(SHORTREADS.out.main_out)
+        )
+        .set { ch_main_shortreaded }
 
     ONT(ontreads)
 
@@ -115,7 +128,7 @@ workflow PREPARE {
         // After joining re-create the maps from the stored map
         .map { _id, meta_old, ont_reads ->
             [
-                meta: meta_old + [ontreads: ont_reads]
+                meta: meta_old -meta_old.subMap("ontreads") + [ontreads: ont_reads]
             ]
         }
         // mix back in those samples where nothing was done to the ont reads
@@ -154,8 +167,6 @@ workflow PREPARE {
         .set {
             ch_main_prepared
         }
-    //ch_main_prepared.view {"CH_MAIN_PREPARED: $it"}
-
 
     // Get average read length of the QC reads from fastplong json report
     def slurp = new groovy.json.JsonSlurper()
@@ -230,6 +241,10 @@ workflow PREPARE {
             ]
         }
         .set { main_out }
+
+    main_out
+        .filter{it-> it.meta.id == "test_hifiasm_hic"}
+        .view {"Prepare: main_out: $it"}
 
     main_out.dump(tag: "Prepare: Combined outputs")
 
