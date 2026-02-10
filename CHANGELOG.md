@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 This is a major release, with breaking changes.
 v2.0.0 of genomeassembler is a large refactor of the pipeline to facilitate sample-level parameteristation. This allows to either parameterise the _pipeline_ using `params`, or parameterise _samples_ via the `input` samplesheet. In case both types of parameterisations are used, sample parameters will take priority.
 
-Since this workflow follows a sample-centric implementation, nextflow will always render the full pipeline dag, but depending on configuration samples may not travel through the whole pipeline. This may also cause terminal output to show steps that will never become an active process.
+Since this workflow follows a sample-centric implementation, nextflow will always render the full pipeline dag, but depending on configuration samples may not travel through the whole pipeline. This may also cause terminal output to show task instances that will never become an active process.
 
 In addition, v2.0.0 contains these changes:
 
@@ -19,14 +19,22 @@ In addition, v2.0.0 contains these changes:
 - migration to nf-test
 - increased flexibility of the scaffolding strategy
 - added option to group samples
-- `dorado polish` added as an alternative to `medaka` for ONT polishing. This is an **experimental feature** and not further documented, due to `dorado polish` being under active development.
+- `dorado polish` added as an alternative to `medaka` for ONT polishing. This is an **experimental feature**, due to `dorado` being under active development.
+- HiC scaffolding subworkflow:
+  - mapping with `bwamem2` or `minimap2`
+  - duplicate removal with `picard`
+  - scaffolding with `yahs`
 
 ### `Fixed`
 
 ### `Dependencies`
 
 - `fastplong`
+- `fastp`
 - `dorado`
+- `bwamem2`
+- `picard`
+- `yahs`
 
 ### `Deprecated`
 
@@ -35,6 +43,7 @@ The following tools are no longer used:
 - `nanoq`
 - `porechop`
 - `lima`
+- `trimgalor`
 
 The following param is no longer implemented:
 

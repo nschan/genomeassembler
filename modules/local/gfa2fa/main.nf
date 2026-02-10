@@ -2,9 +2,9 @@ process GFA_2_FA {
     tag "${meta.id}"
     label 'process_low'
     conda "${moduleDir}/environment.yml"
-    container "${workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container
-        ? 'https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/52/52ccce28d2ab928ab862e25aae26314d69c8e38bd41ca9431c67ef05221348aa/data'
-        : 'community.wave.seqera.io/library/coreutils_grep_gzip_lbzip2_pruned:838ba80435a629f8'}"
+    container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
+        'https://depot.galaxyproject.org/singularity/samtools:1.22.1--h96c455f_0' :
+        'biocontainers/samtools:1.22.1--h96c455f_0' }"
 
     input:
     tuple val(meta), path(gfa_file)
@@ -17,7 +17,7 @@ process GFA_2_FA {
     """
     outfile=\$(basename $gfa_file .gfa).fa.gz
     awk '/^S/{print ">"\$2;print \$3}' ${gfa_file} \\
-    | gzip > \$outfile
+    | bgzip > \$outfile
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         awk:  \$(mawk -Wversion | sed '1!d; s/.*Awk //; s/,.*//; s/ [0-9]*\$//')
