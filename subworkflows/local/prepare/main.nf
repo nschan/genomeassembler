@@ -89,10 +89,6 @@ workflow PREPARE {
 
     // put shortreads back together with samples without shortreads
 
-    SHORTREADS.out.main_out
-        .filter{it-> it.meta.id == "test_hifiasm_hic"}
-        .view {"Prepare: Shortreads: $it"}
-
     // Added mix with empty to make sure that the channel exists
     ch_main_shortreaded
         .mix(
@@ -241,10 +237,6 @@ workflow PREPARE {
             ]
         }
         .set { main_out }
-
-    main_out
-        .filter{it-> it.meta.id == "test_hifiasm_hic"}
-        .view {"Prepare: main_out: $it"}
 
     main_out.dump(tag: "Prepare: Combined outputs")
 

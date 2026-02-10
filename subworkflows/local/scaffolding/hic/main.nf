@@ -1,11 +1,12 @@
-include { QC                               } from '../../qc/main'
-include { YAHS                             } from '../../../../modules/nf-core/yahs/main'
-include { RUN_LIFTOFF                      } from '../../liftoff/main'
-include { BWAMEM2_MEM                      } from '../../../../modules/nf-core/bwamem2/mem/main'
-include { BWAMEM2_INDEX                    } from '../../../../modules/nf-core/bwamem2/index/main'
-include { MINIMAP2_ALIGN as MINIMAP2_HIC   } from '../../../../modules/nf-core/minimap2/align/main'
-include { PICARD_MARKDUPLICATES as MARKDUP } from '../../../../modules/nf-core/picard/markduplicates/main'
-include { SAMTOOLS_FAIDX                   } from '../../../../modules/nf-core/samtools/faidx/main'
+include { QC                                        } from '../../qc/main'
+include { YAHS                                      } from '../../../../modules/nf-core/yahs/main'
+include { RUN_LIFTOFF                               } from '../../liftoff/main'
+include { BWAMEM2_MEM                               } from '../../../../modules/nf-core/bwamem2/mem/main'
+include { BWAMEM2_INDEX                             } from '../../../../modules/nf-core/bwamem2/index/main'
+include { SAMTOOLS_FAIDX                            } from '../../../../modules/nf-core/samtools/faidx/main'
+include { MINIMAP2_ALIGN as MINIMAP2_HIC            } from '../../../../modules/nf-core/minimap2/align/main'
+include { PICARD_MARKDUPLICATES as MARKDUP          } from '../../../../modules/nf-core/picard/markduplicates/main'
+include { PICARD_ADDORREPLACEREADGROUPS as ADD_RG   } from '../../../../modules/nf-core/picard/addorreplacereadgroups/main'
 workflow HIC {
     take:
     ch_main
@@ -62,9 +63,11 @@ workflow HIC {
 
     MINIMAP2_HIC(minimap2_in, true, "csi", [], [])
 
-    BWAMEM2_MEM.out.bam.mix(MINIMAP2_HIC.out.bam).set{ markdup_in }
+    BWAMEM2_MEM.out.bam.mix(MINIMAP2_HIC.out.bam).set{ add_rg_in }
 
-    MARKDUP(markdup_in, [], [])
+    ADD_RG(add_rg_in, [[],[]], [[],[]])
+
+    MARKDUP(ADD_RG.out.bam, [[],[]], [[],[]])
 
     MARKDUP.out.bam
         .map { meta, bam -> [meta.id, meta, bam] }
@@ -74,14 +77,14 @@ workflow HIC {
         )
         .map {_id, meta, bam, bai -> [meta:meta + [hic_dedup_bam: bam, hic_dedup_bai: bai] ]}
         .map {
-        it -> [
+            it -> [
             it.meta,
             it.meta.polished ? (it.meta.polished.pilon ?: it.meta.polished.medaka ?: it.meta.polished.dorado) : it.meta.assembly
-        ]
+            ]
         }
         .set { faidx_in }
 
-    SAMTOOLS_FAIDX(faidx_in, [], false)
+    SAMTOOLS_FAIDX(faidx_in, [[],[]], false)
 
     SAMTOOLS_FAIDX.out.fai
         .map {
@@ -98,7 +101,8 @@ workflow HIC {
                 it.meta,
                 it.meta.polished ? (it.meta.polished.pilon ?: it.meta.polished.medaka ?: it.meta.polished.dorado) : it.meta.assembly,
                 it.meta.hic_genome_idx,
-                it.meta.hic_dedup_bam
+                it.meta.hic_dedup_bam,
+                []
             ]
         }
         .set { yahs_in }
@@ -130,7 +134,15 @@ workflow HIC {
         .set { liftoff_in }
 
     RUN_LIFTOFF(liftoff_in)
-    ch_versions = ch_versions.mix(RUN_LIFTOFF.out.versions)
+    ch_versions = ch_versions.mix(
+        RUN_LIFTOFF.out.versions,
+        QC.out.versions,
+        BWAMEM2_MEM.out.versions,
+        BWAMEM2_INDEX.out.versions,
+        ADD_RG.out.versions_picard,
+        SAMTOOLS_FAIDX.out.versions_samtools,
+        MARKDUP.out.versions_picard,
+        YAHS.out.versions)
 
     emit:
     ch_main                 = ch_main_scaffolded
