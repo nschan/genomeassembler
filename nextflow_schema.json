@@ -212,8 +212,7 @@
                 },
                 "hifiasm_args": {
                     "type": "string",
-                    "description": "Extra arguments passed to `hifiasm`",
-                    "default": "\"\""
+                    "description": "Extra arguments passed to `hifiasm`"
                 },
                 "assembler_ont": {
                     "type": "string",
@@ -254,8 +253,7 @@
                 },
                 "ont_fastplong_args": {
                     "type": "string",
-                    "description": "Additional args to be passed to fastplong for ONT reads",
-                    "default": "\"\""
+                    "description": "Additional args to be passed to fastplong for ONT reads"
                 },
                 "hifireads": {
                     "type": "string",
@@ -268,8 +266,7 @@
                 },
                 "hifi_fastplong_args": {
                     "type": "string",
-                    "description": "Additional args to be passed to fastplong for HiFi reads",
-                    "default": "\"\""
+                    "description": "Additional args to be passed to fastplong for HiFi reads"
                 },
                 "jellyfish": {
                     "type": "boolean",
@@ -302,8 +299,7 @@
                 },
                 "medaka_model": {
                     "type": "string",
-                    "description": "model to use with medaka",
-                    "default": "\"\""
+                    "description": "model to use with medaka"
                 }
             }
         },
@@ -327,7 +323,14 @@
                 },
                 "scaffold_hic": {
                     "type": "boolean",
-                    "description": "Scaffold using HiC reads using yahs (requires reads)?"
+                    "description": "Scaffold using HiC reads using yahs (requires reads)?",
+                    "default": true
+                },
+                "hic_aligner": {
+                    "type": "string",
+                    "enum": ["bwa-mem2", "minimap2"],
+                    "description": "Aligner to use for HiC reads; default: bwa-mem2",
+                    "default": "bwa-mem2"
                 }
             }
         },
@@ -380,7 +383,8 @@
                 },
                 "csi_index_size": {
                     "type": "integer",
-                    "description": "Index size to use for csi index (default: 14), creating and index of size 2^csi_index_size. See samtools index documentation for details. "
+                    "description": "Index size to use for csi index (default: 14), creating and index of size 2^csi_index_size. See samtools index documentation for details. ",
+                    "default": 14
                 }
             }
         },
@@ -419,11 +423,13 @@
                 },
                 "shortread_F": {
                     "type": "string",
-                    "description": "Path to forward short reads"
+                    "description": "Path to forward short reads",
+                    "default": "[]"
                 },
                 "shortread_R": {
                     "type": "string",
-                    "description": "Path to reverse short reads"
+                    "description": "Path to reverse short reads",
+                    "default": "[]"
                 },
                 "paired": {
                     "type": "string",
@@ -437,22 +443,20 @@
             "description": "Options for HiC short reads",
             "default": "",
             "properties": {
-                "hic_aligner": {
-                    "type": "string",
-                    "enum": ["bwa-mem2", "minimap2"],
-                    "description": "Aligner to use for HiC reads; default: bwa-mem2"
-                },
                 "hic_trim": {
                     "type": "boolean",
-                    "description": "Trim HiC short reads?"
+                    "description": "Trim HiC short reads?",
+                    "default": true
                 },
                 "hic_F": {
                     "type": "string",
-                    "description": "Path to forward HiC short reads"
+                    "description": "Path to forward HiC short reads",
+                    "default": "[]"
                 },
                 "hic_R": {
                     "type": "string",
-                    "description": "Path to reverse HiC short reads"
+                    "description": "Path to reverse HiC short reads",
+                    "default": "[]"
                 }
             }
         }
@@ -490,6 +494,9 @@
         },
         {
             "$ref": "#/$defs/short_read_options"
+        },
+        {
+            "$ref": "#/$defs/hic_options"
         }
     ]
 }
