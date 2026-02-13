@@ -18,10 +18,11 @@ quast_stats <- list.files(paste0(data_base, "quast"),
           str_detect(x, "_pilon") ~ "pilon",
           str_detect(x, "_longstitch") ~ "longstitch",
           str_detect(x, "_links") ~ "LINKS",
+          str_detect(x, "_yahs") ~ "HiC",
           str_detect(x, "assembl[ey]") ~ "Assembly",
           TRUE ~ "Unknown")) }) |>
   left_join(groups, by = join_by(sample)) |>
-  mutate(stage = stage |> fct_relevel("Assembly", "medaka", "pilon", "longstitch", "LINKS", "RagTag") ) |>
+  mutate(stage = stage |> fct_relevel("Assembly", "medaka", "dorado", "pilon", "longstitch", "LINKS", "HiC", "RagTag") ) |>
   dplyr::arrange(sample, stage)
 
 # This creates code that will generate the length plot based on the contents of the quast report.

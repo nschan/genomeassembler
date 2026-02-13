@@ -13,6 +13,7 @@ merqury_stats <- list.files(paste0(data_base, "merqury"), full.names = T, patter
           str_detect(x, "_pilon") ~ "pilon",
           str_detect(x, "_longstitch") ~ "longstitch",
           str_detect(x, "_links") ~ "LINKS",
+          str_detect(x, "_yahs") ~ "HiC",
           str_detect(x, "assembl[ey]") ~ "Assembly",
           TRUE ~ "Unknown")) }) |>
   bind_rows() |>

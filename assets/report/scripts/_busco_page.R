@@ -11,7 +11,7 @@ for (i in 1:length(unique(busco_reports$group))) {
       dplyr::select(sample, stage, Var, value) |>
       mutate(Var = str_replace_all(Var, "_", " ") |> str_replace_all("percent", "(%)")) |>
       pivot_wider(names_from = "Var", values_from = "value", id_cols = c(sample,stage)) |>
-      dplyr::arrange(factor(stage, levels = c("Assembly","medaka", "pilon", "dorado","links","longstitch","ragtag")), sample) |>
+      dplyr::arrange(factor(stage, levels = c("Assembly","medaka", "pilon", "dorado","hic","links","longstitch","ragtag")), sample) |>
       gt::gt() |>
       gt::fmt_auto() |>
       gt::opt_stylize(color = "gray") |>

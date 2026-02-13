@@ -75,6 +75,7 @@ read_busco_batch <- \(x) {read_tsv(x, show_col_types = F) %>%
         str_detect(x, "pilon") ~ "pilon",
         str_detect(x, "longstitch") ~ "longstitch",
         str_detect(x, "links") ~ "LINKS",
+        str_detect(x, "yahs") ~ "HiC",
         str_detect(x, "assembl[ey]") ~ "Assembly",
       ),
       Percent_gaps = Percent_gaps %>% str_remove("%") %>% as.numeric) %>%
