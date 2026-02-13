@@ -79,12 +79,13 @@ workflow HIC {
         .map {
             it -> [
             it.meta,
-            it.meta.polished ? (it.meta.polished.pilon ?: it.meta.polished.medaka ?: it.meta.polished.dorado) : it.meta.assembly
+            it.meta.polished ? (it.meta.polished.pilon ?: it.meta.polished.medaka ?: it.meta.polished.dorado) : it.meta.assembly,
+            []
             ]
         }
         .set { faidx_in }
 
-    SAMTOOLS_FAIDX(faidx_in, [[],[]], false)
+    SAMTOOLS_FAIDX(faidx_in, false)
 
     SAMTOOLS_FAIDX.out.fai
         .map {
@@ -117,8 +118,6 @@ workflow HIC {
         YAHS.out.scaffolds_fasta.map { meta, corrected -> [ meta.id, corrected ] },
         meryl_kmers)
 
-    ch_versions = ch_versions.mix(QC.out.versions)
-
     ch_main_scaffolded
         .filter {
             it -> it.lift_annotations
@@ -134,15 +133,10 @@ workflow HIC {
         .set { liftoff_in }
 
     RUN_LIFTOFF(liftoff_in)
+
     ch_versions = ch_versions.mix(
         RUN_LIFTOFF.out.versions,
-        QC.out.versions,
-        BWAMEM2_MEM.out.versions,
-        BWAMEM2_INDEX.out.versions,
-        ADD_RG.out.versions_picard,
-        SAMTOOLS_FAIDX.out.versions_samtools,
-        MARKDUP.out.versions_picard,
-        YAHS.out.versions)
+        QC.out.versions)
 
     emit:
     ch_main                 = ch_main_scaffolded

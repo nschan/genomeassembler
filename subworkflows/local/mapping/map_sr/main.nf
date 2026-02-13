@@ -7,15 +7,12 @@ workflow MAP_SR {
     genome_assembly
 
     main:
-    channel.empty().set { ch_versions }
     // map reads to assembly
     in_reads
         .join(genome_assembly)
         .set { map_assembly }
 
     ALIGN_SHORT(map_assembly, true, 'bai', false, false)
-
-    versions = ch_versions.mix(ALIGN_SHORT.out.versions)
 
     ALIGN_SHORT.out.bam.set { aln_to_assembly_bam }
 
@@ -31,8 +28,6 @@ workflow MAP_SR {
 
     BAM_STATS(aln_to_assembly_bam_bai, ch_fasta)
 
-    versions = ch_versions.mix(BAM_STATS.out.versions)
-
     aln_to_assembly_bam
         .join(aln_to_assembly_bai)
         .set { aln_to_assembly_bam_bai }
@@ -41,5 +36,4 @@ workflow MAP_SR {
     aln_to_assembly_bam
     aln_to_assembly_bai
     aln_to_assembly_bam_bai
-    versions
 }

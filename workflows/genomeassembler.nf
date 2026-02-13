@@ -155,11 +155,28 @@ workflow GENOMEASSEMBLER {
     ch_versions = ch_versions
 
 
+    def topic_versions = channel.topic("versions")
+      .distinct()
+      .branch { entry ->
+          versions_file: entry instanceof Path
+          versions_tuple: true
+      }
 
+    def topic_versions_string = topic_versions.versions_tuple
+      .map { process, tool, version ->
+          [ process[process.lastIndexOf(':')+1..-1], "  ${tool}: ${version}" ]
+      }
+      .groupTuple(by:0)
+      .map { process, tool_versions ->
+          tool_versions.unique().sort()
+          "${process}:\n${tool_versions.join('\n')}"
+      }
+    ch_collated_versions = softwareVersionsToYAML(ch_versions.mix(topic_versions.versions_file))
+      .mix(topic_versions_string)
     /*
     Report
     */
-    softwareVersionsToYAML(ch_versions)
+    ch_collated_versions
         .collectFile(
             storeDir: "${params.outdir}/pipeline_info",
             name: 'nf_core_' + 'pipeline_software_' + 'versions.yml',
@@ -238,35 +255,6 @@ workflow GENOMEASSEMBLER {
             channel.fromPath("${params.outdir}/pipeline_info/nf_core_pipeline_software_versions.yml"),
             ch_main.map { it -> [sample: [id: it.meta.id, group: it.group]]}.collect()
     )
-
-    //
-    // Collate and save software versions
-    //
-    def topic_versions = Channel.topic("versions")
-        .distinct()
-        .branch { entry ->
-            versions_file: entry instanceof Path
-            versions_tuple: true
-        }
-
-    def topic_versions_string = topic_versions.versions_tuple
-        .map { process, tool, version ->
-            [ process[process.lastIndexOf(':')+1..-1], "  ${tool}: ${version}" ]
-        }
-        .groupTuple(by:0)
-        .map { process, tool_versions ->
-            tool_versions.unique().sort()
-            "${process}:\n${tool_versions.join('\n')}"
-        }
-
-    softwareVersionsToYAML(ch_versions.mix(topic_versions.versions_file))
-        .mix(topic_versions_string)
-        .collectFile(
-            storeDir: "${params.outdir}/pipeline_info",
-            name: 'nf_core_'  +  'genomeassembler_software_'  + 'versions.yml',
-            sort: true,
-            newLine: true
-        )
 
     _report = REPORT.out.report_html.toList()
 

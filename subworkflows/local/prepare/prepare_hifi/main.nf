@@ -80,10 +80,7 @@ workflow PREPARE_HIFI {
 
     fastplong_reads_out.dump(tag: "Prepare-HIFI output")
 
-    versions = ch_versions.mix(FASTPLONG_HIFI.out.versions)
-
     emit:
     main_out                = fastplong_reads_out
     fastplong_hifi_reports  = fastplong_json_out
-    versions
 }

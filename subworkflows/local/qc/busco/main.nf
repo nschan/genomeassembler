@@ -5,7 +5,6 @@ workflow RUN_BUSCO {
     ch_main
 
     main:
-    channel.empty().set { versions }
     channel.empty().set { batch_summary }
     channel.empty().set { short_summary_txt }
     channel.empty().set { short_summary_json }
@@ -28,11 +27,9 @@ workflow RUN_BUSCO {
     BUSCO.out.batch_summary.set { batch_summary }
     BUSCO.out.short_summaries_txt.set { short_summary_txt }
     BUSCO.out.short_summaries_json.set { short_summary_json }
-    BUSCO.out.versions.set { versions }
 
     emit:
     batch_summary
     short_summary_json
     short_summary_txt
-    versions
 }

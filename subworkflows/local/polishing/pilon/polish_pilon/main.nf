@@ -27,8 +27,6 @@ workflow POLISH_PILON {
 
     MAP_SR(map_sr_in.shortreads, map_sr_in.assembly)
 
-    ch_versions = ch_versions.mix(MAP_SR.out.versions)
-
     RUN_PILON(map_sr_in.assembly, MAP_SR.out.aln_to_assembly_bam_bai)
 
     RUN_PILON.out.improved_assembly

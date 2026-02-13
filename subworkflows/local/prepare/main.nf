@@ -245,8 +245,6 @@ workflow PREPARE {
     JELLYFISH.out.genomescope_plot.set { genomescope_plot }
 
     SHORTREADS.out.versions
-        .mix(ONT.out.versions)
-        .mix(HIFI.out.versions)
         .mix(JELLYFISH.out.versions)
         .set { versions }
 

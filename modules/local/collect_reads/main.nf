@@ -12,6 +12,8 @@ process COLLECT_READS {
 
     output:
     tuple val(meta), path("*_all_reads.fq.gz"), emit: combined_reads
+    tuple val("${task.process}"), val('gzip'), eval('gzip --version | head -n1 | sed "s/gzip //"'), emit: versions_collect_reads, topic: versions
+
     path "versions.yml", emit: versions
 
     script:
@@ -19,9 +21,6 @@ process COLLECT_READS {
 
     """
     cat ${reads} > ${prefix}_all_reads.fq.gz
-    cat <<-END_VERSIONS > versions.yml
-    "${task.process}":
-        gzip: \$(echo \$(gzip --version | head -n1 | sed 's/gzip //'))
     END_VERSIONS
     """
 

@@ -137,7 +137,7 @@ workflow PREPARE_ONT {
         )
         .set { fastplong_json_out }
 
-        versions = ch_versions.mix(COLLECT.out.versions).mix(FASTPLONG_ONT.out.versions)
+        versions = ch_versions.mix(COLLECT.out.versions)
 
     fastplong_reads_out.dump(tag: "Prepare-ONT output")
 

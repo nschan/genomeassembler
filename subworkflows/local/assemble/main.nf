@@ -127,8 +127,6 @@ workflow ASSEMBLE {
     FLYE_ONT(flye_ont_inputs.reads, flye_ont_inputs.mode)
     FLYE_HIFI(flye_hifi_inputs.reads, flye_hifi_inputs.mode)
 
-    ch_versions = ch_versions.mix(FLYE_ONT.out.versions).mix(FLYE_HIFI.out.versions)
-
     /*
     =========================
         HIFIASM ASSEMBLER

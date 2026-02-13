@@ -6,9 +6,6 @@ workflow MAP_TO_ASSEMBLY {
     map_assembly // meta: [id, qc_reads], reads, refs
 
     main:
-    channel.empty().set { ch_versions }
-    // map reads to assembly
-
     ALIGN(map_assembly, true, 'bai', false, false)
 
     ALIGN.out.bam
@@ -27,9 +24,7 @@ workflow MAP_TO_ASSEMBLY {
 
     BAM_STATS(aln_to_assembly_bam_bai, ch_fasta )
 
-    versions = ch_versions.mix(ALIGN.out.versions).mix(BAM_STATS.out.versions)
-
     emit:
     aln_to_assembly_bam //  [id], bam
-    versions
+    versions = channel.empty()
 }

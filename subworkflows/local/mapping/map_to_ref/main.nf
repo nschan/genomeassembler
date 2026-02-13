@@ -6,8 +6,6 @@ workflow MAP_TO_REF {
     ch_map_ref // meta, reads, refs
 
     main:
-    channel.empty().set { ch_versions }
-
     // Map reads to reference
     ALIGN(ch_map_ref, true, 'bai', false, false)
 
@@ -27,9 +25,6 @@ workflow MAP_TO_REF {
 
     BAM_STATS(ch_aln_to_ref_bam_bai, ch_fasta)
 
-    versions = ch_versions.mix(ALIGN.out.versions).mix(BAM_STATS.out.versions)
-
     emit:
     ch_aln_to_ref_bam //  meta, bam
-    versions
 }

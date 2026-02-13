@@ -74,9 +74,6 @@ workflow QC {
         .mix(ch_map_branched.no_map_to_assembly)
         .set { ch_qc }
 
-
-    ch_versions = ch_versions.mix(MAP_TO_ASSEMBLY.out.versions)
-
     RUN_QUAST(ch_qc)
     RUN_QUAST.out.quast_tsv.set { quast_out }
 
@@ -84,8 +81,6 @@ workflow QC {
 
     RUN_BUSCO(ch_qc)
     RUN_BUSCO.out.batch_summary.set { busco_out }
-
-    ch_versions = ch_versions.mix(RUN_BUSCO.out.versions)
 
     MERQURY.out.stats
         .join(
