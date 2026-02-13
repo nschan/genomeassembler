@@ -3,11 +3,11 @@ lint:
   files_exist:
     - conf/igenomes.config
     - conf/igenomes_ignored.config
-    - assets/sendmail_template.txt
     - assets/multiqc_config.yml
   files_unchanged:
+    - assets/sendmail_template.txt
     - .github/CONTRIBUTING.md
-nf_core_version: 3.4.1
+nf_core_version: 3.5.1
 repository_type: pipeline
 template:
   author: Niklas Schandry
