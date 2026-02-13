@@ -31,6 +31,11 @@
                         "installed_by": ["modules"],
                         "patch": "modules/nf-core/fastplong/fastplong.diff"
                     },
+                    "fastqc": {
+                        "branch": "master",
+                        "git_sha": "3009f27c4e4b6e99da4eeebe82799e13924a4a1f",
+                        "installed_by": ["modules"]
+                    },
                     "flye": {
                         "branch": "master",
                         "git_sha": "1ab453187e9eada07bdd98609ce770971bfe86e4",
