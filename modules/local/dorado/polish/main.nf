@@ -11,7 +11,8 @@ process DORADO_POLISH {
     output:
     tuple val(meta), path("${meta.id}_dorado_polished.fa.gz"), emit: polished_alignment, optional: true
     tuple val(meta), path("${meta.id}_dorado_polished*vcf"), emit: variant_calls, optional: true
-    path "versions.yml", emit: versions
+    tuple val("${task.process}"), val('dorado'), eval('dorado --version 2>&1 | head -n1'), emit: versions_dorado, topic: versions
+
 
     when:
     task.ext.when == null || task.ext.when
@@ -28,12 +29,6 @@ process DORADO_POLISH {
         ${args} \\
         ${variants} \\
         ${outfile}
-
-
-    cat <<-END_VERSIONS > versions.yml
-    "${task.process}":
-        dorado: "\$(dorado --version 2>&1 | head -n1)"
-    END_VERSIONS
     """
 
     stub:
@@ -43,10 +38,5 @@ process DORADO_POLISH {
 
     """
     ${outfile}
-
-    cat <<-END_VERSIONS > versions.yml
-    "${task.process}":
-        dorado: "\$(dorado --version 2>&1 | head -n1)"
-    END_VERSIONS
     """
 }

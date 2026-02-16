@@ -1,6 +1,6 @@
 include { RAGTAG_SCAFFOLD } from '../../../../modules/nf-core/ragtag/scaffold/main'
 include { QC } from '../../qc/main'
-include { RUN_LIFTOFF } from '../../liftoff/main'
+include { LIFTOFF } from '../../../../modules/nf-core/liftoff/main'
 
 
 workflow RUN_RAGTAG {
@@ -9,8 +9,6 @@ workflow RUN_RAGTAG {
     meryl_kmers
 
     main:
-    channel.empty().set { ch_versions }
-
     ch_main
         .multiMap { it ->
                     def assembly_to_scaffold =
@@ -53,7 +51,6 @@ workflow RUN_RAGTAG {
         RAGTAG_SCAFFOLD.out.corrected_assembly.map { meta, corrected -> [ meta.id, corrected ] },
         meryl_kmers)
 
-    ch_versions = ch_versions.mix(QC.out.versions)
 
     ch_main_scaffolded
         .filter {
@@ -69,13 +66,11 @@ workflow RUN_RAGTAG {
         }
         .set { liftoff_in }
 
-    RUN_LIFTOFF(liftoff_in)
-    ch_versions = ch_versions.mix(RUN_LIFTOFF.out.versions)
+    LIFTOFF(liftoff_in, [])
 
     emit:
     ch_main
     quast_out               = QC.out.quast_out
     busco_out               = QC.out.busco_out
     merqury_report_files    = QC.out.merqury_report_files
-    versions                = ch_versions
 }

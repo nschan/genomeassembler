@@ -1,6 +1,6 @@
 include { LONGSTITCH } from '../../../../modules/local/longstitch/main'
 include { QC } from '../../qc/main'
-include { RUN_LIFTOFF } from '../../liftoff/main'
+include { LIFTOFF } from '../../../../modules/nf-core/liftoff/main'
 
 workflow RUN_LONGSTITCH {
     take:
@@ -39,13 +39,9 @@ workflow RUN_LONGSTITCH {
         .map { meta, scaff_longst -> [meta: meta + [scaffolds_longstitch: scaff_longst] ] }
         .set { ch_main_scaffolded }
 
-    ch_versions = ch_versions.mix(LONGSTITCH.out.versions)
-
     QC(ch_main_scaffolded.map { it -> [ meta: it.meta - it.meta.subMap("assembly_map_bam") + [assembly_map_bam: null] ] },
         LONGSTITCH.out.ntlLinks_arks_scaffolds.map { meta, scaffold -> [meta.id, scaffold]},
         meryl_kmers)
-
-    ch_versions = ch_versions.mix(QC.out.versions)
 
     ch_main_scaffolded
         .filter {
@@ -61,8 +57,7 @@ workflow RUN_LONGSTITCH {
         }
         .set { liftoff_in }
 
-    RUN_LIFTOFF(liftoff_in)
-    ch_versions = ch_versions.mix(RUN_LIFTOFF.out.versions)
+    LIFTOFF(liftoff_in,[])
 
     emit:
     ch_main                 = ch_main_scaffolded

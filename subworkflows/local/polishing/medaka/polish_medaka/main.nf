@@ -1,6 +1,6 @@
-include { RUN_MEDAKA } from '../run_medaka/main'
+include { MEDAKA_PARALLEL as MEDAKA } from '../../../../../modules/local/medaka/medaka_consensus/main'
 include { QC } from '../../../qc/main.nf'
-include { RUN_LIFTOFF } from '../../../liftoff/main'
+include { LIFTOFF } from '../../../../../modules/nf-core/liftoff/main'
 
 workflow POLISH_MEDAKA {
     take:
@@ -11,16 +11,16 @@ workflow POLISH_MEDAKA {
     channel.empty().set { ch_versions }
 
     ch_main
-        .multiMap {
+        .map {
             it ->
-            reads: [it.meta, it.meta.ontreads]
-            reference: [it.meta, it.meta.assembly]
+            [ it.meta, it.meta.ontreads, it.meta.assembly ]
+
         }
         .set { ch_medaka_in }
 
-    RUN_MEDAKA(ch_medaka_in.reads, ch_medaka_in.reference)
+    MEDAKA(ch_medaka_in)
 
-    RUN_MEDAKA.out.medaka_out.set { polished_assembly }
+    MEDAKA.out.assembly.set { polished_assembly }
 
     polished_assembly
         .map { meta, polished_medaka -> [meta: meta + [ polished: [medaka: polished_medaka ] ] ]}
@@ -30,16 +30,12 @@ workflow POLISH_MEDAKA {
     ch_medaka_out
         .set { ch_main_out }
 
-    ch_versions = ch_versions.mix(RUN_MEDAKA.out.versions)
-
     QC(
         ch_medaka_out.map { it -> [meta: it.meta - it.meta.subMap("assembly_map_bam") + [ assembly_map_bam: null] ] },
         polished_assembly.map { meta, polished -> [meta.id, polished] },
         meryl_kmers
     )
 
-
-    ch_versions = ch_versions.mix(QC.out.versions)
 
     ch_medaka_out
         .filter {
@@ -55,16 +51,11 @@ workflow POLISH_MEDAKA {
         }
         .set { liftoff_in }
 
-    RUN_LIFTOFF(liftoff_in)
-
-    ch_versions = ch_versions.mix(RUN_LIFTOFF.out.versions)
-
-    versions = ch_versions
+    LIFTOFF(liftoff_in, [])
 
     emit:
     ch_main                 = ch_main_out
     quast_out               = QC.out.quast_out
     busco_out               = QC.out.busco_out
     merqury_report_files    = QC.out.merqury_report_files
-    versions
 }

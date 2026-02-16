@@ -18,7 +18,7 @@ process REPORT {
     path quast_files,       stageAs: "data/quast/*"
     path busco_files,       stageAs: "data/busco/*"
     path meryl_files,       stageAs: "data/merqury/*"
-    path versions,          stageAs: "software_versions.yml"
+    val versions
     val groups
 
     output:
@@ -26,8 +26,12 @@ process REPORT {
     path ("busco_files/reports.csv"), emit: busco_table, optional: true
     path ("quast_files/reports.csv"), emit: quast_table, optional: true
     path ("genomescope_files/*"), emit: genomescope_plots, optional: true
-    path "versions.yml", emit: versions
-
+    // Versions are not pushed to versions topic as it is an input.
+    tuple val("${task.process}"), val('R'), eval("R --version | head -n1 | sed 's/R version //; s/ .*//'"), emit: versions_R
+    tuple val("${task.process}"), val('r-tidyverse'), eval("ls /opt/conda/pkgs/ | grep tidyverse | sed 's/r-tidyverse-//; s/-.*//'"), emit: versions_tidyverse
+    tuple val("${task.process}"), val('r-plotly'), eval("ls /opt/conda/pkgs/ | grep plotly | sed 's/r-plotly-//; s/-.*//'"), emit: versions_plotly
+    tuple val("${task.process}"), val('r-quarto'), eval("ls /opt/conda/pkgs/ | grep r-quarto | sed 's/r-quarto-//; s/-.*//'"), emit: versions_rquarto
+    tuple val("${task.process}"), val('quarto-cli'), eval("quarto --version"), emit: versions_quartocli
     when:
     task.ext.when == null || task.ext.when
 
@@ -58,24 +62,21 @@ process REPORT {
     def groupBuilder = new groovy.yaml.YamlBuilder()
     groupBuilder(groups)
     def group_content = groupBuilder.toString().tokenize('\n').join("\n    ")
+    def versionBuilder = new groovy.yaml.YamlBuilder()
+    versionBuilder(versions)
+    def versions_content = versionBuilder.toString().tokenize('\n').join("\n    ")
     """
     cat <<- END_YAML_GROUPS > groups.yml
     ${group_content}
+    END_YAML_GROUPS
+    cat <<- END_YAML_GROUPS > versions.yml
+    ${versions_content}
     END_YAML_GROUPS
 
     export HOME="\$PWD"
     quarto render report.qmd \\
         ${report_profile} \\
         ${report_params}
-
-    cat <<-END_VERSIONS > versions.yml
-    "${task.process}":
-        R: \$(R --version | head -n1 | sed 's/R version //; s/ .*//')
-        r-tidyverse: \$(ls /opt/conda/pkgs/ | grep tidyverse | sed 's/r-tidyverse-//; s/-.*//')
-        r-plotly: \$(ls /opt/conda/pkgs/ | grep plotly | sed 's/r-plotly-//; s/-.*//')
-        r-quarto: \$(ls /opt/conda/pkgs/ | grep r-quarto | sed 's/r-quarto-//; s/-.*//')
-        quarto-cli: \$(quarto --version)
-    END_VERSIONS
     """
     stub:
     """
@@ -84,14 +85,5 @@ process REPORT {
     mkdir busco_files && touch busco_files/reports.csv
     mkdir quast_files && touch quast_files/reports.csv
     mkdir genomescope_files && touch genomescope_files/file.txt
-
-    cat <<-END_VERSIONS > versions.yml
-    "${task.process}":
-        R: \$(R --version | head -n1 | sed 's/R version //; s/ .*//')
-        r-tidyverse: \$(ls /opt/conda/pkgs/ | grep tidyverse | sed 's/r-tidyverse-//; s/-.*//')
-        r-plotly: \$(ls /opt/conda/pkgs/ | grep plotly | sed 's/r-plotly-//; s/-.*//')
-        r-quarto: \$(ls /opt/conda/pkgs/ | grep r-quarto | sed 's/r-quarto-//; s/-.*//')
-        quarto-cli: \$(quarto --version)
-    END_VERSIONS
     """
 }

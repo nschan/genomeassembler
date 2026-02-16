@@ -15,7 +15,7 @@ process QUAST {
     output:
     path "${meta.id}*/*", emit: results
     path "*report.tsv", emit: tsv
-    path "versions.yml", emit: versions
+    tuple val("${task.process}"), val('quast'), eval("quast.py --version 2>&1 | sed 's/^.*QUAST v//; s/ .*\$//' | tail -n1"), emit: versions_medaka, topic: versions
 
     when:
     task.ext.when == null || task.ext.when
@@ -41,21 +41,11 @@ process QUAST {
         ${args}
 
     ln -s ${prefix}/report.tsv ${prefix}_report.tsv
-
-    cat <<-END_VERSIONS > versions.yml
-    "${task.process}":
-        quast: \$(quast.py --version 2>&1 | sed 's/^.*QUAST v//; s/ .*\$//' | tail -n1)
-    END_VERSIONS
     """
     stub:
     def prefix = task.ext.prefix ?: "${meta.id}"
     """
     mkdir ${prefix} && touch ${prefix}/report.tsv
     ln -s ${prefix}/report.tsv ${prefix}_report.tsv
-
-    cat <<-END_VERSIONS > versions.yml
-    "${task.process}":
-        quast: \$(quast.py --version 2>&1 | sed 's/^.*QUAST v//; s/ .*\$//' | tail -n1)
-    END_VERSIONS
     """
 }

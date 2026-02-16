@@ -9,7 +9,6 @@ workflow SCAFFOLD {
     meryl_kmers
 
     main:
-    channel.empty().set { ch_versions }
     channel.empty().set { links_busco }
     channel.empty().set { links_quast }
     channel.empty().set { links_merqury }
@@ -172,22 +171,18 @@ workflow SCAFFOLD {
     RUN_LINKS.out.busco_out.set { links_busco }
     RUN_LINKS.out.quast_out.set { links_quast }
     RUN_LINKS.out.merqury_report_files.set { links_merqury }
-    ch_versions = ch_versions.mix(RUN_LINKS.out.versions)
 
     RUN_LONGSTITCH.out.busco_out.set { longstitch_busco }
     RUN_LONGSTITCH.out.quast_out.set { longstitch_quast }
     RUN_LONGSTITCH.out.merqury_report_files.set { longstitch_merqury }
-    ch_versions = ch_versions.mix(RUN_LONGSTITCH.out.versions)
 
     HIC.out.busco_out.set { hic_busco }
     HIC.out.quast_out.set { hic_quast }
     HIC.out.merqury_report_files.set { hic_merqury }
-    ch_versions = ch_versions.mix(HIC.out.versions)
 
     RUN_RAGTAG.out.busco_out.set { ragtag_busco }
     RUN_RAGTAG.out.quast_out.set { ragtag_quast }
     RUN_RAGTAG.out.merqury_report_files.set { ragtag_merqury }
-    ch_versions = ch_versions.mix(RUN_RAGTAG.out.versions)
 
     links_busco
         .concat(longstitch_busco)
@@ -207,12 +202,9 @@ workflow SCAFFOLD {
         .concat(hic_merqury)
         .set { scaffold_merqury_reports }
 
-    versions = ch_versions
-
     emit:
     ch_main
     scaffold_busco_reports
     scaffold_quast_reports
     scaffold_merqury_reports
-    versions
 }

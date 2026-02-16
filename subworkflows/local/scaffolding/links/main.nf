@@ -1,6 +1,6 @@
 include { LINKS } from '../../../../modules/nf-core/links/main'
 include { QC } from '../../qc/main'
-include { RUN_LIFTOFF } from '../../liftoff/main'
+include { LIFTOFF } from '../../../../modules/nf-core/liftoff/main'
 
 workflow RUN_LINKS {
     take:
@@ -8,7 +8,6 @@ workflow RUN_LINKS {
     meryl_kmers
 
     main:
-    channel.empty().set { ch_versions }
     ch_main.dump(tag: "SCAFFOLD: LINKS: WORKFLOW inputs")
     ch_main
         .multiMap { it ->
@@ -25,13 +24,9 @@ workflow RUN_LINKS {
         .map { meta, scaff_links -> [meta: meta + [scaffolds_links: scaff_links] ] }
         .set { ch_main_scaffolded }
 
-    ch_versions = ch_versions.mix(LINKS.out.versions)
-
     QC(ch_main_scaffolded.map { it -> [meta: it.meta - it.meta.subMap("assembly_map_bam") + [assembly_map_bam: null] ]},
         LINKS.out.scaffolds_fasta.map { meta, scaffold -> [meta.id, scaffold]},
          meryl_kmers)
-
-    ch_versions = ch_versions.mix(QC.out.versions)
 
     ch_main_scaffolded
         .filter {
@@ -47,13 +42,11 @@ workflow RUN_LINKS {
         }
         .set { liftoff_in }
 
-    RUN_LIFTOFF(liftoff_in)
-    ch_versions = ch_versions.mix(RUN_LIFTOFF.out.versions)
+    LIFTOFF(liftoff_in, [])
 
     emit:
     ch_main                 = ch_main_scaffolded
     quast_out               = QC.out.quast_out
     busco_out               = QC.out.busco_out
     merqury_report_files    = QC.out.merqury_report_files
-    versions                = ch_versions
 }

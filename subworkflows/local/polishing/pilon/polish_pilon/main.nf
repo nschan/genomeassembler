@@ -1,6 +1,6 @@
-include { RUN_PILON } from '../run_pilon/main'
+include { PILON } from '../../../../../modules/nf-core/pilon/main'
 include { MAP_SR } from '../../../mapping/map_sr/main'
-include { RUN_LIFTOFF } from '../../../liftoff/main'
+include { LIFTOFF } from '../../../../../modules/nf-core/liftoff/main'
 include { QC } from '../../../qc/main.nf'
 
 workflow POLISH_PILON {
@@ -27,22 +27,31 @@ workflow POLISH_PILON {
 
     MAP_SR(map_sr_in.shortreads, map_sr_in.assembly)
 
-    RUN_PILON(map_sr_in.assembly, MAP_SR.out.aln_to_assembly_bam_bai)
 
-    RUN_PILON.out.improved_assembly
-        .set { pilon_polished }
+    map_sr_in.assembly
+        .combine(MAP_SR.out.aln_to_assembly_bam_bai)
+        .multiMap {
+            meta, assembly, bam, bai ->
+            assembly: [meta, assembly]
+            bam_bai: [meta, bam, bai]
+        }
+        .set { pilon_in }
+
+    PILON(
+        pilon_in.assembly,
+        pilon_in.bam_bai,
+        "bam",
+    )
+
+    pilon_polished = PILON.out.improved_assembly
 
     pilon_polished
         .map { meta, polished_pilon -> [ meta: meta + [ polished: [pilon: polished_pilon] ] ]  }
         .set { ch_main }
 
-    ch_versions = ch_versions.mix(RUN_PILON.out.versions)
-
     QC(ch_main.map { it -> [meta: it.meta - it.meta.subMap("assembly_map_bam") + [assembly_map_bam: null] ]},
         pilon_polished.map {meta, polished -> [meta.id, polished ]},
         meryl_kmers)
-
-    ch_versions = ch_versions.mix(QC.out.versions)
 
     ch_main
         .filter {
@@ -58,14 +67,11 @@ workflow POLISH_PILON {
         }
         .set { liftoff_in }
 
-    RUN_LIFTOFF(liftoff_in)
-
-    ch_versions = ch_versions.mix(RUN_LIFTOFF.out.versions)
+    LIFTOFF(liftoff_in, [])
 
     emit:
     ch_main
     quast_out               = QC.out.quast_out
     busco_out               = QC.out.busco_out
     merqury_report_files    = QC.out.merqury_report_files
-    versions                = ch_versions
 }

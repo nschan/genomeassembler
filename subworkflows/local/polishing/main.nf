@@ -44,8 +44,6 @@ workflow POLISH {
         .mix(POLISH_DORADO.out.merqury_report_files)
         .set { polish_merqury_reports }
 
-    ch_versions = ch_versions.mix(POLISH_MEDAKA.out.versions)
-
     POLISH_MEDAKA.out.ch_main
         .mix(POLISH_DORADO.out.ch_main)
         .mix(ch_main_polish.no_ont_polish)
@@ -92,10 +90,6 @@ workflow POLISH {
             POLISH_PILON.out.merqury_report_files
         )
         .set { polish_merqury_reports }
-
-    ch_versions = ch_versions.mix(POLISH_PILON.out.versions)
-
-    versions = ch_versions
 
     emit:
     ch_main = ch_out

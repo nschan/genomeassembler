@@ -244,10 +244,6 @@ workflow PREPARE {
 
     JELLYFISH.out.genomescope_plot.set { genomescope_plot }
 
-    SHORTREADS.out.versions
-        .mix(JELLYFISH.out.versions)
-        .set { versions }
-
     fastplong_json_reports = HIFI.out.fastplong_hifi_reports.mix(ONT.out.fastplong_ont_reports)
 
     emit:
@@ -257,5 +253,4 @@ workflow PREPARE {
     meryl_kmers
     genomescope_summary
     genomescope_plot
-    versions
 }

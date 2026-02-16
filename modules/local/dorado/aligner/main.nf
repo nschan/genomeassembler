@@ -10,7 +10,9 @@ process DORADO_ALIGNER {
     output:
     tuple val(meta), path("${meta.id}_dorado_aligned.bam"), emit: bam
     tuple val(meta), path("${meta.id}_dorado_aligned.bam.bai"), emit: bai
-    path "versions.yml", emit: versions
+    tuple val("${task.process}"), val('dorado'), eval('dorado --version 2>&1 | head -n1'), emit: versions_dorado, topic: versions
+    tuple val("${task.process}"), val('samtools'), eval("samtools version | sed '1!d;s/.* //'"), topic: versions, emit: versions_samtools
+
 
     when:
     task.ext.when == null || task.ext.when
@@ -28,11 +30,6 @@ process DORADO_ALIGNER {
         > ${meta.id}_dorado_aligned.bam
 
     samtools index ${meta.id}_dorado_aligned.bam > ${meta.id}_dorado_aligned.bam.bai
-
-    cat <<-END_VERSIONS > versions.yml
-    "${task.process}":
-        dorado: "\$(dorado --version 2>&1 | head -n1)"
-    END_VERSIONS
     """
 
     stub:
@@ -42,10 +39,5 @@ process DORADO_ALIGNER {
     """
     touch ${prefix}/${prefix}.bam
     touch ${prefix}/${prefix}.bai
-
-    cat <<-END_VERSIONS > versions.yml
-    "${task.process}":
-        dorado: "\$(dorado --version 2>&1 | head -n1)"
-    END_VERSIONS
     """
 }

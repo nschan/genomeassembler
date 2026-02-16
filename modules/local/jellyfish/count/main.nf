@@ -10,7 +10,8 @@ process COUNT {
 
     output:
     tuple val(meta), path("*.jf"), emit: kmers
-    path "versions.yml", emit: versions
+    tuple val("${task.process}"), val('jellyfish'), eval("jellyfish --version sed 's/jellyfish //'"), emit: versions_jellyfish, topic: versions
+
 
     script:
     def prefix = task.ext.prefix ?: "${meta.id}"
@@ -30,20 +31,12 @@ process COUNT {
         -C \\
         -t ${task.cpus} ${fasta.baseName}.fasta
     mv mer_counts.jf ${prefix}_mer_counts.jf
-    cat <<-END_VERSIONS > versions.yml
-    "${task.process}":
-        jellyfish: \$(echo \$(jellyfish --version sed 's/jellyfish //'))
-    END_VERSIONS
     """
 
     stub:
     def prefix = task.ext.prefix ?: "${meta.id}"
     """
     touch ${prefix}_mer_counts.jf
-    cat <<-END_VERSIONS > versions.yml
-    "${task.process}":
-        jellyfish: \$(echo \$(jellyfish --version sed 's/jellyfish //'))
-    END_VERSIONS
     """
 
 }

@@ -12,7 +12,8 @@ process LONGSTITCH {
     output:
     tuple val(meta), path("*.tigmint-ntLink-arks.fa"), emit: ntlLinks_arks_scaffolds
     tuple val(meta), path("*.tigmint-ntLink.fa"), emit: ntlLinks_scaffolds
-    path "versions.yml", emit: versions
+        tuple val("${task.process}"), val('LongStitch'), eval("longstitch | head -n1 | sed 's/LongStitch v//'"), emit: versions_longstitch, topic: versions
+
 
     script:
     def prefix = task.ext.prefix ?: "${meta.id}"

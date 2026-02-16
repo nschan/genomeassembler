@@ -5,7 +5,7 @@ include { HIFIASM as HIFIASM_ONT } from '../../../modules/nf-core/hifiasm/main'
 include { GFA_2_FA as GFA_2_FA_HIFI } from '../../../modules/local/gfa2fa/main'
 include { GFA_2_FA as GFA_2_FA_ONT} from '../../../modules/local/gfa2fa/main'
 include { MAP_TO_REF } from '../mapping/map_to_ref/main'
-include { RUN_LIFTOFF } from '../liftoff/main'
+include { LIFTOFF } from '../../../modules/nf-core/liftoff/main'
 include { RAGTAG_PATCH } from '../../../modules/nf-core/ragtag/patch/main'
 include { QC } from '../qc/main'
 
@@ -16,9 +16,6 @@ workflow ASSEMBLE {
     meryl_kmers
 
     main:
-    // Empty channels
-    channel.empty().set { ch_versions }
-
     /*
     Samples are split into those that need assembly, and those that will not be assembled (i.e. assemblies are provided)
     */
@@ -176,9 +173,7 @@ workflow ASSEMBLE {
             [[], []])
 
     // hifiasm produces GFA files
-    GFA_2_FA_HIFI( HIFIASM.out.processed_unitigs)
-
-    ch_versions = ch_versions.mix(HIFIASM.out.versions).mix(GFA_2_FA_HIFI.out.versions)
+    GFA_2_FA_HIFI( HIFIASM.out.primary_contigs )
 
     /*
     hifiasm with ONLY ont reads.
@@ -200,9 +195,7 @@ workflow ASSEMBLE {
 
     HIFIASM_ONT(ch_main_assemble_ont_hifiasm.map { it -> [ it.meta,  it.meta.ontreads, [] ] }, [[], [], []], [[], [], []], [[], []])
 
-    GFA_2_FA_ONT( HIFIASM_ONT.out.processed_unitigs)
-
-    ch_versions = ch_versions.mix(HIFIASM_ONT.out.versions).mix(GFA_2_FA_ONT.out.versions)
+    GFA_2_FA_ONT( HIFIASM_ONT.out.primary_contigs)
 
     // Flye:
     FLYE_ONT.out.fasta
@@ -455,8 +448,6 @@ workflow ASSEMBLE {
 
     ch_main_assembled.dump(tag: "Assemble: Assembled")
 
-    ch_versions = ch_versions.mix(RAGTAG_PATCH.out.versions)
-
     // Mix with whatever was not destined for assembly
     ch_main_branched
         .no_assemble
@@ -527,8 +518,6 @@ workflow ASSEMBLE {
 
     QC(ch_main_to_qc, scaffolds, meryl_kmers)
 
-    ch_versions = ch_versions.mix(QC.out.versions)
-
     // If annotation liftover on the initial assembly is desired, it happens here.
     ch_main_to_qc
         .filter {
@@ -544,13 +533,11 @@ workflow ASSEMBLE {
         }
         .set { liftoff_in }
     liftoff_in.dump(tag: "ASSEMBLE: LIFTOFF: INPUT")
-    RUN_LIFTOFF(liftoff_in)
-    ch_versions = ch_versions.mix(RUN_LIFTOFF.out.versions)
+    LIFTOFF(liftoff_in, [])
 
     emit:
     ch_main                     = ch_main_to_qc
     assembly_quast_reports      = QC.out.quast_out
     assembly_busco_reports      = QC.out.busco_out
     assembly_merqury_reports    = QC.out.merqury_report_files
-    versions                    = ch_versions
 }
