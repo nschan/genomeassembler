@@ -24,6 +24,7 @@ In addition, v2.0.0 contains these changes:
   - mapping with `bwamem2` or `minimap2`
   - duplicate removal with `picard`
   - scaffolding with `yahs`
+- Switched to the versions topic, requires nextflow >=25.10.0
 
 ### `Fixed`
 
