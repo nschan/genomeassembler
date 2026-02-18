@@ -8,8 +8,6 @@ workflow POLISH {
     meryl_kmers
 
     main:
-
-    channel.empty().set { ch_versions }
     channel.empty().set { polish_busco_reports }
     channel.empty().set { polish_quast_reports }
     channel.empty().set { polish_merqury_reports }
@@ -96,5 +94,4 @@ workflow POLISH {
     polish_busco_reports
     polish_quast_reports
     polish_merqury_reports
-    versions
 }

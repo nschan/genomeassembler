@@ -1,5 +1,4 @@
 include { MAP_TO_ASSEMBLY } from '../mapping/map_to_assembly/main'
-include { RUN_BUSCO } from './busco/main.nf'
 include { QUAST } from '../../../modules/local/quast/main'
 include { BUSCO_BUSCO as BUSCO } from '../../../modules/nf-core/busco/busco/main'
 include { MERQURY_MERQURY as MERQURY } from '../../../modules/nf-core/merqury/merqury/main'
@@ -11,7 +10,6 @@ workflow QC {
     meryl_kmers
 
     main:
-    channel.empty().set { ch_versions }
     channel.empty().set { quast_out }
     channel.empty().set { busco_out }
     channel.empty().set { merqury_report_files }
