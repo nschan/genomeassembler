@@ -69,9 +69,9 @@ process REPORT {
     cat <<- END_YAML_GROUPS > groups.yml
     ${group_content}
     END_YAML_GROUPS
-    cat <<- END_YAML_GROUPS > versions.yml
+    cat <<- END_YAML_VERSIONS > versions.yml
     ${versions_content}
-    END_YAML_GROUPS
+    END_YAML_VERSIONS
 
     export HOME="\$PWD"
     quarto render report.qmd \\

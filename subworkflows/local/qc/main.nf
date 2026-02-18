@@ -87,10 +87,11 @@ workflow QC {
                     it.meta.assembly_map_bam
                 ]
                 use_ref: it.meta.use_ref
+                use_gff: it.meta.use_ref && it.meta.ref_gff ? true : false
             }
         .set { quast_in }
 
-    QUAST(quast_in)
+    QUAST(quast_in) // works magically
     QUAST.out.tsv.set { quast_out }
 
     ch_qc

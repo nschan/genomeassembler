@@ -51,10 +51,7 @@ workflow JELLYFISH {
     COUNT(samples)
     COUNT.out.kmers.set { kmers }
 
-    ch_versions = ch_versions.mix(COUNT.out.versions)
-
     HISTO(kmers)
-    ch_versions = ch_versions.mix(HISTO.out.versions)
 
     HISTO.out.histo
         .map { meta, hist ->
@@ -71,10 +68,6 @@ workflow JELLYFISH {
     STATS(kmers)
 
     GENOMESCOPE(genomescope_in)
-
-    ch_versions = ch_versions
-        .mix(GENOMESCOPE.out.versions)
-        .mix(STATS.out.versions)
 
     GENOMESCOPE.out.estimated_hap_len
         .filter { it -> it[0].metas }
@@ -96,11 +89,8 @@ workflow JELLYFISH {
 
     GENOMESCOPE.out.plot.set { genomescope_plot }
 
-    versions = ch_versions
-
     emit:
     main_out = outputs
     genomescope_summary
     genomescope_plot
-    versions
 }

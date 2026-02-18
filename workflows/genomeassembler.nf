@@ -49,8 +49,6 @@ workflow GENOMEASSEMBLER {
     */
     channel.empty().set { meryl_kmers }
 
-    channel.empty().set { ch_versions }
-
     // Initialize channels for QC report collection
     channel
         .of([])
@@ -84,7 +82,6 @@ workflow GENOMEASSEMBLER {
 
     ASSEMBLE.out.ch_main.set { ch_main_assembled }
 
-    ch_versions = ch_versions.mix(ASSEMBLE.out.versions)
     /*
     Polishing
     */
@@ -111,9 +108,6 @@ workflow GENOMEASSEMBLER {
     ch_main_assembled_branched.no_polish
         .mix(POLISH.out.ch_main)
         .set { ch_main_polished }
-
-    ch_versions = ch_versions.mix(POLISH.out.versions)
-
     // Update scaffold for meta map
 
     ch_main_polished
@@ -150,11 +144,6 @@ workflow GENOMEASSEMBLER {
         .collect { it -> it[1] }
         .set { genomescope_files }
 
-    ch_versions = ch_versions.mix(PREPARE.out.versions).mix(ASSEMBLE.out.versions).mix(POLISH.out.versions).mix(SCAFFOLD.out.versions)
-
-    ch_versions = ch_versions
-
-
     def topic_versions = channel.topic("versions")
       .distinct()
       .branch { entry ->
@@ -171,8 +160,7 @@ workflow GENOMEASSEMBLER {
           tool_versions.unique().sort()
           "${process}:\n${tool_versions.join('\n')}"
       }
-    ch_collated_versions = softwareVersionsToYAML(ch_versions.mix(topic_versions.versions_file))
-      .mix(topic_versions_string)
+    ch_collated_versions = topic_versions_string
     /*
     Report
     */
@@ -260,5 +248,4 @@ workflow GENOMEASSEMBLER {
 
     emit:
     _report
-    versions = ch_versions // channel: [ path(versions.yml) ]
 }

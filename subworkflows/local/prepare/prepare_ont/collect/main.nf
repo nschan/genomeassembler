@@ -5,8 +5,6 @@ workflow COLLECT {
     ch_input
 
     main:
-    channel.empty().set { ch_versions }
-
     ch_input
         .filter {
             it -> it.ont_collect
@@ -16,11 +14,7 @@ workflow COLLECT {
 
     COLLECT_READS(reads)
     COLLECT_READS.out.combined_reads.set { reads }
-    ch_versions.mix(COLLECT_READS.out.versions)
-
-    versions = ch_versions
 
     emit:
     reads
-    versions
 }

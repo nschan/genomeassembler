@@ -196,13 +196,10 @@ workflow PREPARE_SHORTREADS {
 
 
 
-    versions = ch_versions.mix(MERYL_COUNT.out.versions).mix(MERYL_UNIONSUM.out.versions)
-
     emit:
     main_out        = shortreads
     fastp_json      = FASTP.out.json
     meryl_kmers
-    versions
 }
 
 def create_shortread_channel(row) { // This function expects a meta map as input

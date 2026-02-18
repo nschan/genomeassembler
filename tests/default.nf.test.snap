@@ -24,13 +24,13 @@
                     "gzip": null
                 },
                 "HIFIASM": {
-                    "hifiasm": "0.25.0-r726"
+                    "hifasm": "0.25.0-r726"
                 },
                 "HIFIASM_ONT": {
-                    "hifiasm": "0.25.0-r726"
+                    "hifasm": "0.25.0-r726"
                 },
                 "LIFTOFF": {
-                    "liftoff": "v1.6.3"
+                    "liftoff": "1.6.3"
                 },
                 "LONGSTITCH": {
                     "LongStitch": "1.0.5"
@@ -38,8 +38,8 @@
                 "RAGTAG_PATCH": {
                     "ragtag": "2.1.0"
                 },
-                "Workflow": {
-                    "nf-core/genomeassembler": "v2.0.0dev"
+                "RAGTAG_SCAFFOLD": {
+                    "ragtag": "2.1.0"
                 }
             },
             [
@@ -56,7 +56,7 @@
                 "test_flye_hifiasm/assembly/flye/test_flye_hifiasm.params.json",
                 "test_flye_hifiasm/assembly/hifiasm",
                 "test_flye_hifiasm/assembly/hifiasm/fasta",
-                "test_flye_hifiasm/assembly/hifiasm/fasta/test_flye_hifiasm.bp.p_utg.fa.gz",
+                "test_flye_hifiasm/assembly/hifiasm/fasta/test_flye_hifiasm.bp.p_ctg.fa.gz",
                 "test_flye_hifiasm/assembly/hifiasm/test_flye_hifiasm.bp.hap1.p_ctg.gfa",
                 "test_flye_hifiasm/assembly/hifiasm/test_flye_hifiasm.bp.hap2.p_ctg.gfa",
                 "test_flye_hifiasm/assembly/hifiasm/test_flye_hifiasm.bp.p_ctg.gfa",
@@ -111,7 +111,7 @@
                 "test_hifi_hifiasm/assembly",
                 "test_hifi_hifiasm/assembly/hifiasm",
                 "test_hifi_hifiasm/assembly/hifiasm/fasta",
-                "test_hifi_hifiasm/assembly/hifiasm/fasta/test_hifi_hifiasm.bp.p_utg.fa.gz",
+                "test_hifi_hifiasm/assembly/hifiasm/fasta/test_hifi_hifiasm.bp.p_ctg.fa.gz",
                 "test_hifi_hifiasm/assembly/hifiasm/test_hifi_hifiasm.bp.hap1.p_ctg.gfa",
                 "test_hifi_hifiasm/assembly/hifiasm/test_hifi_hifiasm.bp.hap2.p_ctg.gfa",
                 "test_hifi_hifiasm/assembly/hifiasm/test_hifi_hifiasm.bp.p_ctg.gfa",
@@ -146,7 +146,7 @@
                 "test_hifiasm_flye/assembly/flye/test_hifiasm_flye.params.json",
                 "test_hifiasm_flye/assembly/hifiasm_ont",
                 "test_hifiasm_flye/assembly/hifiasm_ont/fasta",
-                "test_hifiasm_flye/assembly/hifiasm_ont/fasta/test_hifiasm_flye.bp.p_utg.fa.gz",
+                "test_hifiasm_flye/assembly/hifiasm_ont/fasta/test_hifiasm_flye.bp.p_ctg.fa.gz",
                 "test_hifiasm_flye/assembly/hifiasm_ont/test_hifiasm_flye.bp.hap1.p_ctg.gfa",
                 "test_hifiasm_flye/assembly/hifiasm_ont/test_hifiasm_flye.bp.hap2.p_ctg.gfa",
                 "test_hifiasm_flye/assembly/hifiasm_ont/test_hifiasm_flye.bp.p_ctg.gfa",
@@ -183,7 +183,7 @@
                 "test_hifiasm_ul/assembly",
                 "test_hifiasm_ul/assembly/hifiasm",
                 "test_hifiasm_ul/assembly/hifiasm/fasta",
-                "test_hifiasm_ul/assembly/hifiasm/fasta/test_hifiasm_ul.bp.p_utg.fa.gz",
+                "test_hifiasm_ul/assembly/hifiasm/fasta/test_hifiasm_ul.bp.p_ctg.fa.gz",
                 "test_hifiasm_ul/assembly/hifiasm/test_hifiasm_ul.bp.hap1.p_ctg.gfa",
                 "test_hifiasm_ul/assembly/hifiasm/test_hifiasm_ul.bp.hap2.p_ctg.gfa",
                 "test_hifiasm_ul/assembly/hifiasm/test_hifiasm_ul.bp.p_ctg.gfa",
@@ -246,7 +246,7 @@
                 "test_ont_hifiasm/assembly",
                 "test_ont_hifiasm/assembly/hifiasm_ont",
                 "test_ont_hifiasm/assembly/hifiasm_ont/fasta",
-                "test_ont_hifiasm/assembly/hifiasm_ont/fasta/test_ont_hifiasm.bp.p_utg.fa.gz",
+                "test_ont_hifiasm/assembly/hifiasm_ont/fasta/test_ont_hifiasm.bp.p_ctg.fa.gz",
                 "test_ont_hifiasm/assembly/hifiasm_ont/test_ont_hifiasm.bp.hap1.p_ctg.gfa",
                 "test_ont_hifiasm/assembly/hifiasm_ont/test_ont_hifiasm.bp.hap2.p_ctg.gfa",
                 "test_ont_hifiasm/assembly/hifiasm_ont/test_ont_hifiasm.bp.p_ctg.gfa",
@@ -325,8 +325,8 @@
                 "test_hifiasm_ul_assembly.unmapped.txt:md5,d41d8cd98f00b204e9800998ecf8427e",
                 "test_hifiasm_ul_hifi.fastplong.json:md5,f52a2b6d9aa29fbe5749684ee479de90",
                 "test_hifiasm_ul_ont.fastplong.json:md5,86da6d58ac4630bfeae3ee08014ecb0b",
-                "test_hifiasm_ul_longstitch.tigmint-ntLink-arks.fa:md5,b5ae075fa81a8a0dd3a69283d48ae63a",
-                "test_hifiasm_ul_longstitch.tigmint-ntLink.fa:md5,6191cac0672c778be5fc93b74121ed95",
+                "test_hifiasm_ul_longstitch.tigmint-ntLink-arks.fa:md5,f509aa667afa93699aa4d0258053d706",
+                "test_hifiasm_ul_longstitch.tigmint-ntLink.fa:md5,301136e56bd854239f31e96e32bc49d4",
                 "test_hifiasm_ul_longstitch.unmapped.txt:md5,d41d8cd98f00b204e9800998ecf8427e",
                 "test_ont_flye.params.json:md5,afa91c041bce5e190f4a699d11b69db6",
                 "test_ont_flye_assembly.unmapped.txt:md5,d41d8cd98f00b204e9800998ecf8427e",
@@ -346,8 +346,8 @@
         ],
         "meta": {
             "nf-test": "0.9.2",
-            "nextflow": "25.04.8"
+            "nextflow": "25.10.0"
         },
-        "timestamp": "2026-02-13T11:26:09.065736384"
+        "timestamp": "2026-02-18T12:57:57.883672792"
     }
 }
