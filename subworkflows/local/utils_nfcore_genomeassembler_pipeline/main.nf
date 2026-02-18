@@ -141,7 +141,6 @@ workflow PIPELINE_INITIALISATION {
             def assembler_ont_args =  it.assembler_ont_args ?: params.assembler_ont_args ?: ''
             def assembler_hifi_args = it.assembler_hifi_args ?: params.assembler_hifi_args ?: ''
 
-
             // Check if strategy can be inferred
             strategy == "single" && ontreads && hifireads && !((!assembler_ont && assembler_hifi) || (assembler_ont && !assembler_hifi)) ?
                 error(
@@ -170,13 +169,13 @@ workflow PIPELINE_INITIALISATION {
                     assembler_hifi: assembler_hifi,
                     assembly_scaffolding_order: it.assembly_scaffolding_order ?: params.assembly_scaffolding_order ?: "ont_on_hifi",
                     assembler_ont_args: assembler_ont_args + " " +
-                        (assembler == "flye" && strategy == "single") || (assembler_ont == "flye") ? (it.flye_args ?: params.flye_args) :
+                        ((assembler == "flye" && strategy == "single") || (assembler_ont == "flye") ? (it.flye_args ?: params.flye_args) :
                         (assembler == "hifiasm" && strategy == "single") || (assembler_ont == "hifiasm") ? (it.hifiasm_args ?: params.hifiasm_args) :
-                        "",
+                        ""),
                     assembler_hifi_args: assembler_hifi_args + " " +
-                        (assembler == "flye" && strategy == "single") || (assembler_hifi == "hifiasm") ? (it.hifiasm_args ?: params.hifiasm_args) :
+                        ((assembler == "flye" && strategy == "single") || (assembler_hifi == "hifiasm") ? (it.hifiasm_args ?: params.hifiasm_args) :
                         (assembler == "flye" && strategy == "single") || (assembler_hifi == "flye") ? (it.flye_args ?: params.flye_args) :
-                        "",
+                        ""),
                     polish: polish,
                     ont_collect: it.ont_collect ?: params.ont_collect,
                     ont_adapters: it.ont_adapters ?: params.ont_adapters,
