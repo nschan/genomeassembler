@@ -7,6 +7,9 @@ lint:
   files_unchanged:
     - assets/sendmail_template.txt
     - .github/CONTRIBUTING.md
+    - assets/nf-core-genomeassembler_logo_light.png
+    - docs/images/nf-core-genomeassembler_logo_light.png
+    - docs/images/nf-core-genomeassembler_logo_dark.png
 nf_core_version: 3.5.1
 repository_type: pipeline
 template:
