@@ -7,4 +7,4 @@ pipeline_info/*.{html,json,txt,yml}
 */*.{log,bin,gz,gff3,agp,html,gz}
 *.{log,bin,gz,gff3,agp,html,gz}
 */*/*/*.assembly_info.txt
-*tigmint-ntLink-arks.fa
+*/scaffold/longstitch/*tigmint-ntLink-arks.fa

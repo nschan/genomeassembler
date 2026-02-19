@@ -284,7 +284,11 @@ Options controlling pipeline behavior
 
 ## Assembly options
 
-Options controlling assembly
+Options controlling assembly.
+
+> NOTE: hifiasm_args and flye_args will be passed to the respective assembler in all cases. If the same assembler is used in different strategies, these need may need to be parameterised per sample.
+
+The difference between `{hifiasm,flye}_args` and `assembler_{ont,hifi}_args` is subtle: the former will be applied for all cases where this particular assembler is used, whereas the latter will apply the args to the assembler used for assembling a specific type of data. `{hifiasm,flye}_args` are generally expected to be used for e.g. system specific configuration via `params`, although they can also be set per-sample, whereas `assembler_{ont,hifi}_args` provide a bit more of an abstract interface, possibly more appropriate to adjust certain parameters per-sample.
 
 | Parameter                                         | Description                                                                                                                                                                                                                                                                              | Type     |
 | ------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- |
@@ -298,8 +302,8 @@ Options controlling assembly
 | `flye_mode`                                       | flye mode                                                                                                                                                                                                                                                                                | `string` |
 | `flye_args`                                       | additional args for flye                                                                                                                                                                                                                                                                 | `string` |
 | `hifiasm_args`                                    | Extra arguments passed to `hifiasm`                                                                                                                                                                                                                                                      | `string` |
-| `assembler_ont_args`                              | Extra arguments passed to assembler_ont; assembling ONT reads in `scaffold` strategy                                                                                                                                                                                                     | `string` |
-| `assembler_hifi_args`                             | Extra arguments passed to assembler_hifi; assembling HiFi reads in `scaffold` strategy                                                                                                                                                                                                   | `string` |
+| `assembler_ont_args`                              | Extra arguments passed to assembler_ont, assembling ONT reads and hybrid assemblies                                                                                                                                                                                                      | `string` |
+| `assembler_hifi_args`                             | Extra arguments passed to assembler_hifi; assembling HiFi reads                                                                                                                                                                                                                          | `string` |
 
 ## Long-read preprocessing
 
@@ -307,22 +311,22 @@ All long-reads will be passed to `fastplong` for trimming and quality control.
 If reads should not be modified by `fastplong`, adaptor trimming can be disabled using `-A`, quality filtering can be disabled with `-Q`.
 These arguments can be passed via `<hifi/ont>_fastplot_args` for the different read types.
 
-| Parameter             | Description                                               | Type      |
-| --------------------- | --------------------------------------------------------- | --------- |
-| `ontreads`            | Path to ONT reads                                         | `string`  |
-| `ont_collect`         | Collect ONT reads from several files?                     | `boolean` |
-| `ont_adapters`        | Adaptors for ONT read-trimming                            | `string`  |
-| `ont_fastplong_args`  | Additional args to be passed to `fastplong` for ONT reads | `string`  |
-| `hifireads`           | Path to HiFi reads                                        | `string`  |
-| `hifi_adapters`       | Adaptors for HiFi read-trimming                           | `string`  |
-| `hifi_fastplong_args` | Additional args to be passed to fastplong for HiFi reads  | `string`  |
-| `jellyfish`           | Run jellyfish and genomescope (recommended)               | `boolean` |
-| `jellyfish_k`         | Value of k used during k-mer analysis with jellyfish      | `integer` |
-| `dump`                | dump jellyfish output                                     | `boolean` |
+| Parameter             | Description                                                | Type      |
+| --------------------- | ---------------------------------------------------------- | --------- |
+| `ontreads`            | Path to ONT reads                                          | `string`  |
+| `ont_collect`         | Collect ONT reads from several files?                      | `boolean` |
+| `ont_adapters`        | Adaptors for ONT read-trimming                             | `string`  |
+| `ont_fastplong_args`  | Additional args to be passed to `fastplong` for ONT reads  | `string`  |
+| `hifireads`           | Path to HiFi reads                                         | `string`  |
+| `hifi_adapters`       | Adaptors for HiFi read-trimming                            | `string`  |
+| `hifi_fastplong_args` | Additional args to be passed to `fastplong` for HiFi reads | `string`  |
+| `jellyfish`           | Run jellyfish and genomescope (recommended)                | `boolean` |
+| `jellyfish_k`         | Value of k used during k-mer analysis with jellyfish       | `integer` |
+| `dump`                | dump jellyfish output                                      | `boolean` |
 
 ## Short read options
 
-Options for short reads
+Options for short reads.
 
 | Parameter         | Description                     | Type      |
 | ----------------- | ------------------------------- | --------- |

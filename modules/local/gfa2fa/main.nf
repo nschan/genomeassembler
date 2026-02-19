@@ -11,7 +11,6 @@ process GFA_2_FA {
 
     output:
     tuple val(meta), path("*fa.gz"), emit: contigs_fasta
-    tuple val("${task.process}"), val('awk'), eval("awk |& head -n1 | grep -o 'v[0-9\\.]*' | sed 's/v//'"), emit: versions_awk, topic: versions
     tuple val("${task.process}"), val('bgzip'), eval("bgzip --version | head -n1 | sed 's/bgzip (htslib) //'"), emit: versions_gzip, topic: versions
 
     script:

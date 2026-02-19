@@ -122,7 +122,7 @@ workflow PIPELINE_INITIALISATION {
                                     assembler.contains("_") ? assembler.tokenize("_")[1] :
                                     null
 
-            def polish          =   it.polish ? it.polish :
+            def polish          =   it.polish ?:
                                     (params.polish_medaka && params.polish_dorado) ? error("Both polish_medaka and polish_dorado are set.") :
                                     (params.polish_medaka && params.polish_pilon && ontreads) ? "medaka+pilon" :
                                     (params.polish_dorado && params.polish_pilon && ontreads) ? "dorado+pilon" :
@@ -162,20 +162,14 @@ workflow PIPELINE_INITIALISATION {
                     // new in refactor-assemblers
                     strategy: strategy,
                     // The "assembler" value is mainly to ease input, all actual workflow logic should use assembler_ont/_hifi.
-                    // Could still be useful for debugging.
                     assembler: assembler,
-                    // assembler_ont: ONT, assembler_hifi: HiFi
                     assembler_ont: assembler_ont,
                     assembler_hifi: assembler_hifi,
                     assembly_scaffolding_order: it.assembly_scaffolding_order ?: params.assembly_scaffolding_order ?: "ont_on_hifi",
-                    assembler_ont_args: assembler_ont_args + " " +
-                        ((assembler == "flye" && strategy == "single") || (assembler_ont == "flye") ? (it.flye_args ?: params.flye_args) :
-                        (assembler == "hifiasm" && strategy == "single") || (assembler_ont == "hifiasm") ? (it.hifiasm_args ?: params.hifiasm_args) :
-                        ""),
-                    assembler_hifi_args: assembler_hifi_args + " " +
-                        ((assembler == "flye" && strategy == "single") || (assembler_hifi == "hifiasm") ? (it.hifiasm_args ?: params.hifiasm_args) :
-                        (assembler == "flye" && strategy == "single") || (assembler_hifi == "flye") ? (it.flye_args ?: params.flye_args) :
-                        ""),
+                    assembler_ont_args: assembler_ont_args,
+                    assembler_hifi_args: assembler_hifi_args,
+                    hifiasm_args: it.hifiasm_args ?: params.hifiasm_args,
+                    flye_args: it.flye_args ?: params.flye_args,
                     polish: polish,
                     ont_collect: it.ont_collect ?: params.ont_collect,
                     ont_adapters: it.ont_adapters ?: params.ont_adapters,
