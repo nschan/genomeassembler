@@ -29,7 +29,7 @@ workflow POLISH_PILON {
 
 
     map_sr_in.assembly
-        .combine(MAP_SR.out.aln_to_assembly_bam_bai)
+        .join(MAP_SR.out.aln_to_assembly_bam_bai)
         .multiMap {
             meta, assembly, bam, bai ->
             assembly: [meta, assembly]
