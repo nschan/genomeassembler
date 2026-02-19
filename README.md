@@ -69,10 +69,12 @@ For more details about the output files and reports, please refer to the
 
 nf-core/genomeassembler was written, and is currently maintained by [Niklas Schandry](https://github.com/nschan), of the Faculty of Biology of the Ludwig-Maximilians University (LMU) in Munich, Germany, with funding support from the German Research Foundation (Deutsche Forschungsgemeinschaft [DFG], via Transregional Research Center TRR356 grant 491090170-A05 to Niklas Schandry).
 
-I thank the following people for their extensive assistance and constructive reviews during the development of this pipeline:
+I thank the following people for constructive reviews and discussion during the development of this pipeline:
 
+- [Jim Downie](https://github.com/prototaxites)
 - [Mahesh Binzer-Panchal](https://github.com/mahesh-panchal)
 - [Matthias Hörtenhuber](https://github.com/mashehu)
+- [Evangelos Karatzas](https://github.com/vagkaratzas)
 - [Louis Le Nézet](https://github.com/LouisLeNezet)
 - [Júlia Mir Pedrol](https://github.com/mirpedrol)
 - [Daniel Straub](https://github.com/d4straub)
