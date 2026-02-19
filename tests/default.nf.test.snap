@@ -281,16 +281,11 @@
                 "test_flye_hifiasm.bp.p_ctg.gfa:md5,8fe65466d76815ffe1663ff6d8f2e8d1",
                 "test_flye_hifiasm.bp.p_utg.gfa:md5,ba2c77ebdb2ad3e6060f5574e890c6eb",
                 "test_flye_hifiasm.bp.r_utg.gfa:md5,ba2c77ebdb2ad3e6060f5574e890c6eb",
-                "test_flye_hifiasm_assembly_patch.comps.fasta:md5,c29d28dd1a028a4cc1aa4d5c0f584598",
-                "test_flye_hifiasm_assembly_patch.ctg.fasta:md5,31482a63bf6c58c88cdcb2df5ca65440",
                 "test_flye_hifiasm_assembly_patch.patch.err:md5,d41d8cd98f00b204e9800998ecf8427e",
-                "test_flye_hifiasm_assembly_patch.patch.fasta:md5,31482a63bf6c58c88cdcb2df5ca65440",
                 "test_flye_hifiasm_assembly_patch.rename.fasta:md5,0515edc4c23258ef17d6ba085a6e4d31",
                 "test_flye_hifiasm_assembly.unmapped.txt:md5,d41d8cd98f00b204e9800998ecf8427e",
                 "test_flye_hifiasm_hifi.fastplong.json:md5,0e20fedb8dfe0646232060da502883ee",
                 "test_flye_hifiasm_ont.fastplong.json:md5,826cc5a321dd130a2f2c53cdb1a345b2",
-                "test_flye_hifiasm_ragtag.fasta:md5,3a03ddeda9a82c1e7d5a7e252313a546",
-                "test_flye_hifiasm_ragtag.stats:md5,f9712f1a0af0669e12d74ef97181c428",
                 "test_hifi_flye_hifi.fastplong.json:md5,daad59b32b84b79c29c274ed20f03cce",
                 "test_hifi_flye_ont.fastplong.json:md5,198eb762846548340557f5f861f10c11",
                 "test_hifi_hifiasm.bp.hap1.p_ctg.gfa:md5,46ee70869884ad585165bd48081414e9",
@@ -341,7 +336,7 @@
                 "test_ont_hifiasm_ragtag.stats:md5,466273b499384b2c781c83dc583b8c99"
             ]
         ],
-        "timestamp": "2026-02-19T09:41:46.416703767",
+        "timestamp": "2026-02-19T10:11:41.761287489",
         "meta": {
             "nf-test": "0.9.4",
             "nextflow": "25.10.0"
