@@ -71,13 +71,12 @@ workflow GENOMEASSEMBLER {
 
     PREPARE.out.meryl_kmers.set { meryl_kmers }
 
-
-    //ch_main_prepared.view{"Main WF: Prepared out: $it "}
     /*
     Assembly
     */
     // This pipeline is named genomeassembler, so everything goes into assemble
     // even it might not actually be assembled.
+
     ASSEMBLE(ch_main_prepared, meryl_kmers)
 
     ASSEMBLE.out.ch_main.set { ch_main_assembled }
@@ -230,8 +229,6 @@ workflow GENOMEASSEMBLER {
         .collect()
         .set { report_scripts }
 
-    //fastplong_jsons.view { it -> "UNQIE JSONS: $it"}
-
     REPORT( report_files,
             report_functions,
             report_scripts,
@@ -241,7 +238,7 @@ workflow GENOMEASSEMBLER {
             busco_files,
             merqury_files,
             channel.fromPath("${params.outdir}/pipeline_info/nf_core_pipeline_software_versions.yml"),
-            ch_main.map { it -> [sample: [id: it.meta.id, group: it.group]]}.collect()
+            ch_main.map { it -> [sample: [id: it.meta.id, group: it.meta.group]]}.collect()
     )
 
     _report = REPORT.out.report_html.toList()
