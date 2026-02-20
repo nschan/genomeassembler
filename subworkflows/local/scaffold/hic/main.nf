@@ -7,6 +7,7 @@ include { SAMTOOLS_FAIDX                            } from '../../../../modules/
 include { MINIMAP2_ALIGN as MINIMAP2_HIC            } from '../../../../modules/nf-core/minimap2/align/main'
 include { PICARD_MARKDUPLICATES as MARKDUP          } from '../../../../modules/nf-core/picard/markduplicates/main'
 include { PICARD_ADDORREPLACEREADGROUPS as ADD_RG   } from '../../../../modules/nf-core/picard/addorreplacereadgroups/main'
+
 workflow HIC {
     take:
     ch_main
