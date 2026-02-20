@@ -86,7 +86,7 @@ If a group was provided, the group name will be used instead of SampleName below
 
 </details>
 
-### HiC reads
+#### HiC reads
 
 [fastp](https://github.com/OpenGene/fastp) performs shortread QC and trimming.
 
