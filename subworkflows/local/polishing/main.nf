@@ -22,10 +22,6 @@ workflow POLISH {
         }
         .set { ch_main_polish }
 
-    //ch_main_polish.medaka.view { "ch_main_polish.medaka: $it"}
-    //ch_main_polish.dorado.view { "ch_main_polish.dorado: $it"}
-    //ch_main_polish.no_ont_polish.view { "ch_main_polish.no_ont_polish: $it"}
-
     POLISH_MEDAKA(ch_main_polish.medaka, meryl_kmers)
 
     POLISH_DORADO(ch_main_polish.dorado, meryl_kmers)
@@ -61,10 +57,6 @@ workflow POLISH {
             no_pilon: true
         }
         .set { ch_main_polish_pilon_in }
-
-    //ch_main_polish_pilon_in.pilon.view {"ch_main_polish_pilon_in.pilon: $it"}
-
-    //ch_main_polish_pilon_in.no_pilon.view {"ch_main_polish_pilon_in.no_pilon: $it"}
 
     POLISH_PILON(ch_main_polish_pilon_in.pilon, meryl_kmers)
 
