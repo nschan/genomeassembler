@@ -21,12 +21,12 @@
 
 ## Introduction
 
-**nf-core/genomeassembler** is a bioinformatics pipeline that carries out genome assembly, polishing and scaffolding from long reads (ONT or pacbio). Assembly can be done via `flye` or `hifiasm`, polishing can be carried out with `medaka` (ONT), or `pilon` (requires short-reads), and scaffolding can be done using `LINKS`, `Longstitch`, or `RagTag` (if a reference is available). Quality control includes `BUSCO`, `QUAST` and `merqury` (requires short-reads).
-Currently, this pipeline does not implement phasing of polyploid genomes or HiC scaffolding.
+**nf-core/genomeassembler** is a bioinformatics pipeline that carries out genome assembly, polishing and scaffolding from long reads (ONT or pacbio). Assembly can be done via `flye` or `hifiasm`, or combinations of both, polishing can be carried out with `medaka` (ONT), `dorado` (ONT only, experimental) or `pilon` (requires short-reads), and scaffolding can be done using `LINKS`, `Longstitch`, both using long-reads, `yahs` if HiC reads are availble, or `RagTag` if a reference is available. Quality control includes `BUSCO`, `QUAST` and `merqury` (requires short-reads).
+Currently, this pipeline does not implement phasing of polyploid genomes.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/images/genomeassembler.dark.png">
-  <img alt="nf-core/genomeassembler" src="docs/images/genomeassembler.light.png">
+  <img alt="nf-core/genomeassembler" src="docs/images/genomeassembler_v2.light.png">
 </picture>
 
 ## Usage
@@ -34,30 +34,17 @@ Currently, this pipeline does not implement phasing of polyploid genomes or HiC 
 > [!NOTE]
 > If you are new to Nextflow and nf-core, please refer to [this page](https://nf-co.re/docs/usage/installation) on how to set-up Nextflow. Make sure to [test your setup](https://nf-co.re/docs/usage/introduction#how-to-run-a-pipeline) with `-profile test` before running the workflow on actual data.
 
-First, prepare a samplesheet with your input data that looks as follows:
+nf-core/genomeassembler can be set up via pipeline parameters, or via a samplesheet, or a combination of both. For more details and further functionality, please refer to the [usage documentation](https://nf-co.re/genomeassembler/usage) and the [parameter documentation](https://nf-co.re/genomeassembler/parameters).
 
-`samplesheet.csv`:
-
-```csv
-sample,ontreads,hifireads,ref_fasta,ref_gff,shortread_F,shortread_R,paired
-sampleName,ontreads.fa.gz,hifireads.fa.gz,assembly.fasta.gz,reference.fasta,reference.gff,short_F1.fastq,short_F2.fastq,true
-```
-
-Each row represents one genome to be assembled. `sample` should contain the name of the sample, `ontreads` should contain a path to ONT reads (fastq.gz), `hifireads` a path to HiFi reads (fastq.gz), `ref_fasta` and `ref_gff` contain reference genome fasta and annotations. `shortread_F` and `shortread_R` contain paths to short-read data, `paired` indicates if short-reads are paired. Columns can be omitted if they contain no data, with the exception of `shortread_R`, which needs to be present if `shortread_F` is there, even if it is empty.
-
-Now, you can run the pipeline using:
+The pipeline can be run with a test-profile via:
 
 ```bash
 nextflow run nf-core/genomeassembler \
-   -profile <docker/singularity/.../institute> \
-   --input samplesheet.csv \
-   --outdir <OUTDIR>
+   -profile test,<docker/singularity/.../institute> \
 ```
 
 > [!WARNING]
 > Please provide pipeline parameters via the CLI or Nextflow `-params-file` option. Custom config files including those provided by the `-c` Nextflow option can be used to provide any configuration _**except for parameters**_; see [docs](https://nf-co.re/docs/usage/getting_started/configuration#custom-configuration-files).
-
-For more details and further functionality, please refer to the [usage documentation](https://nf-co.re/genomeassembler/usage) and the [parameter documentation](https://nf-co.re/genomeassembler/parameters).
 
 ## Pipeline output
 
