@@ -88,15 +88,6 @@ workflow GENOMEASSEMBLER {
         .branch {
             it ->
             def polishers = ["pilon", "medaka", "medaka+pilon", "dorado", "dorado+pilon"]
-            /*debug
-            def polishValue = it.meta.polish
-            def inList = polishers.contains(polishValue)
-            println "DEBUG: polish='${polishValue}' (type: ${polishValue.class.name}), inList=${inList}"
-            polish:     inList
-            no_polish:  !inList
-            DEBUG: polish='"medaka+pilon"' (type: java.lang.String), inList=false
-            No quotes in samplesheet?
-            */
             polish:     polishers.contains(it.meta.polish)
             no_polish:  true
         }
@@ -238,7 +229,7 @@ workflow GENOMEASSEMBLER {
             busco_files,
             merqury_files,
             channel.fromPath("${params.outdir}/pipeline_info/nf_core_pipeline_software_versions.yml"),
-            ch_main.map { it -> [sample: [id: it.meta.id, group: it.meta.group]]}.collect()
+            ch_main.map { it -> [sample: [id: it.meta.id, group: it.meta.group]] }.collect()
     )
 
     _report = REPORT.out.report_html.toList()
