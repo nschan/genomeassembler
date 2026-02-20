@@ -7,15 +7,6 @@ workflow RUN_LONGSTITCH {
     ch_main
     meryl_kmers
 
-    /*
-    TODO:
-    Longstitch needs genomesize. For ONT reads that is estimated if not provided.
-    For hifireads it needs to be provided. Currently, not checks for that..
-    Depending on the reads used, longmap needs to be changed.
-    This should probably be done via args / config, but needs a way to do this per-sample.
-    Probably passing in additional information via meta is the way to go for this.
-    */
-
     main:
     channel.empty().set { ch_versions }
 

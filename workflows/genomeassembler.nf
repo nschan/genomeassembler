@@ -18,7 +18,7 @@ include { ASSEMBLE                  } from '../subworkflows/local/assemble/main'
 include { POLISH                    } from '../subworkflows/local/polishing/main'
 
 // Scaffolding
-include { SCAFFOLD                  } from '../subworkflows/local/scaffolding/main'
+include { SCAFFOLD                  } from '../subworkflows/local/scaffold/main'
 
 // reporting
 include { REPORT                    } from '../modules/local/report/main'
