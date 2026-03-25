@@ -9,7 +9,6 @@ workflow POLISH_PILON {
     meryl_kmers
 
     main:
-    channel.empty().set { ch_versions }
 
     ch_main
         .multiMap {
@@ -22,11 +21,7 @@ workflow POLISH_PILON {
         }
         .set { map_sr_in }
 
-    //map_sr_in.shortreads.view {"POLISH_PILON: map_sr_in.shortreads: $it"}
-    //map_sr_in.assembly.view {"POLISH_PILON: map_sr_in.assembly: $it"}
-
     MAP_SR(map_sr_in.shortreads, map_sr_in.assembly)
-
 
     map_sr_in.assembly
         .join(MAP_SR.out.aln_to_assembly_bam_bai)

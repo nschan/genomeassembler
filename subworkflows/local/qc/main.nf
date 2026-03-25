@@ -91,7 +91,7 @@ workflow QC {
             }
         .set { quast_in }
 
-    QUAST(quast_in) // works magically
+    QUAST(quast_in.quast_in, quast_in.use_ref, quast_in.use_gfgf)
     QUAST.out.tsv.set { quast_out }
 
     ch_qc

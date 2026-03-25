@@ -9,7 +9,6 @@ workflow JELLYFISH {
 
     main:
     channel.empty().set { genomescope_in }
-    channel.empty().set { ch_versions }
 
     ch_main
         .filter { it -> it.meta.group }

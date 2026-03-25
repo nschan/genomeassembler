@@ -8,7 +8,6 @@ workflow PREPARE_SHORTREADS {
     shortreads_in
 
     main:
-    channel.empty().set { ch_versions }
 
     shortreads_in
         .map { row -> row.meta.shortread_F ? create_shortread_channel(row.meta) : row } // function below

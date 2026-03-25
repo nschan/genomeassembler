@@ -8,7 +8,6 @@ workflow POLISH_MEDAKA {
     meryl_kmers
 
     main:
-    channel.empty().set { ch_versions }
 
     ch_main
         .map {
