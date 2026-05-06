@@ -1,4 +1,4 @@
-include { LONGSTITCH } from '../../../../modules/local/longstitch/main'
+include { LONGSTITCH } from '../../../../modules/nf-core/longstitch/main'
 include { QC } from '../../qc/main'
 include { LIFTOFF } from '../../../../modules/nf-core/liftoff/main'
 
