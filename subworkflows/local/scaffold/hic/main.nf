@@ -15,16 +15,13 @@ workflow HIC {
 
     main:
 
-    ch_main
+    hic_align_branched = ch_main
         .branch { it ->
             bwamem: it.meta.hic_aligner == "bwa-mem2"
             minimap: it.meta.hic_aligner == "minimap2"
         }
-        .set {
-            hic_align_branched
-        }
 
-    hic_align_branched
+    bwamem_index_in = hic_align_branched
         .bwamem
         .map {
             it ->
@@ -33,10 +30,9 @@ workflow HIC {
                 it.meta.polished ? (it.meta.polished.pilon ?: it.meta.polished.medaka ?: it.meta.polished.dorado) : it.meta.assembly
             ]
         }
-        .set { bwamem_index_in }
 
     BWAMEM2_INDEX(bwamem_index_in)
-    BWAMEM2_INDEX.out.index
+    bwamem_mem_in = BWAMEM2_INDEX.out.index
         .map {meta, idx ->
             [meta: meta + [bwamem_idx: idx]]
         }
@@ -46,11 +42,10 @@ workflow HIC {
             assembly: [it.meta, it.meta.polished ? (it.meta.polished.pilon ?: it.meta.polished.medaka ?: it.meta.polished.dorado) : it.meta.assembly]
             index:  [it.meta, it.meta.bwamem_idx]
         }
-        .set{bwamem_mem_in}
 
     BWAMEM2_MEM(bwamem_mem_in.reads, bwamem_mem_in.index, bwamem_mem_in.assembly, true)
 
-    hic_align_branched
+    minimap2_in = hic_align_branched
         .minimap
         .map { it ->
             [
@@ -59,17 +54,16 @@ workflow HIC {
             it.meta.polished ? (it.meta.polished.pilon ?: it.meta.polished.medaka ?: it.meta.polished.dorado) : it.meta.assembly
             ]
         }
-        .set {minimap2_in}
 
     MINIMAP2_HIC(minimap2_in, true, "csi", [], [])
 
-    BWAMEM2_MEM.out.bam.mix(MINIMAP2_HIC.out.bam).set{ add_rg_in }
+    add_rg_in = BWAMEM2_MEM.out.bam.mix(MINIMAP2_HIC.out.bam)
 
     ADD_RG(add_rg_in, [[],[]], [[],[]])
 
     MARKDUP(ADD_RG.out.bam, [[],[]], [[],[]])
 
-    MARKDUP.out.bam
+    faidx_in = MARKDUP.out.bam
         .map { meta, bam -> [meta.id, meta, bam] }
         .join(
             MARKDUP.out.bai
@@ -83,20 +77,18 @@ workflow HIC {
             []
             ]
         }
-        .set { faidx_in }
 
     SAMTOOLS_FAIDX(faidx_in, false)
 
-    SAMTOOLS_FAIDX.out.fai
+    indexed = SAMTOOLS_FAIDX.out.fai
         .map {
             meta, index ->
             [
                 meta: meta + [hic_genome_idx: index]
             ]
         }
-        .set { indexed }
 
-    indexed
+    yahs_in = indexed
         .map { it ->
             [
                 it.meta,
@@ -106,19 +98,17 @@ workflow HIC {
                 []
             ]
         }
-        .set { yahs_in }
 
     YAHS(yahs_in)
 
-    YAHS.out.scaffolds_fasta
+    ch_main_scaffolded = YAHS.out.scaffolds_fasta
         .map { meta, corrected -> [meta: meta + [ scaffolds_hic: corrected] ] }
-        .set { ch_main_scaffolded }
 
     QC(ch_main_scaffolded.map { it -> [meta: it.meta - it.meta.subMap("assembly_map_bam") + [assembly_map_bam: null] ] },
         YAHS.out.scaffolds_fasta.map { meta, corrected -> [ meta.id, corrected ] },
         meryl_kmers)
 
-    ch_main_scaffolded
+    liftoff_in = ch_main_scaffolded
         .filter {
             it -> it.lift_annotations
         }
@@ -130,7 +120,6 @@ workflow HIC {
                 it.meta.ref_gff
                 ]
         }
-        .set { liftoff_in }
 
     RUN_LIFTOFF(liftoff_in)
 

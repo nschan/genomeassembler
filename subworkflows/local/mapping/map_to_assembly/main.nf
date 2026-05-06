@@ -8,19 +8,15 @@ workflow MAP_TO_ASSEMBLY {
     main:
     ALIGN(map_assembly, true, 'bai', false, false)
 
-    ALIGN.out.bam
-        .set { aln_to_assembly_bam }
+    aln_to_assembly_bam = ALIGN.out.bam
 
-    ALIGN.out.index
-        .set { aln_to_assembly_bai }
+    aln_to_assembly_bai = ALIGN.out.index
 
-    map_assembly
+    ch_fasta = map_assembly
         .map { meta, _reads, fasta -> [meta, fasta] }
-        .set { ch_fasta }
 
-    aln_to_assembly_bam
+    aln_to_assembly_bam_bai = aln_to_assembly_bam
         .join(aln_to_assembly_bai)
-        .set { aln_to_assembly_bam_bai }
 
     BAM_STATS(aln_to_assembly_bam_bai, ch_fasta )
 

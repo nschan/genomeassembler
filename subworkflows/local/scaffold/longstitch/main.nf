@@ -8,33 +8,40 @@ workflow RUN_LONGSTITCH {
     meryl_kmers
 
     main:
-    channel.empty().set { ch_versions }
+    ch_versions = channel.empty()
 
-    ch_main
-        .map {
+    longstitch_in = ch_main
+        .multiMap {
             it ->
-            [
+            assembly: [
                 it.meta,
-                it.meta.polished ? (it.meta.polished.pilon ?: it.meta.polished.medaka ?: it.meta.polished.dorado) : it.meta.assembly,
-                it.meta.qc_reads_path,
-                it.meta.genome_size
-            ]
+                it.meta.polished ?
+                    (
+                        it.meta.polished.pilon  ?:
+                        it.meta.polished.medaka ?:
+                        it.meta.polished.dorado
+                    ) :
+                    it.meta.assembly
+                ]
+            reads: [it.meta, it.meta.qc_reads_path]
+            command: "tigmint-ntLink-arks"
+            span: []
+            genomesize: it.meta.genome_size
+            longmap: it.qc_reads
         }
-        .set { longstitch_in }
 
     longstitch_in.dump(tag: "SCAFFOLD: LONGSTITCH: inputs")
 
-    LONGSTITCH(longstitch_in)
+    LONGSTITCH(longstitch_in.assembly, longstitch_in.reads, longstitch_in.command, longstitch_in.span, longstitch_in.genomesize, longstitch_in.longmap)
 
-    LONGSTITCH.out.ntlLinks_arks_scaffolds
+    ch_main_scaffolded = LONGSTITCH.out.tigmint_ntLink_arcs_fasta
         .map { meta, scaff_longst -> [meta: meta + [scaffolds_longstitch: scaff_longst] ] }
-        .set { ch_main_scaffolded }
 
     QC(ch_main_scaffolded.map { it -> [ meta: it.meta - it.meta.subMap("assembly_map_bam") + [assembly_map_bam: null] ] },
-        LONGSTITCH.out.ntlLinks_arks_scaffolds.map { meta, scaffold -> [meta.id, scaffold]},
+        LONGSTITCH.out.tigmint_ntLink_arcs_fasta.map { meta, scaffold -> [meta.id, scaffold]},
         meryl_kmers)
 
-    ch_main_scaffolded
+    liftoff_in = ch_main_scaffolded
         .filter {
             it -> it.meta.lift_annotations
         }
@@ -46,7 +53,6 @@ workflow RUN_LONGSTITCH {
                 it.meta.ref_gff
                 ]
         }
-        .set { liftoff_in }
 
     LIFTOFF(liftoff_in,[])
 

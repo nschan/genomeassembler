@@ -35,7 +35,7 @@ workflow GENOMEASSEMBLER {
 
     main:
     // Initialize empty channels
-    ch_input.set { ch_main }
+    ch_main = ch_input
 
     /*
     This pipeline uses a "meta-stuffing" appraoch. All information
@@ -47,18 +47,14 @@ workflow GENOMEASSEMBLER {
     The initial keys are defined in
     ./subworkflows/local/utils_nfcore_genomeassembler/main.nf
     */
-    channel.empty().set { meryl_kmers }
+    meryl_kmers = channel.empty()
 
     // Initialize channels for QC report collection
-    channel
-        .of([])
-        .tap { quast_files }
-        .tap { fastplong_jsons }
-        .tap { genomescope_files }
-        .map { it -> ["dummy", it] }
-        .tap { busco_files }
-        .map { it -> [it[0], it[1], it[1], it[1], it[1]] }
-        .tap { merqury_files }
+    quast_files = channel.of([])
+    fastplong_jsons = channel.of([])
+    genomescope_files = channel.of([])
+    busco_files = channel.of([]).map { it -> ["dummy", it] }
+    merqury_files = channel.of([]).map { it -> [it[0], it[1], it[1], it[1], it[1]] }
 
     /*
     =============
@@ -67,9 +63,9 @@ workflow GENOMEASSEMBLER {
     */
     PREPARE(ch_main)
 
-    PREPARE.out.ch_main.set { ch_main_prepared }
+    ch_main_prepared = PREPARE.out.ch_main
 
-    PREPARE.out.meryl_kmers.set { meryl_kmers }
+    meryl_kmers = PREPARE.out.meryl_kmers
 
     /*
     Assembly
@@ -79,35 +75,31 @@ workflow GENOMEASSEMBLER {
 
     ASSEMBLE(ch_main_prepared, meryl_kmers)
 
-    ASSEMBLE.out.ch_main.set { ch_main_assembled }
+    ch_main_assembled = ASSEMBLE.out.ch_main
 
     /*
     Polishing
     */
-    ch_main_assembled
+    ch_main_assembled_branched = ch_main_assembled
         .branch {
             it ->
             def polishers = ["pilon", "medaka", "medaka+pilon", "dorado", "dorado+pilon"]
             polish:     polishers.contains(it.meta.polish)
             no_polish:  true
         }
-        .set { ch_main_assembled_branched }
 
     POLISH(ch_main_assembled_branched.polish, meryl_kmers)
 
-    ch_main_assembled_branched.no_polish
+    ch_main_polished = ch_main_assembled_branched.no_polish
         .mix(POLISH.out.ch_main)
-        .set { ch_main_polished }
     // Update scaffold for meta map
 
-    ch_main_polished
+    ch_main_polished_branched = ch_main_polished
         .branch { it ->
             scaffold: it.meta.scaffold_links || it.meta.scaffold_longstitch || it.meta.scaffold_ragtag
             no_scaffold: !it.meta.scaffold_links && !it.meta.scaffold_longstitch && !it.meta.scaffold_ragtag
         }
-    .set {
-        ch_main_polished_branched
-    }
+
     /*
     Scaffolding
     */
@@ -115,24 +107,21 @@ workflow GENOMEASSEMBLER {
 
     // Recreate ch_main, even though it is not used since there are no later steps.
 
-    ch_main_polished_branched
+    ch_main_scaffolded = ch_main_polished_branched
         .no_scaffold
         .mix(SCAFFOLD.out.ch_main)
-        .set { ch_main_scaffolded }
 
-    PREPARE.out.fastplong_json_reports
+    fastplong_jsons = PREPARE.out.fastplong_json_reports
         .map { it -> it[1] }
         .unique()
         .collect()
-        .set { fastplong_jsons }
 
-    PREPARE.out.genomescope_summary
+    genomescope_files = PREPARE.out.genomescope_summary
         .concat(
             PREPARE.out.genomescope_plot
         )
         .unique()
         .collect { it -> it[1] }
-        .set { genomescope_files }
 
     def topic_versions = channel.topic("versions")
       .distinct()
@@ -162,7 +151,7 @@ workflow GENOMEASSEMBLER {
             newLine: true
         )
 
-    quast_files
+    quast_files = quast_files
         .mix(
             ASSEMBLE.out.assembly_quast_reports
             .mix(
@@ -174,9 +163,8 @@ workflow GENOMEASSEMBLER {
         )
         .unique()
         .collect()
-        .set { quast_files }
 
-    busco_files
+    busco_files = busco_files
         .mix(
             ASSEMBLE.out.assembly_busco_reports
             .mix(
@@ -188,9 +176,8 @@ workflow GENOMEASSEMBLER {
         )
         .unique()
         .collect { it -> it[1] }
-        .set { busco_files }
 
-    merqury_files
+    merqury_files = merqury_files
         .mix(
             ASSEMBLE.out.assembly_merqury_reports
             .mix(
@@ -204,21 +191,18 @@ workflow GENOMEASSEMBLER {
         .toSet()
         .flatten()
         .collect()
-        .set { merqury_files }
 
-    channel
+    report_files = channel
         .fromPath("${projectDir}/assets/report/*")
         .collect()
-        .set { report_files }
     // Report files
-    channel
+    report_functions = channel
         .fromPath("${projectDir}/assets/report/functions/*")
         .collect()
-        .set { report_functions }
-    channel
+
+    report_scripts = channel
         .fromPath("${projectDir}/assets/report/scripts/*")
         .collect()
-        .set { report_scripts }
 
     REPORT( report_files,
             report_functions,

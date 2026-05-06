@@ -7,7 +7,7 @@ workflow RUN_LIFTOFF {
     main:
     LIFTOFF(liftoff_in, [])
 
-    LIFTOFF.out.gff3.set { lifted_annotations }
+    lifted_annotations = LIFTOFF.out.gff3
 
     emit:
     lifted_annotations

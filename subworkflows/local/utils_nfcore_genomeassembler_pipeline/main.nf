@@ -95,7 +95,7 @@ workflow PIPELINE_INITIALISATION {
     // Create channel from input file provided through params.input
     //
 
-    channel.fromPath(params.input)
+    ch_samplesheet = channel.fromPath(params.input)
         .splitCsv(header: true)
         /*
         This is a somewhat crucial step, where the samplesheet and params are used to determine per-sample parameters.
@@ -219,10 +219,8 @@ workflow PIPELINE_INITIALISATION {
             ]
         ]
         }
-        .set { ch_samplesheet }
 
     // Define valid hybrid assemblers
-
     def hybrid_assemblers = ["hifiasm"]
     ch_samplesheet.dump(tag: "PARSED INPUTS:")
     // sample-level checks

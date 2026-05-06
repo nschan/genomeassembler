@@ -9,7 +9,7 @@ workflow RUN_RAGTAG {
     meryl_kmers
 
     main:
-    ch_main
+    ragtag_in = ch_main
         .multiMap { it ->
                     def assembly_to_scaffold =
                                 it.meta.scaffold ?
@@ -36,23 +36,20 @@ workflow RUN_RAGTAG {
                             it.meta.ref_fasta
                         ]
                     }
-        .set { ragtag_in }
 
     ragtag_in.assembly.dump(tag: "SCAFFOLD: RAGTAG: Assembly inputs")
     ragtag_in.reference.dump(tag: "SCAFFOLD: RAGTAG: Reference inputs")
 
     RAGTAG_SCAFFOLD(ragtag_in.assembly, ragtag_in.reference, [[], []], [[], [], []])
 
-    RAGTAG_SCAFFOLD.out.corrected_assembly
+    ch_main_scaffolded = RAGTAG_SCAFFOLD.out.corrected_assembly
         .map { meta, corrected -> [meta: meta + [ scaffolds_ragtag: corrected] ] }
-        .set { ch_main_scaffolded }
 
     QC(ch_main_scaffolded.map { it -> [meta: it.meta - it.meta.subMap("assembly_map_bam") + [assembly_map_bam: null] ] },
         RAGTAG_SCAFFOLD.out.corrected_assembly.map { meta, corrected -> [ meta.id, corrected ] },
         meryl_kmers)
 
-
-    ch_main_scaffolded
+    liftoff_in = ch_main_scaffolded
         .filter {
             it -> it.lift_annotations
         }
@@ -64,7 +61,6 @@ workflow RUN_RAGTAG {
                 it.meta.ref_gff
                 ]
         }
-        .set { liftoff_in }
 
     LIFTOFF(liftoff_in, [])
 

@@ -10,24 +10,21 @@ workflow POLISH_DORADO {
 
     main:
 
-    ch_main
+    ch_aln_in = ch_main
         .map { it -> [it.meta, it.meta.assembly, it.meta.ontreads] }
-        .set { ch_aln_in }
 
     ALIGN(ch_aln_in)
 
-    ALIGN.out.bam
+    ch_polish_in = ALIGN.out.bam
         .join(ALIGN.out.bai)
         .map {meta, bam, bai-> [ meta, meta.assembly, bam, bai ] }
-        .set { ch_polish_in }
 
     POLISH(ch_polish_in, [])
 
-    POLISH.out.polished_alignment.set { polished_assembly }
+    polished_assembly = POLISH.out.polished_alignment
 
-    polished_assembly
+    ch_main_out = polished_assembly
         .map { meta, polished_dorado -> [meta: meta + [ polished: [polished_dorado: polished_dorado ] ] ]}
-        .set { ch_main_out }
 
     QC(
         ch_main_out.map { it -> [meta: it.meta - it.meta.subMap("assembly_map_bam") + [ assembly_map_bam: null] ] },
@@ -35,7 +32,7 @@ workflow POLISH_DORADO {
         meryl_kmers
     )
 
-    ch_main_out
+    liftoff_in = ch_main_out
         .filter {
             it -> it.meta.lift_annotations
         }
@@ -47,7 +44,6 @@ workflow POLISH_DORADO {
                 it.meta.ref_gff
                 ]
         }
-        .set { liftoff_in }
 
     LIFTOFF(liftoff_in, [])
 

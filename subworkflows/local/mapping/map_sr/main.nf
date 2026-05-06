@@ -8,29 +8,25 @@ workflow MAP_SR {
 
     main:
     // map reads to assembly
-    in_reads
+    map_assembly = in_reads
         .join(genome_assembly)
-        .set { map_assembly }
 
     ALIGN_SHORT(map_assembly, true, 'bai', false, false)
 
-    ALIGN_SHORT.out.bam.set { aln_to_assembly_bam }
+    aln_to_assembly_bam = ALIGN_SHORT.out.bam
 
-    ALIGN_SHORT.out.index.set { aln_to_assembly_bai }
+    aln_to_assembly_bai = ALIGN_SHORT.out.index
 
-    aln_to_assembly_bam
+    aln_to_assembly_bam_bai = aln_to_assembly_bam
         .join(aln_to_assembly_bai)
-        .set { aln_to_assembly_bam_bai }
 
-    map_assembly
+    ch_fasta = map_assembly
         .map { meta, _reads, fasta -> [ meta, fasta ] }
-        .set { ch_fasta }
 
     BAM_STATS(aln_to_assembly_bam_bai, ch_fasta)
 
-    aln_to_assembly_bam
+    aln_to_assembly_bam_bai = aln_to_assembly_bam
         .join(aln_to_assembly_bai)
-        .set { aln_to_assembly_bam_bai }
 
     emit:
     aln_to_assembly_bam

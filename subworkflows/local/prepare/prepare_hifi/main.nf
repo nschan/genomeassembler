@@ -8,7 +8,7 @@ workflow PREPARE_HIFI {
 
     main_in.dump(tag: "Prepare-HIFI input")
 
-    main_in
+    ch_fastplong_in = main_in
         .filter { it -> it.meta.group }
         .map { it -> [it.meta, it.meta.group, it.meta.hifi_trim, it.meta.hifireads, it.meta.hifi_adapters, it.meta.hifi_fastplong_args] }
         .groupTuple(by: 1)
@@ -42,13 +42,12 @@ workflow PREPARE_HIFI {
             reads: [it.meta, it.hifireads]
             adapters: it.hifi_adapters ?: []
         }
-        .set { ch_fastplong_in }
 
     ch_fastplong_in.reads.dump(tag: "HiFI fastplong reads in")
 
     FASTPLONG_HIFI(ch_fastplong_in.reads, ch_fastplong_in.adapters, false, false )
 
-    FASTPLONG_HIFI
+    fastplong_reads_out = FASTPLONG_HIFI
         .out
         .reads
         .filter { it -> it[0].metas }
@@ -62,9 +61,8 @@ workflow PREPARE_HIFI {
                 meta, hifireads -> [ meta: meta - meta.subMap("hifireads") + [ hifireads: hifireads ] ]
             }
         )
-        .set { fastplong_reads_out }
 
-    FASTPLONG_HIFI
+    fastplong_json_out = FASTPLONG_HIFI
         .out
         .json
         .filter { it -> it[0].metas }
@@ -75,7 +73,6 @@ workflow PREPARE_HIFI {
         .mix(FASTPLONG_HIFI.out.json
             .filter { it -> !it[0].metas }
         )
-        .set { fastplong_json_out }
 
     fastplong_reads_out.dump(tag: "Prepare-HIFI output")
 

@@ -9,28 +9,26 @@ workflow PREPARE_SHORTREADS {
 
     main:
 
-    shortreads_in
+    shortreads = shortreads_in
         .map { row -> row.meta.shortread_F ? create_shortread_channel(row.meta) : row } // function below
         .branch {
             it ->
                 trim: it.meta.shortread_trim
                 no_trim: !it.meta.shortread_trim
         }
-        .set { shortreads }
 
-    shortreads_in
+    hic_trim = shortreads_in
         .map { row -> row.meta.hic_F ? create_hic_shortread_channel(row.meta) : row }
         .branch {
             row ->
                 trim: row.meta.hic_trim
                 no_trim: !row.meta.hic_trim
         }
-        .set { hic_trim }
 
     shortreads.trim.dump(tag: "shortread trim channel")
     hic_trim.trim.dump(tag: "hic trim channel")
 
-    shortreads
+    trim_in = shortreads
         .trim
         .filter { it -> it.meta.group }
         .map { it -> [it.meta, it.meta.group] }
@@ -54,9 +52,8 @@ workflow PREPARE_SHORTREADS {
                 it -> [ it.meta, it.meta.shortreads, [] ]
                 }
         )
-        .set { trim_in }
 
-    hic_trim
+    hic_trim_in = hic_trim
         .trim
         .filter { it -> it.meta.group }
         .map {it -> [it.meta, it.meta.group]}
@@ -80,13 +77,12 @@ workflow PREPARE_SHORTREADS {
                     it -> [ it.meta, it.meta.hic_reads, [] ]
                 }
         )
-        .set { hic_trim_in }
 
     trim_in.dump(tag: "Trim in")
 
     FASTP(trim_in, false, false, false)
 
-    FASTP.out.reads
+    trimmed_reads = FASTP.out.reads
         .filter { it -> it[0].metas }
         .flatMap { it -> // looks like [meta <[id, metas]>, output_path]
             it[0].metas
@@ -97,7 +93,7 @@ workflow PREPARE_SHORTREADS {
                 .filter { it -> !it[0].metas }
                 .map { it -> [ meta: it[0] - it[0].subMap("shortreads") + [ shortreads: it[1] ] ] }
         )
-        .set { trimmed_reads }
+
 
     trimmed_reads.dump(tag: "Trim out")
     // unite branched:
@@ -105,7 +101,7 @@ workflow PREPARE_SHORTREADS {
 
     FASTP_HIC(hic_trim_in, false, false, false)
 
-    FASTP_HIC.out.reads
+    hic_trimmed_reads = FASTP_HIC.out.reads
         .filter { it -> it[0].metas }
         .flatMap { it -> // looks like [meta <[id, metas]>, output_path]
             it[0].metas
@@ -116,15 +112,13 @@ workflow PREPARE_SHORTREADS {
                 .filter { it -> !it[0].metas }
                 .map { it -> [ meta: it[0] - it[0].subMap("hic_reads") + [ hic_reads: it[1] ] ] }
         )
-        .set { hic_trimmed_reads }
 
-    trimmed_reads
+    shortreads = trimmed_reads
         .mix( shortreads.no_trim )
-        .set { shortreads }
 
     // add HiC trimmed to those that need it
 
-    shortreads
+    shortreads = shortreads
         .filter { row -> row.meta.hic_trim }
         .map { row -> [ row.meta.id, row.meta ] }
         .combine(
@@ -148,9 +142,8 @@ workflow PREPARE_SHORTREADS {
                 .filter { row -> !row.meta.hic_trim }
                 .map { it-> [meta: it.meta - it.meta.subMap("hic_reads") + [hic_reads: null]]}
         )
-        .set { shortreads }
 
-    shortreads
+    meryl_in = shortreads
         .filter { it -> it.meta.merqury }
         .filter { it -> it.meta.group  }
         .map { it -> [ it.meta, it.meta.group, it.meta.shortreads, it.meta.meryl_k ] }
@@ -172,13 +165,12 @@ workflow PREPARE_SHORTREADS {
             reads: [ it.meta, it.shortreads ]
             kmer_size: it.meryl_k
         }
-        .set { meryl_in }
 
     MERYL_COUNT(meryl_in.reads, meryl_in.kmer_size)
 
     MERYL_UNIONSUM(MERYL_COUNT.out.meryl_db, params.meryl_k)
 
-    MERYL_UNIONSUM.out.meryl_db
+    meryl_kmers = MERYL_UNIONSUM.out.meryl_db
         .filter { it -> it[0].metas }
         .flatMap { it -> // looks like [meta <[id, metas]>, output_path]
             it[0].metas
@@ -191,9 +183,6 @@ workflow PREPARE_SHORTREADS {
             }
         )
         .map {meta , kmers -> [meta.id, kmers]}
-        .set { meryl_kmers }
-
-
 
     emit:
     main_out        = shortreads

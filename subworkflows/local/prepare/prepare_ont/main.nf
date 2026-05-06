@@ -9,15 +9,14 @@ workflow PREPARE_ONT {
     main:
 
     ch_main.dump(tag: "Prepare-ONT input")
-    ch_main
+    ch_main_collect_branched = ch_main
         .branch {
             it ->
                 to_collect: it.meta.ont_collect
                 no_collect: !it.meta.ont_collect
         }
-        .set { ch_main_collect_branched }
 
-    ch_main_collect_branched
+    collect_in = ch_main_collect_branched
         .to_collect
         .filter { it -> it.meta.group }
         .map { it -> [it.meta, it.meta.group, it.meta.ontreads] }
@@ -40,11 +39,10 @@ workflow PREPARE_ONT {
                     it -> [ it.meta, it.meta.ontreads ]
                 }
         )
-        .set { collect_in }
 
     COLLECT(collect_in)
 
-    COLLECT.out.reads
+    ch_collected_reads = COLLECT.out.reads
         .filter { it -> it[0].metas }
         .flatMap { it -> // it looks like [meta, output_path]
             it[0].metas
@@ -57,18 +55,16 @@ workflow PREPARE_ONT {
                     meta, ontreads -> [ meta: meta - meta.subMap("ontreads") + [ontreads: ontreads] ]
                 }
         )
-        .set { ch_collected_reads }
 
     ch_collected_reads.dump(tag: "Collected ONT reads")
 
-    ch_collected_reads
+    ch_collected = ch_collected_reads
         .mix(ch_main_collect_branched.no_collect)
-        .set { ch_collected }
 
     ch_collected.dump(tag: "Collected reads mixed with uncollected.")
 
     // ch_collected is the same samples as the input channel
-    ch_collected
+    ch_fastplong_in = ch_collected
         .filter { it -> it.meta.group }
         .map { it -> [it.meta, it.meta.group, it.meta.ont_trim, it.meta.ontreads, it.meta.ont_adaptors, it.meta.ont_fastplong_args] }
         .groupTuple(by: 1)
@@ -102,11 +98,11 @@ workflow PREPARE_ONT {
             reads: [it.meta, it.ontreads]
             adapters: it.ont_adapters ?: []
         }
-        .set { ch_fastplong_in }
+
 
     FASTPLONG_ONT(ch_fastplong_in.reads, ch_fastplong_in.adapters, false, false)
 
-    FASTPLONG_ONT
+    fastplong_reads_out = FASTPLONG_ONT
         .out
         .reads
         .filter { it -> it[0].metas }
@@ -120,9 +116,8 @@ workflow PREPARE_ONT {
                 it -> [ meta: it[0] - it[0].subMap("ontreads") + [ ontreads: it[1] ] ]
             }
         )
-        .set { fastplong_reads_out }
 
-    FASTPLONG_ONT
+    fastplong_json_out = FASTPLONG_ONT
         .out
         .json
         .filter { it -> it[0].metas }
@@ -134,7 +129,6 @@ workflow PREPARE_ONT {
             FASTPLONG_ONT.out.json
             .filter { it -> !it[0].metas }
         )
-        .set { fastplong_json_out }
 
     fastplong_reads_out.dump(tag: "Prepare-ONT output")
 

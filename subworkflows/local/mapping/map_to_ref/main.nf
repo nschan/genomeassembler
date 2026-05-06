@@ -9,19 +9,15 @@ workflow MAP_TO_REF {
     // Map reads to reference
     ALIGN(ch_map_ref, true, 'bai', false, false)
 
-    ALIGN.out.bam
-        .set { ch_aln_to_ref_bam }
+    ch_aln_to_ref_bam = ALIGN.out.bam
 
-    ALIGN.out.index
-        .set { aln_to_ref_bai }
+    aln_to_ref_bai = ALIGN.out.index
 
-    ch_aln_to_ref_bam
+    ch_aln_to_ref_bam_bai = ch_aln_to_ref_bam
         .join(aln_to_ref_bai)
-        .set { ch_aln_to_ref_bam_bai }
 
-    ch_map_ref
+    ch_fasta = ch_map_ref
         .map { meta, _reads, fasta -> [[meta], fasta] }
-        .set { ch_fasta }
 
     BAM_STATS(ch_aln_to_ref_bam_bai, ch_fasta)
 

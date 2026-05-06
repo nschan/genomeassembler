@@ -10,7 +10,7 @@ workflow POLISH_PILON {
 
     main:
 
-    ch_main
+    map_sr_in = ch_main
         .multiMap {
             it ->
             shortreads: [it.meta, it.meta.shortreads]
@@ -19,18 +19,16 @@ workflow POLISH_PILON {
                 it.meta.polish == "medaka+pilon" ? it.meta.polished.medaka : it.meta.polish == "dorado+pilon" ? it.meta.polished.dorado : it.meta.assembly
                 ]
         }
-        .set { map_sr_in }
 
     MAP_SR(map_sr_in.shortreads, map_sr_in.assembly)
 
-    map_sr_in.assembly
+    pilon_in = map_sr_in.assembly
         .join(MAP_SR.out.aln_to_assembly_bam_bai)
         .multiMap {
             meta, assembly, bam, bai ->
             assembly: [meta, assembly]
             bam_bai: [meta, bam, bai]
         }
-        .set { pilon_in }
 
     PILON(
         pilon_in.assembly,
@@ -40,15 +38,14 @@ workflow POLISH_PILON {
 
     pilon_polished = PILON.out.improved_assembly
 
-    pilon_polished
+    ch_main = pilon_polished
         .map { meta, polished_pilon -> [ meta: meta + [ polished: [pilon: polished_pilon] ] ]  }
-        .set { ch_main }
 
     QC(ch_main.map { it -> [meta: it.meta - it.meta.subMap("assembly_map_bam") + [assembly_map_bam: null] ]},
         pilon_polished.map {meta, polished -> [meta.id, polished ]},
         meryl_kmers)
 
-    ch_main
+    liftoff_in = ch_main
         .filter {
             it -> it.meta.lift_annotations
         }
@@ -60,7 +57,6 @@ workflow POLISH_PILON {
                 it.meta.ref_gff
                 ]
         }
-        .set { liftoff_in }
 
     LIFTOFF(liftoff_in, [])
 

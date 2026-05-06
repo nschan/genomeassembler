@@ -59,38 +59,35 @@ workflow PREPARE {
     take: ch_main
 
     main:
-    channel.empty().set{ ch_main_shortreaded }
-    ch_main
+    ch_main_shortreaded = channel.empty()
+
+    shortreads = ch_main
         .filter {
             it -> ((it.meta.shortread_F && it.meta.use_short_reads) || it.hic_trim) ? true : false
         }
-        .set { shortreads }
 
-    ch_main
+    ontreads = ch_main
         .filter {
             it -> (it.meta.ontreads) ? true : false
         }
-        .set { ontreads }
 
-    ch_main
+    hifireads = ch_main
         .filter {
             it -> (it.meta.hifireads) ? true : false
         }
-        .set { hifireads }
-
 
     // adapted to sample-logic
 
     SHORTREADS(shortreads)
 
-    SHORTREADS.out.meryl_kmers.set { meryl_kmers }
+    meryl_kmers = SHORTREADS.out.meryl_kmers
 
     // This changes ch_main shortreads_F and _R become one tuple, paired is gone.
 
     // put shortreads back together with samples without shortreads
 
     // Added mix with empty to make sure that the channel exists
-    ch_main_shortreaded
+    ch_main_shortreaded = ch_main_shortreaded
         .mix(
             ch_main
                 .filter {
@@ -99,19 +96,18 @@ workflow PREPARE {
                 .map { it -> [meta: it.meta - it.meta.subMap("shortread_F","shortread_R", "paired") + [shorteads: null] ]}
                 .mix(SHORTREADS.out.main_out)
         )
-        .set { ch_main_shortreaded }
 
     ONT(ontreads)
 
-    ONT.out.main_out.set { ch_main_ont_prepped }
+    ch_main_ont_prepped = ONT.out.main_out
 
     // Continue here with switching to meta
 
     HIFI(hifireads)
 
-    HIFI.out.main_out.set { ch_main_hifi_prepped }
+    ch_main_hifi_prepped = HIFI.out.main_out
 
-    ch_main_shortreaded
+    ch_main_sr_ont = ch_main_shortreaded
         // ADD ONT READS
         .filter {
             it -> it.meta.ontreads ? true : false
@@ -133,13 +129,10 @@ workflow PREPARE {
                 it -> it.meta.ontreads ? false : true
             }
         )
-        .set {
-            ch_main_sr_ont
-        }
 
     // Add prepared hifi-reads:
 
-    ch_main_sr_ont
+    ch_main_prepared = ch_main_sr_ont
         .filter {
             it -> it.meta.hifireads ? true : false
         }
@@ -160,14 +153,11 @@ workflow PREPARE {
                 it -> it.meta.hifireads ? false : true
             }
         )
-        .set {
-            ch_main_prepared
-        }
 
     // Get average read length of the QC reads from fastplong json report
     def slurp = new groovy.json.JsonSlurper()
 
-    ch_main_prepared
+    ch_main_jellyfish_branched = ch_main_prepared
         .filter { it -> it.meta.qc_reads.toLowerCase() == "ont" }
         .map { it ->
             [
@@ -217,12 +207,10 @@ workflow PREPARE {
                 jelly: it.meta.jellyfish
                 no_jelly: !it.meta.jellyfish
         }
-        .set { ch_main_jellyfish_branched }
 
     JELLYFISH(ch_main_jellyfish_branched.jelly)
 
-
-    ch_main_jellyfish_branched.no_jelly
+    main_out = ch_main_jellyfish_branched.no_jelly
         .mix( JELLYFISH.out.main_out )
         // At this stage, make sure that qc_read_path for downstream qc is using the prepared reads.
         .map { it ->
@@ -236,13 +224,12 @@ workflow PREPARE {
                         ]
             ]
         }
-        .set { main_out }
 
     main_out.dump(tag: "Prepare: Combined outputs")
 
-    JELLYFISH.out.genomescope_summary.set { genomescope_summary }
+    genomescope_summary = JELLYFISH.out.genomescope_summary
 
-    JELLYFISH.out.genomescope_plot.set { genomescope_plot }
+    genomescope_plot = JELLYFISH.out.genomescope_plot
 
     fastplong_json_reports = HIFI.out.fastplong_hifi_reports.mix(ONT.out.fastplong_ont_reports)
 

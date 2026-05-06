@@ -10,19 +10,18 @@ workflow QC {
     meryl_kmers
 
     main:
-    channel.empty().set { quast_out }
-    channel.empty().set { busco_out }
-    channel.empty().set { merqury_report_files }
+    quast_out = channel.empty()
+    busco_out = channel.empty()
+    merqury_report_files = channel.empty()
 
-    ch_main
+    ch_shortread_branched = ch_main
         .branch {
             it ->
             shortread: it.meta.use_short_reads
             no_shortread: !it.meta.use_short_reads
         }
-        .set { ch_shortread_branched }
 
-    ch_shortread_branched
+    merqury_in = ch_shortread_branched
         .shortread
         .filter { it -> it.meta.merqury }
         .map { it -> [it.meta.id, it.meta] }
@@ -31,21 +30,19 @@ workflow QC {
         .map { _id, meta, scaffs, kmers ->
                 [ meta, kmers, scaffs ]
             }
-        .set { merqury_in }
 
     MERQURY(merqury_in)
 
     // Make sure that Polish and Scaffold main channels do not contain assembly_map_bam
 
-    ch_main
+    ch_map_branched = ch_main
         .branch {
             it ->
             map_to_assembly: it.meta.quast && !it.meta.assembly_map_bam
             no_map_to_assembly: !it.meta.quast || (it.meta.quast && it.meta.assembly_map_bam)
         }
-        .set { ch_map_branched }
 
-    ch_map_branched
+    map_assembly_in = ch_map_branched
         .map_to_assembly
         .map {
             it -> [ it.meta.id, it.meta ]
@@ -59,21 +56,19 @@ workflow QC {
                 target_scaffolds
             ]
         }
-        .set { map_assembly_in }
 
     MAP_TO_ASSEMBLY(map_assembly_in)
 
      // create main channel with mappings
-    MAP_TO_ASSEMBLY.out.aln_to_assembly_bam
+    ch_qc = MAP_TO_ASSEMBLY.out.aln_to_assembly_bam
         .map { meta, assembly_map_bam ->
             [
                 meta: meta + [ assembly_map_bam: assembly_map_bam ]
             ]
         }
         .mix(ch_map_branched.no_map_to_assembly)
-        .set { ch_qc }
 
-    ch_qc
+    quast_in = ch_qc
         .filter {
             it -> it.meta.quast
         }
@@ -89,12 +84,11 @@ workflow QC {
                 use_ref: it.meta.use_ref
                 use_gff: it.meta.use_ref && it.meta.ref_gff ? true : false
             }
-        .set { quast_in }
 
     QUAST(quast_in.quast_in, quast_in.use_ref, quast_in.use_gfgf)
-    QUAST.out.tsv.set { quast_out }
+    quast_out = QUAST.out.tsv
 
-    ch_qc
+    busco_in = ch_qc
         .filter {
             it -> it.meta.busco
         }
@@ -106,13 +100,12 @@ workflow QC {
                 busco_lineage: it.meta.busco_lineage
                 busco_db: it.meta.busco_db ? file(it.meta.busco_db, checkIfExists: true) : []
             }
-        .set { busco_in }
 
     BUSCO(busco_in.fasta, 'genome', busco_in.busco_lineage, busco_in.busco_db , [], true)
-    BUSCO.out.batch_summary.set { busco_out }
+    busco_out = BUSCO.out.batch_summary
 
 
-    MERQURY.out.stats
+    merqury_report_files = MERQURY.out.stats
         .join(
             MERQURY.out.spectra_asm_hist
         )
@@ -122,7 +115,6 @@ workflow QC {
         .join(
             MERQURY.out.assembly_qv
         )
-        .set { merqury_report_files }
 
     emit:
     ch_main     // QC does not (and should not) modify ch_main but returns the input.

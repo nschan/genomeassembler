@@ -8,9 +8,9 @@ workflow JELLYFISH {
     ch_main
 
     main:
-    channel.empty().set { genomescope_in }
+    genomescope_in = channel.empty()
 
-    ch_main
+    samples = ch_main
         .filter { it -> it.meta.group }
         .map { it ->
             [
@@ -45,14 +45,13 @@ workflow JELLYFISH {
                     ]
                 }
         )
-        .set { samples }
 
     COUNT(samples)
-    COUNT.out.kmers.set { kmers }
+    kmers = COUNT.out.kmers
 
     HISTO(kmers)
 
-    HISTO.out.histo
+    genomescope_in = HISTO.out.histo
         .map { meta, hist ->
                     [
                         meta,
@@ -62,13 +61,12 @@ workflow JELLYFISH {
 
                     ]
         }
-        .set { genomescope_in }
 
     STATS(kmers)
 
     GENOMESCOPE(genomescope_in)
 
-    GENOMESCOPE.out.estimated_hap_len
+    outputs = GENOMESCOPE.out.estimated_hap_len
         .filter { it -> it[0].metas }
         .flatMap { it ->
             it[0].metas
@@ -80,13 +78,12 @@ workflow JELLYFISH {
                 it -> [ meta: it[0] + [ genome_size: it[1] ] ]
             }
         )
-        .set { outputs }
 
     outputs.dump(tag: "Jellyfish outputs")
 
-    GENOMESCOPE.out.summary.set { genomescope_summary }
+    genomescope_summary = GENOMESCOPE.out.summary
 
-    GENOMESCOPE.out.plot.set { genomescope_plot }
+    genomescope_plot = GENOMESCOPE.out.plot
 
     emit:
     main_out = outputs

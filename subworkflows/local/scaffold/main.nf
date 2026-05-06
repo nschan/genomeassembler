@@ -9,65 +9,58 @@ workflow SCAFFOLD {
     meryl_kmers
 
     main:
-    channel.empty().set { links_busco }
-    channel.empty().set { links_quast }
-    channel.empty().set { links_merqury }
-    channel.empty().set { longstitch_busco }
-    channel.empty().set { longstitch_quast }
-    channel.empty().set { longstitch_merqury }
-    channel.empty().set { ragtag_busco }
-    channel.empty().set { ragtag_quast }
-    channel.empty().set { ragtag_merqury }
+    links_busco = channel.empty()
+    links_quast = channel.empty()
+    links_merqury = channel.empty()
+    longstitch_busco = channel.empty()
+    longstitch_quast = channel.empty()
+    longstitch_merqury = channel.empty()
+    ragtag_busco = channel.empty()
+    ragtag_quast = channel.empty()
+    ragtag_merqury = channel.empty()
 
     // There is no support for scaffolding of scaffolded scaffolds.
     // But it is possible that one sample is scaffolded with different tools.
     // Therefore main is filtered, instead of branched.
 
-    ch_main
+    links_in = ch_main
         .filter {
             it ->  it.meta.scaffold_links
         }
-    .set { links_in }
 
     RUN_LINKS(links_in, meryl_kmers)
-    RUN_LINKS.out.ch_main
-        .set { links_out }
+    links_out = RUN_LINKS.out.ch_main
 
-    ch_main
+    longstitch_in = ch_main
         .filter {
             it ->  it.meta.scaffold_longstitch
         }
-    .set { longstitch_in }
 
     RUN_LONGSTITCH(longstitch_in, meryl_kmers)
-    RUN_LONGSTITCH.out.ch_main
-        .set { longstitch_out }
 
-    ch_main
+    longstitch_out = RUN_LONGSTITCH.out.ch_main
+
+    hic_in = ch_main
         .filter {
             it ->  it.meta.scaffold_hic
         }
-    .set { hic_in }
 
     HIC(hic_in, meryl_kmers)
-    HIC.out.ch_main
-        .set { hic_out }
+    hic_out = HIC.out.ch_main
 
-    ch_main
+    ragtag_in = ch_main
         .filter {
             it -> it.meta.scaffold_ragtag && !it.meta.hic_reads && !it.meta.scaffold_longstitch && !it.meta.scaffold_links
         }
     .mix(hic_out.filter { it -> it.meta.scaffold_ragtag } )
     .mix(longstitch_out.filter { it -> it.meta.scaffold_ragtag } )
     .mix(links_out.filter { it -> it.meta.scaffold_ragtag } )
-    .set { ragtag_in }
 
     RUN_RAGTAG(ragtag_in, meryl_kmers)
-    RUN_RAGTAG.out.ch_main
-        .set { ragtag_out }
+    ragtag_out = RUN_RAGTAG.out.ch_main
 
     // Deal with cases that are single scaffold
-    links_out
+    ch_main = links_out
         .filter {it -> !it.meta.scaffold_longstitch && !it.meta.scaffold_ragtag }
         .map { meta -> [ meta: meta - meta.subMap("links_scaffold") + [ scaffolds: [ links: meta.scaffolds_links ] ]  ]}
         .mix(
@@ -165,42 +158,38 @@ workflow SCAFFOLD {
                              ]
                 }
         )
-        .set { ch_main }
 
 
-    RUN_LINKS.out.busco_out.set { links_busco }
-    RUN_LINKS.out.quast_out.set { links_quast }
-    RUN_LINKS.out.merqury_report_files.set { links_merqury }
+    links_busco = RUN_LINKS.out.busco_out
+    links_quast = RUN_LINKS.out.quast_out
+    links_merqury = RUN_LINKS.out.merqury_report_files
 
-    RUN_LONGSTITCH.out.busco_out.set { longstitch_busco }
-    RUN_LONGSTITCH.out.quast_out.set { longstitch_quast }
-    RUN_LONGSTITCH.out.merqury_report_files.set { longstitch_merqury }
+    longstitch_busco = RUN_LONGSTITCH.out.busco_out
+    longstitch_quast = RUN_LONGSTITCH.out.quast_out
+    longstitch_merqury = RUN_LONGSTITCH.out.merqury_report_files
 
-    HIC.out.busco_out.set { hic_busco }
-    HIC.out.quast_out.set { hic_quast }
-    HIC.out.merqury_report_files.set { hic_merqury }
+    hic_busco = HIC.out.busco_out
+    hic_quast = HIC.out.quast_out
+    hic_merqury = HIC.out.merqury_report_files
 
-    RUN_RAGTAG.out.busco_out.set { ragtag_busco }
-    RUN_RAGTAG.out.quast_out.set { ragtag_quast }
-    RUN_RAGTAG.out.merqury_report_files.set { ragtag_merqury }
+    ragtag_busco = RUN_RAGTAG.out.busco_out
+    ragtag_quast = RUN_RAGTAG.out.quast_out
+    ragtag_merqury = RUN_RAGTAG.out.merqury_report_files
 
-    links_busco
+    scaffold_busco_reports = links_busco
         .concat(longstitch_busco)
         .concat(ragtag_busco)
         .concat(hic_busco)
-        .set { scaffold_busco_reports }
 
-    links_quast
+    scaffold_quast_reports = links_quast
         .concat(longstitch_quast)
         .concat(ragtag_quast)
         .concat(hic_quast)
-        .set { scaffold_quast_reports }
 
-    links_merqury
+    scaffold_merqury_reports = links_merqury
         .concat(longstitch_merqury)
         .concat(ragtag_merqury)
         .concat(hic_merqury)
-        .set { scaffold_merqury_reports }
 
     emit:
     ch_main
