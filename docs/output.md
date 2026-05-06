@@ -11,9 +11,9 @@ The directories listed below will be created in the results directory after the 
 The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes data using the following steps:
 
 - [**Read preparation**](#read-preparation)
-  - [**Long reads**](#long-reads):
-  - [**Short reads**](#short-reads):
-  - [**HiC reads**](#hic-reads):
+  - [**Long reads**](#long-reads)
+  - [**Short reads**](#short-reads)
+  - [**HiC reads**](#hic-reads)
 - [**Assembly**](#assembly), choice between assemblers
 - [**Polishing**](#polishing)
 - [**Scaffolding**](#scaffolding)
@@ -132,7 +132,7 @@ Annotation `gff3` and `unmapped.txt` files are only created if a reference for a
       - `<SampleName>.asm.bp.p_ctg.gfa`: primary contigs in gfa format
       - `<SampleName>.asm.bp.p_utg.gfa`: processed unitigs in gfa format
       - `<SampleName>.asm.bp.r_utg.gfa`: raw unitigs in gfa format
-      - `<SampleName>.stderr.log`: Any output form hifiasm to stderr
+      - `<SampleName>.stderr.log`: Any output from hifiasm to stderr
       - `gfa2_fasta/`: hifiasm assembly in fasta format.
     - `ragtag/`: output from RagTag, only if `'scaffold'` was used as the strategy.
       - `<SampleName>_assembly_scaffold/`
@@ -140,7 +140,7 @@ Annotation `gff3` and `unmapped.txt` files are only created if a reference for a
         - `<SampleName>_assembly_scaffold.fasta`: Scaffolds in fasta format
         - `<SampleName>_assembly_scaffold.stats`: Scaffolding statistics.
     - `<SampleName>_assembly.gff3` annotation liftover
-    - `<SampleName>_assembly.unnapped.txt` annotations that could not be lifted over during annotation liftover
+    - `<SampleName>_assembly.unmapped.txt` annotations that could not be lifted over during annotation liftover
 
 </details>
 
@@ -178,7 +178,7 @@ Annotation `gff3` and `unmapped.txt` files are only created if a reference for a
 
 The (polished) assembly can be scaffolded using different tools.
 [links](https://github.com/bcgsc/LINKS) performs scaffolding of the assembly using long-reads
-[longstitch](https://github.com/bcgsc/longstitch) performs correction via [Tigmint](https://github.com/bcgsc/tigmint) and scaffolding using long reads via [ntLink](https://github.com/bcgsc/ntLink) and [ARKS](https://github.com/bcgsc/arcs).
+[longstitch](https://github.com/bcgsc/longstitch) performs correction via [Tigmint](https://github.com/bcgsc/tigmint) and scaffolding using long reads via [ntLink](https://github.com/bcgsc/ntLink) and [ARKS](https://github.com/bcgsc/arcs). [yahs](https://github.com/c-zhou/yahs) is used to perform scaffolding using HiC reads.
 Annotation `gff3` and `unmapped.txt` files are only created if a reference for annotation liftover is provided and `lift_annotations` is enabled.
 
 <details markdown="1">
@@ -220,9 +220,7 @@ Annotation `gff3` and `unmapped.txt` files are only created if a reference for a
 
 All quality control files end up in `QC`. Below is the tree assuming that all steps of the pipeline were run:
 
-- [`nanoq`](https://github.com/esteinig/nanoq) generates descriptive statistics of the nanopore reads.
-  For each step three quality control tools can be run.
-- [`QUAST`](https://github.com/ablab/quast) provides assembly statistics (e.g. size, N50, etc. )
+- [`QUAST`](https://github.com/ablab/quast) provides assembly statistics (e.g. size, N50, etc.)
 - [`BUSCO`](https://busco.ezlab.org/) assess genome quality based on the presence of lineage-specific single-copy orthologs
 - [`merqury`](https://github.com/marbl/merqury) compares the genome k-mer spectrum to the short-read k-mer spectrum to assess base-accuracy of the assembly.
 
@@ -255,7 +253,7 @@ The files and folders in the different QC folders are named based on
       - `<SampleName>_<stage>.assembly_only.wig` : bp errors in assembly (wig)
       - `<SampleName>_<stage>.unionsum.hist.ploidy` : ploidy estimates from short-reads
     - `QUAST/`: QUAST analysis
-      - `<Sample Name>_<stage>/`: QUAST results, cp. [QUAST Docs](https://github.com/ablab/quast?tab=readme-ov-file#output)
+      - `<SampleName>_<stage>/`: QUAST results, cp. [QUAST Docs](https://github.com/ablab/quast?tab=readme-ov-file#output)
         - `report.txt`: summary table
         - `report.tsv`: tab-separated version, for parsing, or for spreadsheets (Google Docs, Excel, etc)
         - `report.tex`: Latex version
@@ -267,7 +265,7 @@ The files and folders in the different QC folders are named based on
           - `unaligned_report`: detailed report on unaligned and partially unaligned contigs
         - `reads_stats/`: [only if reads are provided]
           - `reads_report`: detailed report on mapped reads statistics
-      - `<Sample Name>_<stage_report>.tsv`: QUAST summary report
+      - `<SampleName>_<stage>_report.tsv`: QUAST summary report
 
 </details>
 
