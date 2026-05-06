@@ -290,7 +290,7 @@ workflow ASSEMBLE {
     // flye-flye
     scaffold_flye_flye = FLYE_ONT.out.fasta
         .filter {
-            meta, _fasta -> meta.strategy == "scaffold" && meta.assembler_ont == "flye" & meta.assembler_hifi == "flye"
+            meta, _fasta -> meta.strategy == "scaffold" && meta.assembler_ont == "flye" && meta.assembler_hifi == "flye"
         }
         .map {
             meta, fasta -> [meta.id, meta, fasta] // id, meta, ont assembly
@@ -298,7 +298,7 @@ workflow ASSEMBLE {
         .join(
             FLYE_HIFI.out.fasta
                 .filter {
-                    meta, _fasta -> meta.strategy == "scaffold" && meta.assembler_ont == "flye" & meta.assembler_hifi == "flye"
+                    meta, _fasta -> meta.strategy == "scaffold" && meta.assembler_ont == "flye" && meta.assembler_hifi == "flye"
                 }
                 .map {
                     meta, fasta -> [ meta.id, fasta ] // id, hifi assembly

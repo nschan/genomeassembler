@@ -85,7 +85,7 @@ workflow QC {
                 use_gff: it.meta.use_ref && it.meta.ref_gff ? true : false
             }
 
-    QUAST(quast_in.quast_in, quast_in.use_ref, quast_in.use_gfgf)
+    QUAST(quast_in.quast_in, quast_in.use_ref, quast_in.use_gff)
     quast_out = QUAST.out.tsv
 
     busco_in = ch_qc
