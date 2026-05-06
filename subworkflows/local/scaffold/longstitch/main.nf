@@ -30,7 +30,7 @@ workflow RUN_LONGSTITCH {
             longmap: it.qc_reads
         }
 
-    longstitch_in.dump(tag: "SCAFFOLD: LONGSTITCH: inputs")
+    //longstitch_in.dump(tag: "SCAFFOLD: LONGSTITCH: inputs")
 
     LONGSTITCH(longstitch_in.assembly, longstitch_in.reads, longstitch_in.command, longstitch_in.span, longstitch_in.genomesize, longstitch_in.longmap)
 
