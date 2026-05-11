@@ -106,7 +106,7 @@ workflow HIC {
 
     liftoff_in = ch_main_scaffolded
         .filter {
-            it -> it.lift_annotations
+            it -> it.meta.lift_annotations
         }
         .map { it ->
                 [
