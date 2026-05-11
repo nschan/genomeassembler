@@ -1,7 +1,7 @@
 include { COUNT } from '../../../../modules/local/jellyfish/count/main'
 include { HISTO } from '../../../../modules/local/jellyfish/histo/main'
 include { STATS } from '../../../../modules/local/jellyfish/stats/main'
-include { GENOMESCOPE } from '../../../../modules/local/genomescope/main'
+include { GENOMESCOPE2 } from '../../../../modules/nf-core/genomescope2/main'
 
 workflow JELLYFISH {
     take:
@@ -52,27 +52,18 @@ workflow JELLYFISH {
     HISTO(kmers)
 
     genomescope_in = HISTO.out.histo
-        .map { meta, hist ->
-                    [
-                        meta,
-                        hist,
-                        meta.jellyfish_k,
-                        meta.qc_read_mean
-
-                    ]
-        }
 
     STATS(kmers)
 
-    GENOMESCOPE(genomescope_in)
+    GENOMESCOPE2(genomescope_in)
 
-    outputs = GENOMESCOPE.out.estimated_hap_len
+    outputs = GENOMESCOPE2.out.estimated_hap_len
         .filter { it -> it[0].metas }
         .flatMap { it ->
             it[0].metas
                 .collect { meta -> [ meta: meta + [ genome_size: it[1] ] ] }
         }
-        .mix(GENOMESCOPE.out.estimated_hap_len
+        .mix(GENOMESCOPE2.out.estimated_hap_len
             .filter { it -> !it[0].metas }
             .map {
                 it -> [ meta: it[0] + [ genome_size: it[1] ] ]
@@ -81,9 +72,9 @@ workflow JELLYFISH {
 
     outputs.dump(tag: "Jellyfish outputs")
 
-    genomescope_summary = GENOMESCOPE.out.summary
+    genomescope_summary = GENOMESCOPE2.out.summary
 
-    genomescope_plot = GENOMESCOPE.out.plot
+    genomescope_plot = GENOMESCOPE2.out.transformed_log_plot_png
 
     emit:
     main_out = outputs

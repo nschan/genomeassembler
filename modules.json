@@ -43,7 +43,8 @@
                     "genomescope2": {
                         "branch": "master",
                         "git_sha": "edc431ff96ebea772cc81ed8b1b15df6928a0ff8",
-                        "installed_by": ["modules"]
+                        "installed_by": ["modules"],
+                        "patch": "modules/nf-core/genomescope2/genomescope2.diff"
                     },
                     "hifiasm": {
                         "branch": "master",
