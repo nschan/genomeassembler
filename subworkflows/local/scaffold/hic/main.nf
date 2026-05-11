@@ -104,10 +104,6 @@ workflow HIC {
     ch_main_scaffolded = YAHS.out.scaffolds_fasta
         .map { meta, corrected -> [meta: meta + [ scaffolds_hic: corrected] ] }
 
-    QC(ch_main_scaffolded.map { it -> [meta: it.meta - it.meta.subMap("assembly_map_bam") + [assembly_map_bam: null] ] },
-        YAHS.out.scaffolds_fasta.map { meta, corrected -> [ meta.id, corrected ] },
-        meryl_kmers)
-
     liftoff_in = ch_main_scaffolded
         .filter {
             it -> it.lift_annotations
@@ -122,6 +118,12 @@ workflow HIC {
         }
 
     RUN_LIFTOFF(liftoff_in)
+
+    QC(ch_main_scaffolded.map { it -> [meta: it.meta - it.meta.subMap("assembly_map_bam") + [assembly_map_bam: null] ] },
+        YAHS.out.scaffolds_fasta.map { meta, corrected -> [ meta.id, corrected ] },
+        meryl_kmers)
+
+
 
     emit:
     ch_main                 = ch_main_scaffolded

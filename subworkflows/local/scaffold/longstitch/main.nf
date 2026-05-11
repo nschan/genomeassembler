@@ -37,10 +37,6 @@ workflow RUN_LONGSTITCH {
     ch_main_scaffolded = LONGSTITCH.out.tigmint_ntLink_arcs_fasta
         .map { meta, scaff_longst -> [meta: meta + [scaffolds_longstitch: scaff_longst] ] }
 
-    QC(ch_main_scaffolded.map { it -> [ meta: it.meta - it.meta.subMap("assembly_map_bam") + [assembly_map_bam: null] ] },
-        LONGSTITCH.out.tigmint_ntLink_arcs_fasta.map { meta, scaffold -> [meta.id, scaffold]},
-        meryl_kmers)
-
     liftoff_in = ch_main_scaffolded
         .filter {
             it -> it.meta.lift_annotations
@@ -55,6 +51,10 @@ workflow RUN_LONGSTITCH {
         }
 
     LIFTOFF(liftoff_in,[])
+
+    QC(ch_main_scaffolded.map { it -> [ meta: it.meta - it.meta.subMap("assembly_map_bam") + [assembly_map_bam: null] ] },
+        LONGSTITCH.out.tigmint_ntLink_arcs_fasta.map { meta, scaffold -> [meta.id, scaffold]},
+        meryl_kmers)
 
     emit:
     ch_main                 = ch_main_scaffolded

@@ -45,10 +45,6 @@ workflow RUN_RAGTAG {
     ch_main_scaffolded = RAGTAG_SCAFFOLD.out.corrected_assembly
         .map { meta, corrected -> [meta: meta + [ scaffolds_ragtag: corrected] ] }
 
-    QC(ch_main_scaffolded.map { it -> [meta: it.meta - it.meta.subMap("assembly_map_bam") + [assembly_map_bam: null] ] },
-        RAGTAG_SCAFFOLD.out.corrected_assembly.map { meta, corrected -> [ meta.id, corrected ] },
-        meryl_kmers)
-
     liftoff_in = ch_main_scaffolded
         .filter {
             it -> it.lift_annotations
@@ -63,6 +59,10 @@ workflow RUN_RAGTAG {
         }
 
     LIFTOFF(liftoff_in, [])
+
+    QC(ch_main_scaffolded.map { it -> [meta: it.meta - it.meta.subMap("assembly_map_bam") + [assembly_map_bam: null] ] },
+        RAGTAG_SCAFFOLD.out.corrected_assembly.map { meta, corrected -> [ meta.id, corrected ] },
+        meryl_kmers)
 
     emit:
     ch_main
