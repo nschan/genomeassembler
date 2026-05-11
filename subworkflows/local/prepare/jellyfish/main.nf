@@ -1,4 +1,4 @@
-include { COUNT } from '../../../../modules/local/jellyfish/count/main'
+include { JELLYFISH_COUNT as COUNT } from '../../../../modules/nf-core/jellyfish/count/main'
 include { HISTO } from '../../../../modules/local/jellyfish/histo/main'
 include { STATS } from '../../../../modules/local/jellyfish/stats/main'
 include { GENOMESCOPE2 } from '../../../../modules/nf-core/genomescope2/main'
@@ -45,8 +45,14 @@ workflow JELLYFISH {
                     ]
                 }
         )
+    jellyfish_count_in = samples
+        .multiMap { meta, reads ->
+            fasta: [meta, reads]
+            kmer_length: meta.jellyfish_k
+            size:  meta.jellyfish_size
+            }
 
-    COUNT(samples)
+    COUNT(jellyfish_count_in.fasta, jellyfish_count_in.kmer_length, jellyfish_count_in.size)
     kmers = COUNT.out.kmers
 
     HISTO(kmers)

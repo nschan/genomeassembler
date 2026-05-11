@@ -176,6 +176,7 @@ workflow PIPELINE_INITIALISATION {
                     ont_fastplong_args: it.ont_fastplong_args ?: params.ont_fastplong_args,
                     jellyfish: it.jellyfish ?: params.jellyfish,
                     jellyfish_k: it.ont_jellyfish_k ?: params.jellyfish_k,
+                    jellyfish_size: it.jellyfish_size ?: params.jellyfish_size,
                     hifi_adapters: it.hifi_adapters ?: params.hifi_adapters,
                     hifi_fastplong_args: it.hifi_fastplong_args ?: params.hifi_fastplong_args,
                     medaka_model: it.medaka_model ?: params.medaka_model,
