@@ -1,5 +1,5 @@
 include { MAP_TO_ASSEMBLY } from '../mapping/map_to_assembly/main'
-include { QUAST } from '../../../modules/local/quast/main'
+include { QUAST } from '../../../modules/nf-core/quast/main'
 include { BUSCO_BUSCO as BUSCO } from '../../../modules/nf-core/busco/busco/main'
 include { MERQURY_MERQURY as MERQURY } from '../../../modules/nf-core/merqury/merqury/main'
 
@@ -75,14 +75,10 @@ workflow QC {
         .multiMap { it ->
                 quast_in: [
                     it.meta,
-                    it.meta.qc_target,
-                    it.meta.ref_fasta ?: [],
-                    it.meta.ref_gff ?: [],
-                    it.meta.ref_map_bam ?: [],
-                    it.meta.assembly_map_bam
+                    it.meta.qc_target
                 ]
-                use_ref: it.meta.use_ref
-                use_gff: it.meta.use_ref && it.meta.ref_gff ? true : false
+                use_ref: [it.meta, it.meta.use_ref ? it.meta.ref_fasta : '']
+                use_gff: [it.meta, it.meta.use_ref && it.meta.ref_gff ? it.meta.ref_gff : '']
             }
 
     QUAST(quast_in.quast_in, quast_in.use_ref, quast_in.use_gff)
