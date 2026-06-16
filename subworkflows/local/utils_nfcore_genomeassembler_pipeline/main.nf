@@ -102,26 +102,20 @@ workflow PIPELINE_INITIALISATION {
         */
         .map { it ->
             def strategy        =   it.strategy ?: params.strategy
-
             def ontreads        =   it.ontreads ?: params.ontreads
-
             def hifireads       =   it.hifireads ?: params.hifireads
-
             def assembler       =   it.assembler ?: params.assembler
-
             def assembler_ont   =   it.assembler_ont ?:
                                     (strategy == "single" && assembler && ontreads && !hifireads) ? assembler :
                                     params.assembler_ont ?:
                                     (strategy == "hybrid" && assembler == "hifiasm") ? assembler :
                                     assembler.contains("_") ? assembler.tokenize("_")[0] :
                                     null
-
             def assembler_hifi  =   it.assembler_hifi ?:
                                     (strategy == "single" && assembler && hifireads && !ontreads) ? assembler :
                                     params.assembler_hifi ?:
                                     assembler.contains("_") ? assembler.tokenize("_")[1] :
                                     null
-
             def polish          =   it.polish ?:
                                     (params.polish_medaka && params.polish_dorado) ? error("Both polish_medaka and polish_dorado are set.") :
                                     (params.polish_medaka && params.polish_pilon && ontreads) ? "medaka+pilon" :
@@ -130,17 +124,12 @@ workflow PIPELINE_INITIALISATION {
                                     (params.polish_dorado && ontreads) ? "dorado" :
                                     (params.polish_pilon && (it.shortread_F || params.shortread_F)) ? "pilon" :
                                     null
-
             def hic_F           =   it.hic_F ?: params.hic_F
-
             def scaffold_hic    =   hic_F ? (it.scaffold_hic != null ? it.scaffold_hic : params.scaffold_hic) : false
-
             def hic_trim        =   !scaffold_hic ? false :
                                     (it.hic_trim ?: params.hic_trim)
-
             def assembler_ont_args =  it.assembler_ont_args ?: params.assembler_ont_args ?: ''
             def assembler_hifi_args = it.assembler_hifi_args ?: params.assembler_hifi_args ?: ''
-
             // Check if strategy can be inferred
             strategy == "single" && ontreads && hifireads && !((!assembler_ont && assembler_hifi) || (assembler_ont && !assembler_hifi)) ?
                 error(
@@ -150,7 +139,6 @@ workflow PIPELINE_INITIALISATION {
                     """
                 ) :
                 null
-
             // Build the map. Everything goes into meta.
             [
                 meta: [
@@ -220,91 +208,8 @@ workflow PIPELINE_INITIALISATION {
             ]
         ]
         }
-
     // Define valid hybrid assemblers
-    def hybrid_assemblers = ["hifiasm"]
     ch_samplesheet.dump(tag: "PARSED INPUTS:")
-    // sample-level checks
-    // if a check fails, map returns a list that prints what fails, and contains "invalid"
-    // error is raised by subscribe if there is more than one "invalid"
-    /*
-    ch_samplesheet
-        .map {
-            it ->
-            [
-                // Check if assembler_ont was set
-                (it.meta.ontreads && !it.meta.assembler_ont && !it.meta.assembly)
-                ?
-                (
-                    // Check if assembler_hifi was set
-                    (it.meta.hifireads && it.meta.assembler_hifi && it.meta.stragegy == "single")
-                    ?
-                    null
-                    :
-                    [
-                        println("Please confirm samplesheet: [sample: $it.meta.id]: assembler_ont could not be set and no assembly was provided."),
-                        "invalid"
-                    ]
-                )
-                : null,
-                // Check if assembler_hifi was set
-                (it.meta.hifireads && !it.meta.assembler_hifi && !it.meta.assembly)
-                ?
-                (
-                    // Check if assembler_ont was set
-                    (it.meta.ontreads && it.meta.assembler_ont && it.meta.stragegy == "single")
-                    ?
-                    null
-                    :
-                    [
-                        println("Please confirm samplesheet: [sample: $it.meta.id]: assembler_hifi could not be set and no assembly was provided."),
-                        "invalid"
-                    ]
-                )
-                : null,
-            // Check if reads and strategy match
-                (it.meta.strategy == "single" && it.meta.ontreads && it.meta.hifireads)
-                ?
-                [
-                    println("Please confirm samplesheet: [sample: $it.meta.id]: Strategy is $it.meta.strategy, but both types of reads are provided."),
-                    "invalid"
-                ]
-                : null,
-            // Check if assembler can do hybrid
-            (it.meta.strategy == "hybrid" && !hybrid_assemblers.contains(it.meta.assembler_ont))
-                ?
-                [
-                    println("Please confirm samplesheet: [sample: $it.meta.id]: Hybrid assembly can only be performed with $hybrid_assemblers"),
-                    "invalid"
-                ]
-                : null,
-            // Check if qc reads are specified for hybrid assemblies
-            (it.meta.strategy == "hybrid" && !it.meta.qc_reads)
-                ?
-                [
-                    println("Please confirm samplesheet: [sample: $it.meta.id]: Please specify which reads should be used for qc: '--qc_reads': 'ont' or 'hifi'"),
-                    "invalid"
-                ]
-                : null,
-            // Check if genome_size is given with --scaffold_longstitch
-            (it.meta.scaffold_longstitch && !it.meta.genome_size && !it.meta.jellyfish)
-                ?
-                [
-                    println("Please confirm samplesheet: [sample: $it.meta.id]: scaffolding with longstitch requires genome-size. Either provide genome-size estimate, or estimate from reads with --jellyfish"),
-                    "invalid"
-                ]
-                : null,
-            ]
-        }
-        .map { it -> it.collect() }
-        .collect()
-        // warn if >0 samples failed a check above
-        .subscribe {
-            it -> it.contains("invalid")
-                ? log.warn("Invalid combination in samplesheet")
-                : null
-        }
-    */
 
     emit:
     samplesheet = ch_samplesheet
