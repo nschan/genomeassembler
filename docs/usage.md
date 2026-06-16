@@ -54,10 +54,10 @@ In the second case, it is likely that several samples will use the same inputs (
 
 ## Choice of assembly-strategy and assembler
 
-Assembly strategy is controlled via `strategy` (either pipeline parameter or sample-setting), and assembler(s) used are chosen via `assembler` (either pipeline parameter or sample-setting)
+Assembly strategy is controlled via `strategy` (either pipeline parameter or sample-setting), and assembler(s) used are chosen via `assembler` (either pipeline parameter or sample-setting)
 `nf-core/genomeassembler` currently supports the following assembly strategies:
 
-- single (default): Use a single assembler for a single type of read. The assembler should be provided via `assembler` and can be `hifiasm` (default) or `flye`.
+- single (default): Use a single assembler for a single type of read. The assembler should be provided via `assembler` and can be `hifiasm` (default) or `flye`.
 - hybrid: Use a single assembler for a combined assembly of ONT and HiFi reads. The assembler should be provided via `assembler`. Currently, only `hifiasm` supports hybrid assembly.
 - scaffold: Assemble ONT reads and HiFi indepently and scaffold one assembly onto the other. `assembler` has to be provided as `"ontAssembler_hifiAssembler"` and could for example be: "`flye_hifiasm"` to assemble ont reads with `flye` and HiFi reads with `hifiasm` or "hifiasm_hifiasm" to assemble both ont and hifi reads indepently with `hifiasm`. When running in "scaffold" mode, `assembly_scaffolding_order` can be used to control which assembly gets scaffolded onto which, the default being "ont_on_hifi" where ONT assembly is scaffolded onto HifI assembly.
 
@@ -286,7 +286,8 @@ Options controlling pipeline behavior
 
 Options controlling assembly.
 
-> NOTE: hifiasm_args and flye_args will be passed to the respective assembler in all cases. If the same assembler is used in different strategies, these need may need to be parameterised per sample.
+> [!NOTE]
+> hifiasm_args and flye_args will be passed to the respective assembler in all cases. If the same assembler is used in different strategies, these need may need to be parameterised per sample.
 
 The difference between `{hifiasm,flye}_args` and `assembler_{ont,hifi}_args` is subtle: the former will be applied for all cases where this particular assembler is used, whereas the latter will apply the args to the assembler used for assembling a specific type of data. `{hifiasm,flye}_args` are generally expected to be used for e.g. system specific configuration via `params`, although they can also be set per-sample, whereas `assembler_{ont,hifi}_args` provide a bit more of an abstract interface, possibly more appropriate to adjust certain parameters per-sample.
 
