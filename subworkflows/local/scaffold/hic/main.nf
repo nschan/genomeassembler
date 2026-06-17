@@ -123,8 +123,6 @@ workflow HIC {
         YAHS.out.scaffolds_fasta.map { meta, corrected -> [ meta.id, corrected ] },
         meryl_kmers)
 
-
-
     emit:
     ch_main                 = ch_main_scaffolded
     quast_out               = QC.out.quast_out
