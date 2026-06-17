@@ -146,8 +146,16 @@
                     "type": "string",
                     "fa_icon": "far fa-check-circle",
                     "description": "Base URL or local path to location of pipeline test dataset files",
-                    "default": "https://raw.githubusercontent.com/nf-core/test-datasets/",
+                    "default": "https://raw.githubusercontent.com/nf-core/test-datasets/refs/heads/genomeassembler/",
                     "hidden": true
+                },
+                "help_full": {
+                    "type": "boolean",
+                    "description": "Display the full detailed help message."
+                },
+                "show_hidden": {
+                    "type": "boolean",
+                    "description": "Display hidden parameters in the help message (only works when --help or --help_full are provided)."
                 }
             }
         },
@@ -248,7 +256,6 @@
                 },
                 "ont_adapters": {
                     "type": "string",
-                    "default": "[]",
                     "description": "Adaptors for ONT read-trimming"
                 },
                 "ont_fastplong_args": {
@@ -261,7 +268,6 @@
                 },
                 "hifi_adapters": {
                     "type": "string",
-                    "default": "[]",
                     "description": "Adaptors for HiFi read-trimming"
                 },
                 "hifi_fastplong_args": {
@@ -428,13 +434,11 @@
                 },
                 "shortread_F": {
                     "type": "string",
-                    "description": "Path to forward short reads",
-                    "default": "[]"
+                    "description": "Path to forward short reads"
                 },
                 "shortread_R": {
                     "type": "string",
-                    "description": "Path to reverse short reads",
-                    "default": "[]"
+                    "description": "Path to reverse short reads"
                 },
                 "paired": {
                     "type": "string",
@@ -455,13 +459,11 @@
                 },
                 "hic_F": {
                     "type": "string",
-                    "description": "Path to forward HiC short reads",
-                    "default": "[]"
+                    "description": "Path to forward HiC short reads"
                 },
                 "hic_R": {
                     "type": "string",
-                    "description": "Path to reverse HiC short reads",
-                    "default": "[]"
+                    "description": "Path to reverse HiC short reads"
                 }
             }
         }
