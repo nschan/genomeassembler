@@ -206,7 +206,7 @@ workflow ASSEMBLE {
     flye_assemblies.dump(tag: "Assemble: Flye assemblies")
 
     // regernerate meta maps
-    hifiasm_hifi_assemblies = GFA2FA_HIFI.out.contigs_fasta
+    hifiasm_hifi_assemblies = GFA2FA_HIFI.out.fasta
         .filter { it -> it[0].strategy != "scaffold" }
         .map { meta_old, assembly ->
         [
@@ -220,7 +220,7 @@ workflow ASSEMBLE {
 
     hifiasm_hifi_assemblies.dump(tag: "Assemble: hifiasm HIFI assemblies")
 
-    hifiasm_ont_assemblies = GFA2FA_ONT.out.contigs_fasta
+    hifiasm_ont_assemblies = GFA2FA_ONT.out.fasta
         .filter { meta, _fasta -> meta.strategy != "scaffold" }
         .map { meta, assembly ->
             [
@@ -268,7 +268,7 @@ workflow ASSEMBLE {
         .join(
             GFA2FA_HIFI
                 .out
-                .contigs_fasta
+                .fasta
                 .filter { meta, _fasta ->
                     meta.strategy == "scaffold" &&
                     meta.assembler_ont == "flye" &&
@@ -315,7 +315,7 @@ workflow ASSEMBLE {
         }
 
     // hifiasm_flye
-    scaffold_hifiasm_flye = GFA2FA_ONT.out.contigs_fasta
+    scaffold_hifiasm_flye = GFA2FA_ONT.out.fasta
         .filter {
             meta, _assembly -> meta.strategy == "scaffold" &&
                 meta.assembler_ont == "hifiasm" &&
@@ -346,7 +346,7 @@ workflow ASSEMBLE {
         }
 
     // hifiasm_hifiasm
-    scaffold_hifiasm_hifiasm = GFA2FA_ONT.out.contigs_fasta
+    scaffold_hifiasm_hifiasm = GFA2FA_ONT.out.fasta
         .filter {
             meta, _assembly -> meta.strategy == "scaffold" &&
                 meta.assembler_ont == "hifiasm" &&
@@ -361,7 +361,7 @@ workflow ASSEMBLE {
             ]
         }
         .join(
-            GFA2FA_HIFI.out.contigs_fasta
+            GFA2FA_HIFI.out.fasta
                 .filter {
                     meta, _assembly -> meta.strategy == "scaffold" &&
                         meta.assembler_ont == "hifiasm" &&

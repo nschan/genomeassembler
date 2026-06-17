@@ -53,7 +53,7 @@ workflow JELLYFISH {
             }
 
     COUNT(jellyfish_count_in.fasta, jellyfish_count_in.kmer_length, jellyfish_count_in.size)
-    kmers = COUNT.out.kmers
+    kmers = COUNT.out.jf
 
     HISTO(kmers)
 
