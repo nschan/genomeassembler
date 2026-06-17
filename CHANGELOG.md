@@ -14,6 +14,10 @@ In addition, v2.0.0 contains these changes:
 
 ### `Added`
 
+Pull requests in reverse chronological order since v1.1.0
+
+[#171](https://github.com/nf-core/genomeassembler/issues/171)
+
 - fastplong for long-read trimming and qc
 - fastp for short-read trimming and qc
 - migration to nf-test
@@ -26,7 +30,23 @@ In addition, v2.0.0 contains these changes:
   - scaffolding with `yahs`
 - Switched to the versions topic, requires nextflow >=25.10.0
 
+[#180](https://github.com/nf-core/genomeassembler/issues/180)
+
+- Template update to 3.5.1
+
+[#177](https://github.com/nf-core/genomeassembler/issues/177)
+
+- Template update to 3.4.1
+
+[#164](https://github.com/nf-core/genomeassembler/issues/164)
+
+- Template update to 3.3.1
+
 ### `Fixed`
+
+[#176](https://github.com/nf-core/genomeassembler/issues/176)
+
+- Fixed typo in medaka url (@TomHarrop)
 
 ### `Dependencies`
 
@@ -44,7 +64,7 @@ The following tools are no longer used:
 - `nanoq`
 - `porechop`
 - `lima`
-- `trimgalor`
+- `trimgalore`
 
 The following param is no longer implemented:
 
