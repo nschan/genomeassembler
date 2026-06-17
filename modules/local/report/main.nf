@@ -60,10 +60,10 @@ process REPORT {
     }
 
     def groupBuilder = new groovy.yaml.YamlBuilder()
-    groupBuilder(groups)
+    groupBuilder.call(groups)
     def group_content = groupBuilder.toString().tokenize('\n').join("\n    ")
     def versionBuilder = new groovy.yaml.YamlBuilder()
-    versionBuilder(versions)
+    versionBuilder.call(versions)
     def versions_content = versionBuilder.toString().tokenize('\n').join("\n    ")
     """
     cat <<- END_YAML_GROUPS > groups.yml
