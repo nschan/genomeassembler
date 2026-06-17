@@ -47,6 +47,11 @@
                         "installed_by": ["modules"],
                         "patch": "modules/nf-core/genomescope2/genomescope2.diff"
                     },
+                    "gfatools/gfa2fa": {
+                        "branch": "master",
+                        "git_sha": "6d46786420b4d7bc88eba026eb389c0c5535d120",
+                        "installed_by": ["modules"]
+                    },
                     "hifiasm": {
                         "branch": "master",
                         "git_sha": "c87519b3c0bfcb0b022b77738cf8164b3af042eb",

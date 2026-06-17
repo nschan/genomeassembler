@@ -276,6 +276,11 @@
                     "type": "integer",
                     "default": 21,
                     "description": "Value of k used during k-mer analysis with jellyfish"
+                },
+                "jellyfish_size": {
+                    "type": "string",
+                    "default": "200M",
+                    "description": "Initial hash size used by jellyfish count"
                 }
             }
         },
