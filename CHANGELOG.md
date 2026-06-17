@@ -50,25 +50,69 @@ Pull requests in reverse chronological order since v1.1.0
 
 ### `Dependencies`
 
-- `fastplong`
-- `fastp`
-- `dorado`
-- `bwamem2`
-- `picard`
-- `yahs`
+#### New
 
-### `Deprecated`
+The following modules have been added:
 
-The following tools are no longer used:
+| name      | v1.1.0 | v2.0.0          |
+| --------- | ------ | --------------- |
+| dorado    | -      | 1.3.1+7c84b01de |
+| bwamem2   | -      | 2.3             |
+| fastp     | -      | 1.0.1           |
+| fastplong | -      | 0.3.0           |
+| gfatools  | -      | 0.5             |
+| picard    | -      | 3.4.0           |
+| yahs      | -      | 1.2.2           |
 
-- `nanoq`
-- `porechop`
-- `lima`
-- `trimgalore`
+#### Updated
+
+The following tools have been updated to a new version:
+
+| name         | v1.1.0 | v2.0.0 |
+| ------------ | ------ | ------ |
+| genomescope2 | 2.0    | 2.1.0  |
+| busco        | 5.8.3  | 6.0.0  |
+
+#### `Deprecated`
+
+The following tools have been deprecated:
+
+| name       | v1.1.0 | v2.0.0                   |
+| ---------- | ------ | ------------------------ |
+| nanoq      | 0.10.0 | deprecated               |
+| lima       | 2.12.0 | deprecated               |
+| porechop   | 0.2.4  | deprecated               |
+| pigz       | 2.8    | deprecated with porechop |
+| trimgalore | 0.6.10 | deprecated               |
+| cutadapt   | 4.9    | deprecated               |
 
 The following param is no longer implemented:
 
 - `dump`, used to dump jellyfish output.
+
+#### Unchanged
+
+The following tools are unchanged:
+
+| name       | v1.1.0 | v2.0.0 |
+| ---------- | ------ | ------ |
+| coreutils  | 9.5    | 9.5    |
+| jellyfish  | 2.3.1  | 2.3.1  |
+| longstitch | 1.0.5  | 1.0.5  |
+| medaka     | 1.11.3 | 1.11.3 |
+| quast      | 5.3.0  | 5.3.0  |
+| quarto     | 1.7.31 | 1.7.31 |
+| fastqc     | 0.12.1 | 0.12.1 |
+| flye       | 2.9.5  | 2.9.5  |
+| hifiasm    | 0.25.0 | 0.25.0 |
+| liftoff    | 1.6.3  | 1.6.3  |
+| links      | 2.0.1  | 2.0.1  |
+| merqury    | 1.3    | 1.3    |
+| meryl      | 1.4.1  | 1.4.1  |
+| minimap2   | 2.29   | 2.29   |
+| samtools   | 1.21   | 1.21   |
+| pilon      | 1.24   | 1.24   |
+| ragtag     | 2.1.0  | 2.1.0  |
 
 ## v1.1.0 'Brass Pigeon' - [2025-07-21]
 
