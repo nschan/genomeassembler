@@ -20,7 +20,7 @@ process GENOMESCOPE2 {
     tuple val(meta), path("${prefix}_lookup_table.txt")           , emit: lookup_table, optional: true
     tuple val(meta), path("${prefix}_fitted_hist.png")            , emit: fitted_histogram_png, optional: true
     tuple val(meta), path("*.json")                               , emit: json_report, optional: true
-    tuple val(meta), env(est_hap_len)           , emit: estimated_hap_len
+    tuple val(meta), env('est_hap_len')                           , emit: estimated_hap_len
 
     tuple val("${task.process}"), val('genomescope2'), eval('genomescope2 -v | sed "s/GenomeScope //"'), emit: versions_genomescope2, topic: versions
 
