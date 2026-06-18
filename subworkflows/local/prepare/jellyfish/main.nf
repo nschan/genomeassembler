@@ -18,6 +18,7 @@ workflow JELLYFISH {
                 it.meta,
                 it.meta.group,
                 it.meta.jellyfish_k,
+                it.meta.jellyfish_size,
                 it.meta.qc_reads_path,
                 it.meta.qc_read_mean
             ]
@@ -30,9 +31,10 @@ workflow JELLYFISH {
                         id: it[1],
                         metas: it[0],
                         jellyfish_k: it[2][0],
-                        qc_read_mean: it[4][0]
+                        jellyfish_size: it[3][0],
+                        qc_read_mean: it[5][0]
                     ],
-                    it[3][0]
+                    it[4][0]
                 ]
         }
         .mix(
