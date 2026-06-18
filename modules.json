@@ -60,7 +60,8 @@
                     "jellyfish/count": {
                         "branch": "master",
                         "git_sha": "614004b6a8e752f9f0d362e4fb94d67bb7b7455c",
-                        "installed_by": ["modules"]
+                        "installed_by": ["modules"],
+                        "patch": "modules/nf-core/jellyfish/count/jellyfish-count.diff"
                     },
                     "liftoff": {
                         "branch": "master",

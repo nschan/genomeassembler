@@ -1,0 +1,35 @@
+Changes in component 'nf-core/jellyfish/count'
+'modules/nf-core/jellyfish/count/environment.yml' is unchanged
+'modules/nf-core/jellyfish/count/meta.yml' is unchanged
+Changes in 'jellyfish/count/main.nf':
+--- modules/nf-core/jellyfish/count/main.nf
++++ modules/nf-core/jellyfish/count/main.nf
+@@ -23,6 +23,15 @@
+     def args = task.ext.args ?: ''
+     prefix = task.ext.prefix ?: "${meta.id}"
+     """
++    if [[ ${fasta} == *.gz ]]; then
++        zcat ${fasta} > ${fasta.baseName}.fasta
++    fi
++    if [[ ${fasta} == *.fa ]]; then
++        cp ${fasta} ${fasta.baseName}.fasta
++    fi
++    if [[ ${fasta} == *.fastq ]]; then
++        cp ${fasta} ${fasta.baseName}.fasta
++    fi
+     jellyfish \\
+         count \\
+         $args \\
+@@ -30,7 +39,7 @@
+         -s ${size} \\
+         -t $task.cpus \\
+         -o ${prefix}.jf \\
+-        ${fasta}
++        ${fasta.baseName}.fasta
+ 
+ 
+     cat <<-END_VERSIONS > versions.yml
+
+'modules/nf-core/jellyfish/count/tests/main.nf.test' is unchanged
+'modules/nf-core/jellyfish/count/tests/main.nf.test.snap' is unchanged
+************************************************************
