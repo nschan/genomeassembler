@@ -25,13 +25,13 @@ workflow JELLYFISH {
         .map {
             it ->
                 [
-                    meta: [
+                    [
                         id: it[1],
                         metas: it[0],
                         jellyfish_k: it[2][0],
                         qc_read_mean: it[4][0]
                     ],
-                    qc_reads_path: it[3][0]
+                    it[3][0]
                 ]
         }
         .mix(
@@ -40,8 +40,8 @@ workflow JELLYFISH {
                 .map {
                     it ->
                     [
-                        meta: it.meta,
-                        qc_reads_path: it.meta.qc_reads_path
+                    it.meta,
+                    it.meta.qc_reads_path
                     ]
                 }
         )
