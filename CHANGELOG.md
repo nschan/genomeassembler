@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## v2.0.0 - 'Saffron Vulture' - [2026-xx-xx]
 
 This is a major release, with breaking changes.
+
+The pipeline now implements topics to collect software version, the minimum `nextflow` version is `25.10.0`.
+
 v2.0.0 of genomeassembler is a large refactor of the pipeline to facilitate sample-level parameteristation. This allows to either parameterise the _pipeline_ using `params`, or parameterise _samples_ via the `input` samplesheet. In case both types of parameterisations are used, sample parameters will take priority.
 
 Since this workflow follows a sample-centric implementation, nextflow will always render the full pipeline dag, but depending on configuration samples may not travel through the whole pipeline. This may also cause terminal output to show task instances that will never become an active process.
@@ -65,6 +68,7 @@ The following modules have been added:
 | fastp     | -      | 1.0.1           |
 | fastplong | -      | 0.3.0           |
 | gfatools  | -      | 0.5             |
+| htslib    | -      | 1.23.1          |
 | picard    | -      | 3.4.0           |
 | yahs      | -      | 1.2.2           |
 
