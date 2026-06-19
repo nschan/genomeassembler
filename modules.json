@@ -62,6 +62,11 @@
                         "git_sha": "c87519b3c0bfcb0b022b77738cf8164b3af042eb",
                         "installed_by": ["modules"]
                     },
+                    "htslib/bgziptabix": {
+                        "branch": "master",
+                        "git_sha": "22edd7ce9462025093b25e3b55006f7720ff0d8e",
+                        "installed_by": ["modules"]
+                    },
                     "jellyfish/count": {
                         "branch": "master",
                         "git_sha": "614004b6a8e752f9f0d362e4fb94d67bb7b7455c",
