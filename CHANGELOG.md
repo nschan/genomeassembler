@@ -30,6 +30,10 @@ Pull requests in reverse chronological order since v1.1.0
   - scaffolding with `yahs`
 - Switched to the versions topic, requires nextflow >=25.10.0
 
+[#185](https://github.com/nf-core/genomeassembler/issues/180)
+
+- Template update to 4.0.2
+
 [#180](https://github.com/nf-core/genomeassembler/issues/180)
 
 - Template update to 3.5.1
@@ -70,7 +74,7 @@ The following tools have been updated to a new version:
 
 | name         | v1.1.0 | v2.0.0 |
 | ------------ | ------ | ------ |
-| genomescope2 | 2.0    | 2.1.0  |
+| genomescope2 | 2.0    | 2.0.0  |
 | busco        | 5.8.3  | 6.0.0  |
 
 #### `Deprecated`
