@@ -1,5 +1,7 @@
 include { MINIMAP2_ALIGN as ALIGN_SHORT } from '../../../../modules/nf-core/minimap2/align/main'
 include { BAM_STATS_SAMTOOLS as BAM_STATS } from '../../../nf-core/bam_stats_samtools/main'
+include { SAMTOOLS_FAIDX } from '../../../../modules/nf-core/samtools/faidx/main'
+include { GUNZIP } from '../../../../modules/nf-core/gunzip/main'
 
 workflow MAP_SR {
     take:
@@ -20,10 +22,14 @@ workflow MAP_SR {
     aln_to_assembly_bam_bai = aln_to_assembly_bam
         .join(aln_to_assembly_bai)
 
-    ch_fasta = map_assembly
-        .map { meta, _reads, fasta -> [ meta, fasta ] }
+    GUNZIP(genome_assembly)
 
-    BAM_STATS(aln_to_assembly_bam_bai, ch_fasta)
+    SAMTOOLS_FAIDX(GUNZIP.out.gunzip, false)
+
+    ch_fasta_fai = genome_assembly
+        .join(SAMTOOLS_FAIDX.out.fai)
+
+    BAM_STATS(aln_to_assembly_bam_bai, ch_fasta_fai)
 
     aln_to_assembly_bam_bai = aln_to_assembly_bam
         .join(aln_to_assembly_bai)
