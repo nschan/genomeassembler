@@ -50,7 +50,8 @@
                     "gfatools/gfa2fa": {
                         "branch": "master",
                         "git_sha": "6d46786420b4d7bc88eba026eb389c0c5535d120",
-                        "installed_by": ["modules"]
+                        "installed_by": ["modules"],
+                        "patch": "modules/nf-core/gfatools/gfa2fa/gfatools-gfa2fa.diff"
                     },
                     "gunzip": {
                         "branch": "master",

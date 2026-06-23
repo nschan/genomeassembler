@@ -11,7 +11,7 @@ process GFATOOLS_GFA2FA {
     tuple val(meta), path(gfa)
 
     output:
-    tuple val(meta), path("*.fasta.gz"), emit: fasta
+    tuple val(meta), path("*.fasta"), emit: fasta
     tuple val("${task.process}"), val('gfatools'), eval("gfatools version | sed '1!d; s/.* //'"), topic: versions, emit: versions_gfatools
 
     when:
@@ -25,7 +25,7 @@ process GFATOOLS_GFA2FA {
         gfa2fa \\
         $args \\
         $gfa \\
-        | gzip -c > ${prefix}.fasta.gz
+        > ${prefix}.fasta
     """
 
     stub:

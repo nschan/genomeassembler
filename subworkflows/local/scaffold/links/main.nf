@@ -30,12 +30,14 @@ workflow RUN_LINKS {
             []
         ]
     }
-    BGZIP(ch_main_to_zip, "compress", false, [])
 
-    ch_main_scaffolded = BGZIP.out.output.map { meta, scaff_links -> [meta: meta + [scaffolds_links: scaff_links] ] }
+    BGZIP(ch_main_to_zip, "compress", false, "fa")
+
+    ch_main_scaffolded = BGZIP.out.output
+        .map { meta, scaff_links -> [meta: meta + [scaffolds_links: scaff_links] ] }
 
     QC(ch_main_scaffolded.map { it -> [meta: it.meta - it.meta.subMap("assembly_map_bam") + [assembly_map_bam: null] ]},
-        LINKS.out.scaffolds_fasta.map { meta, scaffold -> [meta.id, scaffold]},
+        BGZIP.out.output.map { meta, scaffold -> [meta.id, scaffold]},
          meryl_kmers)
 
     liftoff_in = ch_main_scaffolded

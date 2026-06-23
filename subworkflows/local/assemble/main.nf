@@ -7,6 +7,10 @@ include { GFATOOLS_GFA2FA as GFA2FA_ONT  } from '../../../modules/nf-core/gfatoo
 include { MAP_TO_REF } from '../mapping/map_to_ref/main'
 include { LIFTOFF } from '../../../modules/nf-core/liftoff/main'
 include { RAGTAG_PATCH } from '../../../modules/nf-core/ragtag/patch/main'
+include { HTSLIB_BGZIPTABIX as BGZIP_HIFI } from '../../../modules/nf-core/htslib/bgziptabix/main'
+include { HTSLIB_BGZIPTABIX as BGZIP_ONT } from '../../../modules/nf-core/htslib/bgziptabix/main'
+include { HTSLIB_BGZIPTABIX as BGZIP_RAGTAG } from '../../../modules/nf-core/htslib/bgziptabix/main'
+
 include { QC } from '../qc/main'
 
 
@@ -168,6 +172,18 @@ workflow ASSEMBLE {
     // hifiasm produces GFA files
     GFA2FA_HIFI( HIFIASM.out.primary_contigs )
 
+    ch_zip_hifi = GFA2FA_HIFI.out.fasta.map {
+        meta, scaffold ->
+        [
+            meta,
+            scaffold,
+            [],
+            []
+        ]
+    }
+
+    BGZIP_HIFI(ch_zip_hifi, "compress", false, "fa")
+
     /*
     hifiasm with ONLY ont reads.
     Assemble hifiasm_ont branch:
@@ -189,6 +205,18 @@ workflow ASSEMBLE {
 
     GFA2FA_ONT( HIFIASM_ONT.out.primary_contigs)
 
+    ch_zip_ont = GFA2FA_ONT.out.fasta.map {
+        meta, scaffold ->
+        [
+            meta,
+            scaffold,
+            [],
+            []
+        ]
+    }
+
+    BGZIP_ONT(ch_zip_ont, "compress", false, "fa")
+
     // Flye:
     flye_assemblies = FLYE_ONT.out.fasta
         .filter {
@@ -206,7 +234,7 @@ workflow ASSEMBLE {
     flye_assemblies.dump(tag: "Assemble: Flye assemblies")
 
     // regernerate meta maps
-    hifiasm_hifi_assemblies = GFA2FA_HIFI.out.fasta
+    hifiasm_hifi_assemblies = BGZIP_HIFI.out.output
         .filter { it -> it[0].strategy != "scaffold" }
         .map { meta_old, assembly ->
         [
@@ -220,7 +248,7 @@ workflow ASSEMBLE {
 
     hifiasm_hifi_assemblies.dump(tag: "Assemble: hifiasm HIFI assemblies")
 
-    hifiasm_ont_assemblies = GFA2FA_ONT.out.fasta
+    hifiasm_ont_assemblies = BGZIP_ONT.out.output
         .filter { meta, _fasta -> meta.strategy != "scaffold" }
         .map { meta, assembly ->
             [
@@ -415,9 +443,19 @@ workflow ASSEMBLE {
     ragtag_in.query.dump( tag: "ASSEMBLE: SCAFFOLD: RAGTAG_PATCH INPUT: QUERY")
     // Scaffold with PATCH
     RAGTAG_PATCH(ragtag_in.target, ragtag_in.query, [[], []], [[], []] )
+    ch_to_zip_ragtag = RAGTAG_PATCH.out.patch_fasta.map {
+        meta, polished ->
+        [
+            meta,
+            polished,
+            [],
+            []
+        ]
+    }
 
+    BGZIP_RAGTAG(ch_to_zip_ragtag, "compress", false, "fa")
     // Update meta
-    ch_assemblies_scaffold = RAGTAG_PATCH.out.patch_fasta
+    ch_assemblies_scaffold = BGZIP_RAGTAG.out.output
         .map { meta, patched -> [meta: meta + [assembly: patched] ] }
 
     ch_assemblies_scaffold.dump(tag: "Assemble: Assemblies with scaffolding - outputs")

@@ -1,7 +1,7 @@
 include { RAGTAG_SCAFFOLD } from '../../../../modules/nf-core/ragtag/scaffold/main'
 include { QC } from '../../qc/main'
 include { LIFTOFF } from '../../../../modules/nf-core/liftoff/main'
-
+include { HTSLIB_BGZIPTABIX as BGZIP } from '../../../../modules/nf-core/htslib/bgziptabix/main'
 
 workflow RUN_RAGTAG {
     take:
@@ -42,7 +42,20 @@ workflow RUN_RAGTAG {
 
     RAGTAG_SCAFFOLD(ragtag_in.assembly, ragtag_in.reference, [[], []], [[], [], []])
 
-    ch_main_scaffolded = RAGTAG_SCAFFOLD.out.corrected_assembly
+    ch_main_to_zip = RAGTAG_SCAFFOLD.out.corrected_assembly
+        .map {
+            meta, scaffold ->
+                [
+                    meta,
+                    scaffold,
+                    [],
+                    []
+                ]
+    }
+
+    BGZIP(ch_main_to_zip, "compress", false, "fa")
+
+    ch_main_scaffolded = BGZIP.out.output
         .map { meta, corrected -> [meta: meta + [ scaffolds_ragtag: corrected] ] }
 
     liftoff_in = ch_main_scaffolded
@@ -61,7 +74,7 @@ workflow RUN_RAGTAG {
     LIFTOFF(liftoff_in, [])
 
     QC(ch_main_scaffolded.map { it -> [meta: it.meta - it.meta.subMap("assembly_map_bam") + [assembly_map_bam: null] ] },
-        RAGTAG_SCAFFOLD.out.corrected_assembly.map { meta, corrected -> [ meta.id, corrected ] },
+        BGZIP.out.output.map { meta, corrected -> [ meta.id, corrected ] },
         meryl_kmers)
 
     emit:
