@@ -39,7 +39,8 @@
                     "flye": {
                         "branch": "master",
                         "git_sha": "1ab453187e9eada07bdd98609ce770971bfe86e4",
-                        "installed_by": ["modules"]
+                        "installed_by": ["modules"],
+                        "patch": "modules/nf-core/flye/flye.diff"
                     },
                     "genomescope2": {
                         "branch": "master",

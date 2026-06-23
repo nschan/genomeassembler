@@ -9,6 +9,8 @@ include { LIFTOFF } from '../../../modules/nf-core/liftoff/main'
 include { RAGTAG_PATCH } from '../../../modules/nf-core/ragtag/patch/main'
 include { HTSLIB_BGZIPTABIX as BGZIP_HIFI } from '../../../modules/nf-core/htslib/bgziptabix/main'
 include { HTSLIB_BGZIPTABIX as BGZIP_ONT } from '../../../modules/nf-core/htslib/bgziptabix/main'
+include { HTSLIB_BGZIPTABIX as BGZIP_FLYE_ONT } from '../../../modules/nf-core/htslib/bgziptabix/main'
+include { HTSLIB_BGZIPTABIX as BGZIP_FLYE_HIFI } from '../../../modules/nf-core/htslib/bgziptabix/main'
 include { HTSLIB_BGZIPTABIX as BGZIP_RAGTAG } from '../../../modules/nf-core/htslib/bgziptabix/main'
 
 include { QC } from '../qc/main'
@@ -120,8 +122,28 @@ workflow ASSEMBLE {
 
     // Run through flye
     FLYE_ONT(flye_ont_inputs.reads, flye_ont_inputs.mode)
-    FLYE_HIFI(flye_hifi_inputs.reads, flye_hifi_inputs.mode)
+    ch_zip_flye_ont = FLYE_ONT.out.fasta.map {
+        meta, scaffold ->
+        [
+            meta,
+            scaffold,
+            [],
+            []
+        ]
+    }
+    BGZIP_FLYE_ONT(ch_zip_flye_ont, "compress", false, "fa")
 
+    FLYE_HIFI(flye_hifi_inputs.reads, flye_hifi_inputs.mode)
+    ch_zip_flye_hifi = FLYE_HIFI.out.fasta.map {
+        meta, scaffold ->
+        [
+            meta,
+            scaffold,
+            [],
+            []
+        ]
+    }
+    BGZIP_FLYE_HIFI(ch_zip_flye_hifi, "compress", false, "fa")
     /*
     =========================
         HIFIASM ASSEMBLER
@@ -218,13 +240,13 @@ workflow ASSEMBLE {
     BGZIP_ONT(ch_zip_ont, "compress", false, "fa")
 
     // Flye:
-    flye_assemblies = FLYE_ONT.out.fasta
+    flye_assemblies = BGZIP_FLYE_ONT.out.output
         .filter {
             meta, _fasta -> meta.strategy != "scaffold"
         }
         .map { meta_old, assembly -> [meta: meta_old + [ assembly: assembly ] ] }
         .mix(
-            FLYE_HIFI.out.fasta
+            BGZIP_FLYE_HIFI.out.output
                 .filter {
                     meta, _fasta -> meta.strategy != "scaffold"
                 }
@@ -285,7 +307,7 @@ workflow ASSEMBLE {
     // scaffolds can be: FLYE-HIFIASM, FLYE-FLYE, HIFIASM-HIFIASM or HIFIASM-FLYE
     // The above is (ONT-HIFI)
 
-    scaffold_flye_hifiasm = FLYE_ONT.out.fasta
+    scaffold_flye_hifiasm = BGZIP_FLYE_ONT.out.output
         // Flye-hifiasm
         .filter { meta, _fasta ->
             meta.strategy == "scaffold" &&
@@ -294,9 +316,7 @@ workflow ASSEMBLE {
         }
         .map { meta, fasta -> [meta.id, meta, fasta] }
         .join(
-            GFA2FA_HIFI
-                .out
-                .fasta
+            BGZIP_HIFI.out.output
                 .filter { meta, _fasta ->
                     meta.strategy == "scaffold" &&
                     meta.assembler_ont == "flye" &&
@@ -316,7 +336,7 @@ workflow ASSEMBLE {
         }
 
     // flye-flye
-    scaffold_flye_flye = FLYE_ONT.out.fasta
+    scaffold_flye_flye = BGZIP_FLYE_ONT.out.output
         .filter {
             meta, _fasta -> meta.strategy == "scaffold" && meta.assembler_ont == "flye" && meta.assembler_hifi == "flye"
         }
@@ -324,7 +344,7 @@ workflow ASSEMBLE {
             meta, fasta -> [meta.id, meta, fasta] // id, meta, ont assembly
         }
         .join(
-            FLYE_HIFI.out.fasta
+            BGZIP_FLYE_HIFI.out.output
                 .filter {
                     meta, _fasta -> meta.strategy == "scaffold" && meta.assembler_ont == "flye" && meta.assembler_hifi == "flye"
                 }
@@ -343,7 +363,7 @@ workflow ASSEMBLE {
         }
 
     // hifiasm_flye
-    scaffold_hifiasm_flye = GFA2FA_ONT.out.fasta
+    scaffold_hifiasm_flye = BGZIP_ONT.out.output
         .filter {
             meta, _assembly -> meta.strategy == "scaffold" &&
                 meta.assembler_ont == "hifiasm" &&
@@ -374,7 +394,7 @@ workflow ASSEMBLE {
         }
 
     // hifiasm_hifiasm
-    scaffold_hifiasm_hifiasm = GFA2FA_ONT.out.fasta
+    scaffold_hifiasm_hifiasm = BGZIP_ONT.out.output
         .filter {
             meta, _assembly -> meta.strategy == "scaffold" &&
                 meta.assembler_ont == "hifiasm" &&
@@ -389,7 +409,7 @@ workflow ASSEMBLE {
             ]
         }
         .join(
-            GFA2FA_HIFI.out.fasta
+            BGZIP_HIFI.out.output
                 .filter {
                     meta, _assembly -> meta.strategy == "scaffold" &&
                         meta.assembler_ont == "hifiasm" &&
