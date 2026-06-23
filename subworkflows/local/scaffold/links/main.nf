@@ -42,14 +42,14 @@ workflow RUN_LINKS {
 
     liftoff_in = ch_main_scaffolded
         .filter {
-            it -> it.lift_annotations
+            it -> it.meta.lift_annotations
         }
         .map { it ->
                 [
                 it.meta,
-                it.scaffolds_links,
-                it.ref_fasta,
-                it.ref_gff
+                it.meta.scaffolds_links,
+                it.meta.ref_fasta,
+                it.meta.ref_gff
                 ]
         }
 
