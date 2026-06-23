@@ -340,7 +340,6 @@
                 "test_ont_hifiasm/scaffold/ragtag/test_ont_hifiasm_ragtag.unmapped.txt"
             ],
             [
-                "test_flye_hifiasm.assembly.fasta:md5,29b77d20bd3a959c49b9501169caa650",
                 "test_flye_hifiasm.params.json:md5,afa91c041bce5e190f4a699d11b69db6",
                 "test_flye_hifiasm.bp.hap1.p_ctg.gfa:md5,46ee70869884ad585165bd48081414e9",
                 "test_flye_hifiasm.bp.hap2.p_ctg.gfa:md5,7792865547989d6d284f640425c4e36c",
@@ -365,7 +364,6 @@
                 "test_hifi_hifiasm.fasta:md5,77e3d5af48175c784bfd217048fe271b",
                 "test_hifi_hifiasm_hifi.fastplong.json:md5,e58f896e9b70344ae4e607324c2c6742",
                 "test_hifi_hifiasm_ont.fastplong.json:md5,eedbb98c4d3870f38320d75b21c86604",
-                "test_hifiasm_flye.assembly.fasta:md5,b6dd8b785f98cdbb9c8256d9bce53ced",
                 "test_hifiasm_flye.params.json:md5,54b576cb6d4d27656878a7fd3657bde9",
                 "test_hifiasm_flye.bp.hap1.p_ctg.gfa:md5,c9a084903ea872a7ac28f3bbd5eee8f3",
                 "test_hifiasm_flye.bp.hap2.p_ctg.gfa:md5,d41d8cd98f00b204e9800998ecf8427e",
@@ -392,7 +390,6 @@
                 "test_hifiasm_ul_ont.fastplong.json:md5,86da6d58ac4630bfeae3ee08014ecb0b",
                 "test_hifiasm_ul_longstitch.unmapped.txt:md5,d41d8cd98f00b204e9800998ecf8427e",
                 "versions.yml:md5,c6c0c66defcf12c9bd29c649fbef58af",
-                "test_ont_flye.assembly.fasta:md5,95e8b37908231fd65c5df7de46d2b8d2",
                 "test_ont_flye.params.json:md5,afa91c041bce5e190f4a699d11b69db6",
                 "test_ont_flye_assembly.unmapped.txt:md5,d41d8cd98f00b204e9800998ecf8427e",
                 "test_ont_flye_hifi.fastplong.json:md5,9205a4cf65cce249429badc208348349",
@@ -411,7 +408,7 @@
                 "test_ont_hifiasm_ragtag.unmapped.txt:md5,e99c39c4afff7b433fb3973359dae6a4"
             ]
         ],
-        "timestamp": "2026-06-23T10:33:13.064624685",
+        "timestamp": "2026-06-23T16:46:09.725072203",
         "meta": {
             "nf-test": "0.9.5",
             "nextflow": "25.10.4"
