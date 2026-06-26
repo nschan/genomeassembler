@@ -131,7 +131,12 @@ Due to the way the pipeline handles parameterization of inputs, if a parameter i
 
 ## Adding a new step
 
-Any steps added to the pipeline need to be compatible with the overall pipeline. During 'transit', this pipeline makes use of a channel (`ch_main`) that consists of a singular item: the `meta` map. This is constructed in `subworkflows/local/utils_nfcore_genomeassembler_pipeline/main.nf`. This map stores _all_ sample information, which includes every parameter. Every subworkflow has to emit `ch_main`, i.e. a channel that only contains the `meta` map. All steps that are related to the creation of this map, including handling of conditional execution, need to happen in the subworkflow, to ensure that the full `ch_main` travels through the pipeline.
+Any steps added to the pipeline need to be compatible with the overall pipeline.
+During 'transit', this pipeline makes use of a channel (`ch_main`) that consists of a singular item: the `meta` map.
+This is constructed in `subworkflows/local/utils_nfcore_genomeassembler_pipeline/main.nf`.
+This map stores _all_ sample information, which includes every parameter.
+Every subworkflow has to emit `ch_main`, i.e. a channel that only contains the `meta` map.
+All steps that are related to the creation of this map, including handling of conditional execution, need to happen in the subworkflow, to ensure that the full `ch_main` travels through the pipeline.
 
 Below are patterns that are used in this pipeline to do work with `ch_main`.
 
