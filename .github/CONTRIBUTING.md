@@ -93,6 +93,13 @@ Sensible defaults for process resource requirements (CPUs / memory / time) for a
 
 The process resources can be passed on to the tool dynamically within the process with the `${task.cpus}` and `${task.memory}` variables in the `script:` block.
 
+### Naming schemes
+
+Please use the following naming schemes, to make it easy to understand what is going where.
+
+- initial process channel: `ch_output_from_<process>`
+- intermediate and terminal channels: `ch_<previousprocess>_for_<nextprocess>`
+
 ### Nextflow version bumping
 
 If you are using a new feature from core Nextflow, you may bump the minimum required version of nextflow in the pipeline with: `nf-core pipelines bump-version --nextflow . [min-nf-version]`
