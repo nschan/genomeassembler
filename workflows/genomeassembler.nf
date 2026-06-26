@@ -121,6 +121,7 @@ workflow GENOMEASSEMBLER {
             PREPARE.out.genomescope_plot
         )
         .unique()
+        .filter { it -> it != null }
         .collect { it -> it[1] }
 
     def topic_versions = channel.topic("versions")
@@ -143,6 +144,7 @@ workflow GENOMEASSEMBLER {
     /*
     Report
     */
+
     ch_collated_versions
         .collectFile(
             storeDir: "${params.outdir}/pipeline_info",
@@ -161,6 +163,7 @@ workflow GENOMEASSEMBLER {
                 SCAFFOLD.out.scaffold_quast_reports
             )
         )
+        .filter { it -> it[0] != null }
         .unique()
         .collect { reports -> reports[1] }
 
@@ -175,6 +178,7 @@ workflow GENOMEASSEMBLER {
             )
         )
         .unique()
+        .filter { it -> it != null }
         .collect { reports -> reports[1] }
 
     merqury_files = merqury_files
@@ -187,9 +191,11 @@ workflow GENOMEASSEMBLER {
                 SCAFFOLD.out.scaffold_merqury_reports
             )
         )
-        .collect { reports -> [reports[1], reports[2], reports[3], reports[4]] }
+        .filter { it -> it != null }
+        .collect { reports -> [reports[1], reports[2], reports[3]] }
         .toSet()
         .flatten()
+        .filter { it -> it != null }
         .collect()
 
     report_files = channel
@@ -212,7 +218,7 @@ workflow GENOMEASSEMBLER {
             quast_files,
             busco_files,
             merqury_files,
-            channel.fromPath("${params.outdir}/pipeline_info/nf_core_pipeline_software_versions.yml"),
+            ch_collated_versions,
             ch_main.map { it -> [sample: [id: it.meta.id, group: it.meta.group]] }.collect()
     )
 
