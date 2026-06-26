@@ -16,13 +16,10 @@ Contributions to the code are even more welcome ;)
 
 If you'd like to write some code for nf-core/genomeassembler, the standard workflow is as follows:
 
-1. Check that there isn't already an issue about your idea in the [nf-core/genomeassembler issues](https://github.com/nf-core/genomeassembler/issues) or [nf-core/genomeassembler pull requests](https://github.com/nf-core/genomeassembler/pulls)to avoid duplicating work. If there isn't one already, please create one so that others know you're working on this
+1. Check that there isn't already an issue about your idea in the [nf-core/genomeassembler issues](https://github.com/nf-core/genomeassembler/issues) to avoid duplicating work. If there isn't one already, please create one so that others know you're working on this
 2. [Fork](https://help.github.com/en/github/getting-started-with-github/fork-a-repo) the [nf-core/genomeassembler repository](https://github.com/nf-core/genomeassembler) to your GitHub account
 3. Make the necessary changes / additions within your forked repository following [Pipeline conventions](#pipeline-contribution-conventions)
 4. Use `nf-core pipelines schema build` and add any new parameters to the pipeline JSON schema (requires [nf-core tools](https://github.com/nf-core/tools) >= 1.10).
-5. Submit a Pull Request against the `dev` branch and wait for the code to be reviewed and merged
-
-If you're not used to this workflow with git, you can start with some [docs from GitHub](https://help.github.com/en/github/collaborating-with-issues-and-pull-requests) or even their [excellent `git` resources](https://try.github.io/).
 
 ## Tests
 
@@ -67,13 +64,68 @@ For further information/help, please consult the [nf-core/genomeassembler docume
 
 To make the `nf-core/genomeassembler` code and processing logic more understandable for new contributors and to ensure quality, we semi-standardise the way the code and other contributions are written.
 
-### Adding a new step
+#### Other standards
+
+If you wish to contribute a new step, please use the following coding standards:
+
+1. Define the corresponding input channel into your new process from the expected previous process channel.
+2. Write the process block (see below).
+3. Define the output channel if needed (see below).
+4. Add any new parameters to `nextflow.config` with a default (see below).
+5. Add any new parameters to `nextflow_schema.json` with help text (via the `nf-core pipelines schema build` tool).
+6. Add sanity checks and validation for all relevant parameters.
+7. Perform local tests to validate that the new code works as expected.
+8. If applicable, add a new test in the `tests` directory.
+9. Add a description of the output files and if relevant any appropriate images from the MultiQC report to `docs/output.md`.
+
+### Default values
+
+Parameters should be initialised / defined with default values within the `params` scope in `nextflow.config`.
+
+Once there, use `nf-core pipelines schema build` to add to `nextflow_schema.json`.
+
+### Default processes resource requirements
+
+Sensible defaults for process resource requirements (CPUs / memory / time) for a process should be defined in `conf/base.config`. These should generally be specified generic with `withLabel:` selectors so they can be shared across multiple processes/steps of the pipeline. A nf-core standard set of labels that should be followed where possible can be seen in the [nf-core pipeline template](https://github.com/nf-core/tools/blob/main/nf_core/pipeline-template/conf/base.config), which has the default process as a single core-process, and then different levels of multi-core configurations for increasingly large memory requirements defined with standardised labels.
+
+The process resources can be passed on to the tool dynamically within the process with the `${task.cpus}` and `${task.memory}` variables in the `script:` block.
+
+### Nextflow version bumping
+
+If you are using a new feature from core Nextflow, you may bump the minimum required version of nextflow in the pipeline with: `nf-core pipelines bump-version --nextflow . [min-nf-version]`
+
+### Images and figures
+
+For overview images and other documents we follow the nf-core [style guidelines and examples](https://nf-co.re/developers/design_guidelines).
+
+## GitHub Codespaces
+
+This repo includes a devcontainer configuration which will create a GitHub Codespaces for Nextflow development! This is an online developer environment that runs in your browser, complete with VSCode and a terminal.
+
+To get started:
+
+- Open the repo in [Codespaces](https://github.com/nf-core/genomeassembler/codespaces)
+- Tools installed
+  - nf-core
+  - Nextflow
+
+Devcontainer specs:
+
+- [DevContainer config](.devcontainer/devcontainer.json)
+
+# Pipeline specific conventions
+
+## Parameters
+
+Due to the way the pipeline handles parameterization of inputs, if a parameter is added, the corresponding param needs to also be added to the meta-map constructor in `subworkflows/local/utils_nfcore_genomeassembler_pipeline/main.nf`.
+
+## Adding a new step
 
 Any steps added to the pipeline need to be compatible with the overall pipeline. During 'transit', this pipeline makes use of a channel (`ch_main`) that consists of a singular item: the `meta` map. This is constructed in `subworkflows/local/utils_nfcore_genomeassembler_pipeline/main.nf`. This map stores _all_ sample information, which includes every parameter. Every subworkflow has to emit `ch_main`, i.e. a channel that only contains the `meta` map. All steps that are related to the creation of this map, including handling of conditional execution, need to happen in the subworkflow, to ensure that the full `ch_main` travels through the pipeline.
 
 Below are patterns that are used in this pipeline to do work with `ch_main`.
 
-#### Single input
+### Single input
 
 General generation of input for a single input process:
 
@@ -92,7 +144,7 @@ ch_main = SINGLE_INPUT_PROCESS.out.output
 
 > [!NOTE] Use `meta - meta.subMap["key"] + [key: value]` to remove an existing item in case it should be updated
 
-#### Multi input
+### Multi input
 
 General generation of input for a multi input process:
 
@@ -105,7 +157,7 @@ ch_process_multi_in = ch_main
 MULTI_INPUT_PROCESS(ch_process_multi_in.input_reads ch_process_multi_in.input_ref)
 ```
 
-#### Flow-control
+### Flow-control
 
 Since the pipeline parameterises per sample, flow control has to be done on channels, via `.branch()`, or `.filter()`.
 `.filter()` offers more flexibility, in complex cases, e.g. where samples can be part of multiple groups, while I personally find `.branch()` easier to handle simpler cases.
@@ -124,7 +176,7 @@ conditional_process_in =
 CONDITIONAL_PROCESS(conditional_process_in)
 ```
 
-#### Output creation
+### Output creation
 
 Ouptputs for conditional channels need to be handled to recreate the whole transit channel, via `.mix()`:
 
@@ -140,7 +192,7 @@ ch_main = ch_conditional_process.process_skip
    )
 ```
 
-#### Grouping
+### Grouping
 
 The pipeline implements sample grouping, which is currently only used during read-preprocessing. Samples that share a group will undergo read-preprocessing as a group, i.e. the reads are only processed once.
 Grouping works by generating a new `meta.id`, which corresponds to the group, while the `meta`s of the group members are stored in `meta.metas`:
@@ -196,60 +248,9 @@ ch_main = ONT_PROCESS
     )
 ```
 
-#### Other standards
-
-If you wish to contribute a new step, please use the following coding standards:
-
-1. Define the corresponding input channel into your new process from the expected previous process channel.
-2. Write the process block (see below).
-3. Define the output channel if needed (see below).
-4. Add any new parameters to `nextflow.config` with a default (see below).
-5. Add any new parameters to `nextflow_schema.json` with help text (via the `nf-core pipelines schema build` tool).
-6. Add sanity checks and validation for all relevant parameters.
-7. Perform local tests to validate that the new code works as expected.
-8. If applicable, add a new test in the `tests` directory.
-9. Add a description of the output files and if relevant any appropriate images from the MultiQC report to `docs/output.md`.
-
-### Default values
-
-Parameters should be initialised / defined with default values within the `params` scope in `nextflow.config`.
-
-Once there, use `nf-core pipelines schema build` to add to `nextflow_schema.json`.
-
-Due to the way the pipeline handles parameterization of inputs, the corresponding param needs to be added to the meta-map constructor in `subworkflows/local/utils_nfcore_genomeassembler_pipeline/main.nf`.
-
-### Default processes resource requirements
-
-Sensible defaults for process resource requirements (CPUs / memory / time) for a process should be defined in `conf/base.config`. These should generally be specified generic with `withLabel:` selectors so they can be shared across multiple processes/steps of the pipeline. A nf-core standard set of labels that should be followed where possible can be seen in the [nf-core pipeline template](https://github.com/nf-core/tools/blob/main/nf_core/pipeline-template/conf/base.config), which has the default process as a single core-process, and then different levels of multi-core configurations for increasingly large memory requirements defined with standardised labels.
-
-The process resources can be passed on to the tool dynamically within the process with the `${task.cpus}` and `${task.memory}` variables in the `script:` block.
-
 ### Naming schemes
 
-Please use the following naming schemes, to make it easy to understand what is going where.
+Please use the following channel naming schemes, to make it easy to understand what is going where.
 
 - transit channel, subworkfow input and output: `ch_main`
 - intermediate channels: `ch_descriptive_suffix`
-
-### Nextflow version bumping
-
-If you are using a new feature from core Nextflow, you may bump the minimum required version of nextflow in the pipeline with: `nf-core pipelines bump-version --nextflow . [min-nf-version]`
-
-### Images and figures
-
-For overview images and other documents we follow the nf-core [style guidelines and examples](https://nf-co.re/developers/design_guidelines).
-
-## GitHub Codespaces
-
-This repo includes a devcontainer configuration which will create a GitHub Codespaces for Nextflow development! This is an online developer environment that runs in your browser, complete with VSCode and a terminal.
-
-To get started:
-
-- Open the repo in [Codespaces](https://github.com/nf-core/genomeassembler/codespaces)
-- Tools installed
-  - nf-core
-  - Nextflow
-
-Devcontainer specs:
-
-- [DevContainer config](.devcontainer/devcontainer.json)
