@@ -10,73 +10,73 @@ process REPORT {
     https://wave.seqera.io/view/builds/bd-be4a8863b7b76cf7_1 docker
     */
     input:
-    path qmdir_files, stageAs: "*"
-    path funct_files, stageAs: "functions/*"
-    path nanoq_files, stageAs: "data/nanoq/*"
-    path jelly_files, stageAs: "data/genomescope/*"
-    path quast_files, stageAs: "data/quast/*"
-    path busco_files, stageAs: "data/busco/*"
-    path meryl_files, stageAs: "data/merqury/*"
-    path versions, stageAs: "software_versions.yml"
+    path qmdir_files,       stageAs: "*"
+    path funct_files,       stageAs: "functions/*"
+    path script_files,      stageAs: "scripts/*"
+    path fastplong_files,   stageAs: "data/fastplong/*"
+    path jelly_files,       stageAs: "data/genomescope/*"
+    path quast_files,       stageAs: "data/quast/*"
+    path busco_files,       stageAs: "data/busco/*"
+    path meryl_files,       stageAs: "data/merqury/*"
+    val versions
+    val groups
 
     output:
     tuple path("report.html"), path("report_files/*"), emit: report_html
     path ("busco_files/reports.csv"), emit: busco_table, optional: true
     path ("quast_files/reports.csv"), emit: quast_table, optional: true
     path ("genomescope_files/*"), emit: genomescope_plots, optional: true
-    path "versions.yml", emit: versions
-
+    // Versions are not pushed to versions topic as it is an input.
+    tuple val("${task.process}"), val('R'), eval("R --version | head -n1 | sed 's/R version //; s/ .*//'"), emit: versions_R
+    tuple val("${task.process}"), val('r-tidyverse'), eval("ls /opt/conda/pkgs/ | grep tidyverse | sed 's/r-tidyverse-//; s/-.*//'"), emit: versions_tidyverse
+    tuple val("${task.process}"), val('r-plotly'), eval("ls /opt/conda/pkgs/ | grep plotly | sed 's/r-plotly-//; s/-.*//'"), emit: versions_plotly
+    tuple val("${task.process}"), val('r-quarto'), eval("ls /opt/conda/pkgs/ | grep r-quarto | sed 's/r-quarto-//; s/-.*//'"), emit: versions_rquarto
+    tuple val("${task.process}"), val('quarto-cli'), eval("quarto --version"), emit: versions_quartocli
     when:
     task.ext.when == null || task.ext.when
 
     script:
     def report_profile = "--profile base"
-    if (params.ont) {
-        report_profile = report_profile << ",nanoq"
-    }
-    if (params.quast) {
-        report_profile = report_profile << ",quast"
-    }
-    if (params.busco) {
-        report_profile = report_profile << ",busco"
-    }
-    if (params.jellyfish) {
-        report_profile = report_profile << ",jellyfish"
-    }
-    if (params.merqury) {
-        report_profile = report_profile << ",merqury"
-    }
     def report_params = ''
-    if (params.ont) {
-        report_params = report_params << ' -P nanoq:true'
+    if (fastplong_files) {
+        report_profile = report_profile << ",fastplong"
+        report_params  = report_params << ' -P fastplong:true'
     }
-    if (params.quast) {
-        report_params = report_params << ' -P quast:true '
+    if (quast_files) {
+        report_profile = report_profile << ",quast"
+        report_params  = report_params << ' -P quast:true '
     }
-    if (params.busco) {
-        report_params = report_params << ' -P busco:true'
+    if (busco_files) {
+        report_profile = report_profile << ",busco"
+        report_params  = report_params << ' -P busco:true'
     }
-    if (params.jellyfish) {
-        report_params = report_params << ' -P jellyfish:true'
+    if (jelly_files) {
+        report_profile = report_profile << ",jellyfish"
+        report_params  = report_params << ' -P jellyfish:true'
     }
-    if (params.merqury) {
-        report_params = report_params << ' -P merqury:true'
+    if (meryl_files) {
+        report_profile = report_profile << ",merqury"
+        report_params  = report_params << ' -P merqury:true'
     }
+
+    def groupBuilder = new groovy.yaml.YamlBuilder()
+    groupBuilder.call(groups)
+    def group_content = groupBuilder.toString().tokenize('\n').join("\n    ")
+    def versionBuilder = new groovy.yaml.YamlBuilder()
+    versionBuilder.call(versions)
+    def versions_content = versionBuilder.toString().tokenize('\n').join("\n    ")
     """
+    cat <<- END_YAML_GROUPS > groups.yml
+    ${group_content}
+    END_YAML_GROUPS
+    cat <<- END_YAML_VERSIONS > versions.yml
+    ${versions_content}
+    END_YAML_VERSIONS
+
     export HOME="\$PWD"
     quarto render report.qmd \\
         ${report_profile} \\
-        ${report_params} \\
-        --to dashboard
-
-    cat <<-END_VERSIONS > versions.yml
-    "${task.process}":
-        R: \$(R --version | head -n1 | sed 's/R version //; s/ .*//')
-        r-tidyverse: \$(ls /opt/conda/pkgs/ | grep tidyverse | sed 's/r-tidyverse-//; s/-.*//')
-        r-plotly: \$(ls /opt/conda/pkgs/ | grep plotly | sed 's/r-plotly-//; s/-.*//')
-        r-quarto: \$(ls /opt/conda/pkgs/ | grep r-quarto | sed 's/r-quarto-//; s/-.*//')
-        quarto-cli: \$(quarto --version)
-    END_VERSIONS
+        ${report_params}
     """
     stub:
     """
@@ -85,14 +85,5 @@ process REPORT {
     mkdir busco_files && touch busco_files/reports.csv
     mkdir quast_files && touch quast_files/reports.csv
     mkdir genomescope_files && touch genomescope_files/file.txt
-
-    cat <<-END_VERSIONS > versions.yml
-    "${task.process}":
-        R: \$(R --version | head -n1 | sed 's/R version //; s/ .*//')
-        r-tidyverse: \$(ls /opt/conda/pkgs/ | grep tidyverse | sed 's/r-tidyverse-//; s/-.*//')
-        r-plotly: \$(ls /opt/conda/pkgs/ | grep plotly | sed 's/r-plotly-//; s/-.*//')
-        r-quarto: \$(ls /opt/conda/pkgs/ | grep r-quarto | sed 's/r-quarto-//; s/-.*//')
-        quarto-cli: \$(quarto --version)
-    END_VERSIONS
     """
 }

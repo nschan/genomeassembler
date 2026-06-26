@@ -12,13 +12,13 @@ process FLYE {
     val mode
 
     output:
-    tuple val(meta), path("*.fasta.gz"), emit: fasta
+    tuple val(meta), path("*.fasta")   , emit: fasta
     tuple val(meta), path("*.gfa.gz")  , emit: gfa
     tuple val(meta), path("*.gv.gz")   , emit: gv
     tuple val(meta), path("*.txt")     , emit: txt
     tuple val(meta), path("*.log")     , emit: log
     tuple val(meta), path("*.json")    , emit: json
-    path "versions.yml"                , emit: versions
+    tuple val("${task.process}"), val('flye'), eval('flye --version'), emit: versions_flye, topic: versions
 
     when:
     task.ext.when == null || task.ext.when
@@ -37,17 +37,12 @@ process FLYE {
         $task.cpus \\
         $args
 
-    gzip -c assembly.fasta > ${prefix}.assembly.fasta.gz
+    mv assembly.fasta ${prefix}.assembly.fasta
     gzip -c assembly_graph.gfa > ${prefix}.assembly_graph.gfa.gz
     gzip -c assembly_graph.gv > ${prefix}.assembly_graph.gv.gz
     mv assembly_info.txt ${prefix}.assembly_info.txt
     mv flye.log ${prefix}.flye.log
     mv params.json ${prefix}.params.json
-
-    cat <<-END_VERSIONS > versions.yml
-    "${task.process}":
-        flye: \$( flye --version )
-    END_VERSIONS
     """
 
     stub:
@@ -59,10 +54,5 @@ process FLYE {
     echo contig_1 > ${prefix}.assembly_info.txt
     echo stub > ${prefix}.flye.log
     echo stub > ${prefix}.params.json
-
-    cat <<-END_VERSIONS > versions.yml
-    "${task.process}":
-        flye: \$( flye --version )
-    END_VERSIONS
     """
 }
