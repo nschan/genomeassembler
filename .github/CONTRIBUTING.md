@@ -152,7 +152,8 @@ ch_main = SINGLE_INPUT_PROCESS.out.output
     .map{ meta, process_output -> [meta + [process_output_name: process_output]]}
 ```
 
-> [!NOTE] Use `meta - meta.subMap["key"] + [key: value]` to remove an existing item in case it should be updated
+> [!NOTE]
+> Use `meta - meta.subMap["key"] + [key: value]` to remove an existing item in case it should be updated
 
 ### Multi input
 
