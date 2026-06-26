@@ -1,7 +1,6 @@
 include { MINIMAP2_ALIGN as ALIGN } from '../../../../modules/nf-core/minimap2/align/main'
 include { BAM_STATS_SAMTOOLS as BAM_STATS } from '../../../nf-core/bam_stats_samtools/main'
 include { SAMTOOLS_FAIDX } from '../../../../modules/nf-core/samtools/faidx/main'
-include { GUNZIP } from '../../../../modules/nf-core/gunzip/main'
 
 workflow MAP_TO_ASSEMBLY {
     take:
@@ -22,9 +21,7 @@ workflow MAP_TO_ASSEMBLY {
         ]
     }
 
-    GUNZIP(ch_index_in)
-
-    SAMTOOLS_FAIDX(GUNZIP.out.gunzip, false)
+    SAMTOOLS_FAIDX(ch_index_in, false)
 
     ch_fasta_fai = ch_index_in
         .join(SAMTOOLS_FAIDX.out.fai)
