@@ -1,7 +1,7 @@
 {
     "-profile test": {
         "content": [
-            53,
+            54,
             {
                 "BGZIP": {
                     "htslib": "1.23.1",
@@ -272,6 +272,7 @@
                 "test_hifiasm_ul/scaffold/longstitch/assembly.cut250.tigmint.fa.k32.w100.z1000.trimmed_scafs.path",
                 "test_hifiasm_ul/scaffold/longstitch/assembly.cut250.tigmint.fa.k32.w100.z1000.trimmed_scafs.tsv",
                 "test_hifiasm_ul/scaffold/longstitch/assembly.cut250.tigmint.fa.k32.w100.z1000.verbose_mapping.tsv",
+                "test_hifiasm_ul/scaffold/longstitch/test_hifiasm_ul_longstitch.fa.gz",
                 "test_hifiasm_ul/scaffold/longstitch/test_hifiasm_ul_longstitch.gff3",
                 "test_hifiasm_ul/scaffold/longstitch/test_hifiasm_ul_longstitch.tigmint-ntLink-arks.fa",
                 "test_hifiasm_ul/scaffold/longstitch/test_hifiasm_ul_longstitch.unmapped.txt",
@@ -408,7 +409,7 @@
                 "test_ont_hifiasm_ragtag.unmapped.txt:md5,e99c39c4afff7b433fb3973359dae6a4"
             ]
         ],
-        "timestamp": "2026-06-23T16:46:09.725072203",
+        "timestamp": "2026-06-26T10:04:27.79043967",
         "meta": {
             "nf-test": "0.9.5",
             "nextflow": "25.10.4"
