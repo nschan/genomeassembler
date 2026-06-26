@@ -99,10 +99,10 @@ General generation of input for a multi input process:
 ```nextflow
 ch_process_multi_in = ch_main
     .multiMap { meta ->
-        input1: [meta, meta.reads]
-        input2: [meta, meta.reference]
+        input_reads: [meta, meta.reads]
+        input_ref:   [meta, meta.reference]
     }
-MULTI_INPUT_PROCESS(ch_process_multi_in.input1, ch_process_multi_in.input1)
+MULTI_INPUT_PROCESS(ch_process_multi_in.input_reads ch_process_multi_in.input_ref)
 ```
 
 #### Flow-control
@@ -114,7 +114,7 @@ Since the pipeline parameterises per sample, flow control has to be done on chan
 ch_conditional_process =
     ch_main
         .branch { meta ->
-            process_in: meta.run_conditional_process == "yes"
+            process_in:   meta.run_conditional_process == "yes"
             process_skip: meta.run_conditional_process != "yes"
         }
 
@@ -181,14 +181,14 @@ After this process has concluded, the group members are regenerated, and ch_main
 ```nextflow
 ch_main = ONT_PROCESS
     .out
-    .ouput
+    .output
     .filter { it -> it[0].metas } // metas only exists when grouped.
     .flatMap { it -> // it looks like [meta, output_path]
         it[0].metas
               .collect { metas -> [ meta: metas + [ ontreads_modified: it[1] ] ] }
               // it here is the it from flatMap. Every group member receives the same output.
     }
-    .mix(ONT_PROCESS.out.ouput
+    .mix(ONT_PROCESS.out.output
         .filter { it -> !it[0].metas }
         .map {
             it -> [ meta: it[0] + [ ontreads_modified: it[1] ] ]
