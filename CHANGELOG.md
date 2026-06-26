@@ -19,6 +19,10 @@ In addition, v2.0.0 contains these changes:
 
 Pull requests in reverse chronological order since v1.1.0
 
+[#194](https://github.com/nf-core/genomeassembler/pull/194)
+
+- Update `CONTRIBUTING.md`.
+
 [#193](https://github.com/nf-core/genomeassembler/pull/193)
 
 - Update `OUTPUT.md` with bgzipped files.
