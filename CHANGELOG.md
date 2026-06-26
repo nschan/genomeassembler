@@ -19,6 +19,10 @@ In addition, v2.0.0 contains these changes:
 
 Pull requests in reverse chronological order since v1.1.0
 
+[#192](https://github.com/nf-core/genomeassembler/pull/192)
+
+- BGZIP is now used for all fasta outputs, input for SAMTOOLS_FAIDX is no longer unzipped.
+
 [#171](https://github.com/nf-core/genomeassembler/issues/171)
 
 - fastplong for long-read trimming and qc
