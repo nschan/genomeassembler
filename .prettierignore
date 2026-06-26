@@ -1,6 +1,4 @@
 email_template.html
-adaptivecard.json
-slackreport.json
 .nextflow*
 work/
 data/
@@ -16,3 +14,4 @@ modules/nf-core/
 subworkflows/nf-core/
 *.svg
 tests/
+nf-core-genomeassembler_logo_dark.svg
