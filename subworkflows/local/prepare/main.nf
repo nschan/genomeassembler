@@ -153,15 +153,16 @@ workflow PREPARE {
                 it -> it.meta.hifireads ? false : true
             }
         )
+        // update the path to QC reads, so that the trimmed reads will be used.
         .map {
-            meta ->
+            it ->
             [
-                meta: meta -
-                    meta.subMap("qc_reads_path") +
+                meta: it.meta -
+                    it.meta.subMap("qc_reads_path") +
                     [
-                        qc_reads_path: meta.qc_reads.toLowerCase() == "ont" ?
-                            meta.ontreads :
-                            meta.hifireads
+                        qc_reads_path: it.meta.qc_reads.toLowerCase() == "ont" ?
+                            it.meta.ontreads :
+                            it.meta.hifireads
                     ]
             ]
         }
