@@ -19,6 +19,10 @@ In addition, v2.0.0 contains these changes:
 
 Pull requests in reverse chronological order since v1.1.0
 
+[#197](https://github.com/nf-core/genomeassembler/pull/197)
+
+- Fix handling of reads for quality control, inputs for jellyfish should be trimmed.
+
 [#196](https://github.com/nf-core/genomeassembler/pull/196)
 
 - bgzip `medaka` outputs
