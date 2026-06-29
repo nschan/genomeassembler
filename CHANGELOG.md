@@ -19,7 +19,6 @@ In addition, v2.0.0 contains these changes:
 
 Pull requests in reverse chronological order since v1.1.0
 
-
 [#196](https://github.com/nf-core/genomeassembler/pull/193)
 
 - bgzip `medaka` outputs
