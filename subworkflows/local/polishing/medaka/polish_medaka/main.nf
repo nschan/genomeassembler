@@ -1,8 +1,6 @@
 include { MEDAKA_PARALLEL as MEDAKA } from '../../../../../modules/local/medaka/medaka_consensus/main'
 include { QC } from '../../../qc/main.nf'
 include { LIFTOFF } from '../../../../../modules/nf-core/liftoff/main'
-include { HTSLIB_BGZIPTABIX as BGZIP } from '../../../../../modules/nf-core/htslib/bgziptabix/main'
-include { HTSLIB_BGZIPTABIX as UNZIP } from '../../../../../modules/nf-core/htslib/bgziptabix/main'
 
 workflow POLISH_MEDAKA {
     take:
