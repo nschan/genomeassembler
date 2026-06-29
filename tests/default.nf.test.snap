@@ -1,7 +1,7 @@
 {
     "-profile test": {
         "content": [
-            54,
+            60,
             {
                 "BGZIP": {
                     "htslib": "1.23.1",
@@ -122,6 +122,17 @@
                 "test_flye_hifiasm/scaffold/ragtag/test_flye_hifiasm_ragtag.stats",
                 "test_flye_hifiasm/scaffold/ragtag/test_flye_hifiasm_ragtag.unmapped.txt",
                 "test_hifi_flye",
+                "test_hifi_flye/assembly",
+                "test_hifi_flye/assembly/flye",
+                "test_hifi_flye/assembly/flye/test_hifi_flye.assembly.fasta",
+                "test_hifi_flye/assembly/flye/test_hifi_flye.assembly_graph.gfa.gz",
+                "test_hifi_flye/assembly/flye/test_hifi_flye.assembly_graph.gv.gz",
+                "test_hifi_flye/assembly/flye/test_hifi_flye.assembly_info.txt",
+                "test_hifi_flye/assembly/flye/test_hifi_flye.fa.gz",
+                "test_hifi_flye/assembly/flye/test_hifi_flye.flye.log",
+                "test_hifi_flye/assembly/flye/test_hifi_flye.params.json",
+                "test_hifi_flye/assembly/test_hifi_flye_assembly.gff3",
+                "test_hifi_flye/assembly/test_hifi_flye_assembly.unmapped.txt",
                 "test_hifi_flye/reads",
                 "test_hifi_flye/reads/fastplong",
                 "test_hifi_flye/reads/fastplong/hifi",
@@ -134,6 +145,14 @@
                 "test_hifi_flye/reads/fastplong/ont/test_hifi_flye_ont.fastplong.html",
                 "test_hifi_flye/reads/fastplong/ont/test_hifi_flye_ont.fastplong.json",
                 "test_hifi_flye/reads/fastplong/ont/test_hifi_flye_ont.fastplong.log",
+                "test_hifi_flye/scaffold",
+                "test_hifi_flye/scaffold/ragtag",
+                "test_hifi_flye/scaffold/ragtag/test_hifi_flye_ragtag.agp",
+                "test_hifi_flye/scaffold/ragtag/test_hifi_flye_ragtag.fa.gz",
+                "test_hifi_flye/scaffold/ragtag/test_hifi_flye_ragtag.fasta",
+                "test_hifi_flye/scaffold/ragtag/test_hifi_flye_ragtag.gff3",
+                "test_hifi_flye/scaffold/ragtag/test_hifi_flye_ragtag.stats",
+                "test_hifi_flye/scaffold/ragtag/test_hifi_flye_ragtag.unmapped.txt",
                 "test_hifi_hifiasm",
                 "test_hifi_hifiasm/assembly",
                 "test_hifi_hifiasm/assembly/hifiasm",
@@ -354,8 +373,13 @@
                 "test_flye_hifiasm_hifi.fastplong.json:md5,0e20fedb8dfe0646232060da502883ee",
                 "test_flye_hifiasm_ont.fastplong.json:md5,826cc5a321dd130a2f2c53cdb1a345b2",
                 "test_flye_hifiasm_ragtag.unmapped.txt:md5,d41d8cd98f00b204e9800998ecf8427e",
+                "test_hifi_flye.params.json:md5,54b576cb6d4d27656878a7fd3657bde9",
+                "test_hifi_flye_assembly.unmapped.txt:md5,d41d8cd98f00b204e9800998ecf8427e",
                 "test_hifi_flye_hifi.fastplong.json:md5,daad59b32b84b79c29c274ed20f03cce",
                 "test_hifi_flye_ont.fastplong.json:md5,198eb762846548340557f5f861f10c11",
+                "test_hifi_flye_ragtag.fasta:md5,79d2708ebfdbd7b766b9e7c6ee795d5b",
+                "test_hifi_flye_ragtag.stats:md5,25325bb3c27246be0934f38f291b57b2",
+                "test_hifi_flye_ragtag.unmapped.txt:md5,d41d8cd98f00b204e9800998ecf8427e",
                 "test_hifi_hifiasm.bp.hap1.p_ctg.gfa:md5,46ee70869884ad585165bd48081414e9",
                 "test_hifi_hifiasm.bp.hap2.p_ctg.gfa:md5,7792865547989d6d284f640425c4e36c",
                 "test_hifi_hifiasm.bp.p_ctg.gfa:md5,8fe65466d76815ffe1663ff6d8f2e8d1",
@@ -409,10 +433,10 @@
                 "test_ont_hifiasm_ragtag.unmapped.txt:md5,e99c39c4afff7b433fb3973359dae6a4"
             ]
         ],
-        "timestamp": "2026-06-26T10:04:27.79043967",
         "meta": {
-            "nf-test": "0.9.5",
+            "nf-test": "0.9.2",
             "nextflow": "25.10.4"
-        }
+        },
+        "timestamp": "2026-06-29T09:54:35.781308401"
     }
 }
