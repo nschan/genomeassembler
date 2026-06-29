@@ -23,6 +23,10 @@ Pull requests in reverse chronological order since v1.1.0
 
 - bgzip `medaka` outputs
 
+[#195](https://github.com/nf-core/genomeassembler/pull/195)
+
+- Fixed oversight in #171 where hifi reads were not assembled via flye with strategy `single`.
+
 [#194](https://github.com/nf-core/genomeassembler/pull/194)
 
 - Update `CONTRIBUTING.md`.

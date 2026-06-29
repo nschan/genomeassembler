@@ -74,7 +74,7 @@ workflow ASSEMBLE {
 
     ch_main_assemble_flye = ch_main_assemble_branched
         .single
-        .filter { it -> it.meta.assembler_ont == "flye" }
+        .filter { it -> it.meta.assembler_ont == "flye" || it.meta.assembler_hifi == "flye"  }
         .mix(
             // Add in the scaffolding samples where flye is used
             ch_main_assemble_branched
