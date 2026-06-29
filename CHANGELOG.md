@@ -19,6 +19,10 @@ In addition, v2.0.0 contains these changes:
 
 Pull requests in reverse chronological order since v1.1.0
 
+[#195](https://github.com/nf-core/genomeassembler/pull/195)
+
+- Fixed oversight in #171 where hifi reads were not assembled via flye with strategy `single`.
+
 [#193](https://github.com/nf-core/genomeassembler/pull/193)
 
 - Update `OUTPUT.md` with bgzipped files.
