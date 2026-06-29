@@ -3,11 +3,14 @@ process REPORT {
     label 'process_low'
     conda "${moduleDir}/environment.yml"
     container "${workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container
-        ? 'https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/89/8967e1cb830fdc77ec5b84541a50c74a0a05eaaae557314490809de2fc91e4af/data'
-        : 'community.wave.seqera.io/library/quarto_r-gt_r-plotly_r-quarto_pruned:be4a8863b7b76cf7'}"
+        ? 'oras://community.wave.seqera.io/library/quarto_r-gt_r-plotly_r-quarto_pruned:c7c55c1c911608e9'
+        : 'community.wave.seqera.io/library/jupyter_matplotlib_papermill_quarto_pruned:d660572879a0d7c4'}"
     /* wave builds:
     https://wave.seqera.io/view/builds/bd-6e20dd9b9b77f359_1 singularity
     https://wave.seqera.io/view/builds/bd-be4a8863b7b76cf7_1 docker
+    */
+    /* wave builds new container:
+    https://wave.seqera.io/view/builds/bd-d660572879a0d7c4_1 docker
     */
     input:
     path qmdir_files,       stageAs: "*"
@@ -72,6 +75,23 @@ process REPORT {
     cat <<- END_YAML_VERSIONS > versions.yml
     ${versions_content}
     END_YAML_VERSIONS
+    # Set environment variables needed for Quarto rendering
+    export XDG_CACHE_HOME="./.xdg_cache_home"
+    export XDG_DATA_HOME="./.xdg_data_home"
+
+    # Fix Quarto for Apptainer (see https://community.seqera.io/t/confusion-over-why-a-tool-works-in-docker-but-fails-in-singularity-when-the-installation-doesnt-differ-i-e-using-wave-micromamba/1244)
+    ENV_QUARTO=/opt/conda/etc/conda/activate.d/quarto.sh
+    set +u
+    if [ -z "\${QUARTO_DENO}" ] && [ -f "\${ENV_QUARTO}" ]; then
+        source "\${ENV_QUARTO}"
+    fi
+    set -u
+
+    # Set parallelism for BLAS/MKL etc. to avoid over-booking of resources
+    export MKL_NUM_THREADS="${task.cpus}"
+    export OPENBLAS_NUM_THREADS="${task.cpus}"
+    export OMP_NUM_THREADS="${task.cpus}"
+    export NUMBA_NUM_THREADS="${task.cpus}"
 
     export HOME="\$PWD"
     quarto render report.qmd \\
