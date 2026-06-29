@@ -28,7 +28,6 @@ params:
 # Load libraries
 library(tidyverse)
 library(magrittr)
-library(plotly)
 
 #library(gt)
 # Load functions
@@ -299,13 +298,20 @@ The pipeline was run using the following software versions:
 #| message: false
 #| echo: false
 #| output: asis
-versions <- yaml::read_yaml("software_versions.yml")
+versions <- yaml::read_yaml("versions.yml")
 lapply(1:length(versions), \(process) {
-  proc = versions[[process]]
-  proc_name = names(versions[process])
-  tools <- lapply(1:length(proc), \(tool) {
-    tool_name = proc[tool] |> names()
-    tool_version = proc[[tool]] |> as.character()
+  proc  <-  versions[[process]] |> str_split(":\\\n ") |> flatten()
+  proc_name  <-  proc[[1]][1]
+  tools  <-  proc[[2]][1] |>
+    str_split("\\\n ") |>
+    lapply(\(x) trimws(x)) |>
+    flatten()
+  tools_df <- lapply(1:length(tools), \(toolnum) {
+    tool_info  <- tools[[toolnum]][1] |>
+      str_split(": ")  %>%
+      flatten()
+    tool_name = tool_info[[1]]
+    tool_version = tool_info[[2]]
     return(tibble(Process = proc_name,Tool = tool_name, Version = tool_version))
   }) |>
     bind_rows()

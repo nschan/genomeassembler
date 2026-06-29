@@ -117,7 +117,7 @@ workflow GENOMEASSEMBLER {
         .collect()
 
     genomescope_files = PREPARE.out.genomescope_summary
-        .concat(
+        .mix(
             PREPARE.out.genomescope_plot
         )
         .unique()
@@ -192,7 +192,7 @@ workflow GENOMEASSEMBLER {
             )
         )
         .filter { it -> it != null }
-        .collect { reports -> [reports[1], reports[2], reports[3]] }
+        .collect { reports -> [reports[1], reports[2], reports[3], reports[4]] }
         .toSet()
         .flatten()
         .filter { it -> it != null }
@@ -218,7 +218,7 @@ workflow GENOMEASSEMBLER {
             quast_files,
             busco_files,
             merqury_files,
-            ch_collated_versions,
+            ch_collated_versions.collect(),
             ch_main.map { it -> [sample: [id: it.meta.id, group: it.meta.group]] }.collect()
     )
 
