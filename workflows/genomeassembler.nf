@@ -165,7 +165,7 @@ workflow GENOMEASSEMBLER {
         )
         .filter { it -> it[0] != null }
         .unique()
-        .collect { reports -> reports[1] }
+        .collect()
 
     busco_files = busco_files
         .mix(
@@ -178,8 +178,7 @@ workflow GENOMEASSEMBLER {
             )
         )
         .unique()
-        .filter { it -> it != null }
-        .collect { reports -> reports[1] }
+        .collect { it -> it[1] }
 
     merqury_files = merqury_files
         .mix(
@@ -191,8 +190,7 @@ workflow GENOMEASSEMBLER {
                 SCAFFOLD.out.scaffold_merqury_reports
             )
         )
-        .filter { it -> it != null }
-        .collect { reports -> [reports[1], reports[2], reports[3], reports[4]] }
+        .collect { it -> [it[1], it[2], it[3], it[4]] }
         .toSet()
         .flatten()
         .filter { it -> it != null }
