@@ -26,7 +26,6 @@ workflow MAP_TO_ASSEMBLY {
     ch_fasta_fai = ch_index_in
         .join(SAMTOOLS_FAIDX.out.fai)
 
-
     aln_to_assembly_bam_bai = aln_to_assembly_bam
         .join(aln_to_assembly_bai)
 
