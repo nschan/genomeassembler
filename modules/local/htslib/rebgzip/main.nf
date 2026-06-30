@@ -13,6 +13,8 @@ process HTSLIB_REBGZIP {
     output:
     tuple val(meta), path("out/${outfile}"), emit: bgzipped
     tuple val("${task.process}"), val('htslib'), eval("bgzip --version | sed '1! d; s/bgzip (htslib) //'"), topic: versions, emit: versions_htslib
+    tuple val("${task.process}"), val('xz'), eval("xz --version | sed '1! d; s/xz (XZ Utils) //'"), topic: versions, emit: versions_xz
+
 
     when:
     task.ext.when == null || task.ext.when

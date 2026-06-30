@@ -4,22 +4,28 @@
             60,
             {
                 "BGZIP": {
-                    "htslib": "1.23.1"
+                    "htslib": "1.23.1",
+                    "xz": "5.8.3"
                 },
                 "BGZIP_FLYE_HIFI": {
-                    "htslib": "1.23.1"
+                    "htslib": "1.23.1",
+                    "xz": "5.8.3"
                 },
                 "BGZIP_FLYE_ONT": {
-                    "htslib": "1.23.1"
+                    "htslib": "1.23.1",
+                    "xz": "5.8.3"
                 },
                 "BGZIP_HIFI": {
-                    "htslib": "1.23.1"
+                    "htslib": "1.23.1",
+                    "xz": "5.8.3"
                 },
                 "BGZIP_ONT": {
-                    "htslib": "1.23.1"
+                    "htslib": "1.23.1",
+                    "xz": "5.8.3"
                 },
                 "BGZIP_RAGTAG": {
-                    "htslib": "1.23.1"
+                    "htslib": "1.23.1",
+                    "xz": "5.8.3"
                 },
                 "FASTPLONG_HIFI": {
                     "fastplong": "0.3.0"
@@ -447,7 +453,7 @@
                 "test_ont_hifiasm_ragtag.unmapped.txt:md5,e99c39c4afff7b433fb3973359dae6a4"
             ]
         ],
-        "timestamp": "2026-06-30T16:06:20.443082096",
+        "timestamp": "2026-06-30T16:26:03.920670413",
         "meta": {
             "nf-test": "0.9.5",
             "nextflow": "25.10.4"
