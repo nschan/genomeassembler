@@ -4,13 +4,13 @@ process REPORT {
     conda "${moduleDir}/environment.yml"
     container "${workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container
         ? 'oras://community.wave.seqera.io/library/quarto_r-gt_r-plotly_r-quarto_pruned:c7c55c1c911608e9'
-        : 'community.wave.seqera.io/library/jupyter_matplotlib_papermill_quarto_pruned:d660572879a0d7c4'}"
-    /* wave builds:
+        : 'community.wave.seqera.io/library/quarto_r-gt_r-plotly_r-quarto_pruned:9829faca188871f4'}"
+    /* wave builds OLD
     https://wave.seqera.io/view/builds/bd-6e20dd9b9b77f359_1 singularity
     https://wave.seqera.io/view/builds/bd-be4a8863b7b76cf7_1 docker
     */
-    /* wave builds new container:
-    https://wave.seqera.io/view/builds/bd-d660572879a0d7c4_1 docker
+    /* wave builds new container TESTING
+    https://wave.seqera.io/view/builds/bd-9829faca188871f4_1 docker
     */
     input:
     path qmdir_files,       stageAs: "*"

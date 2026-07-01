@@ -38,7 +38,7 @@ list.files("functions",
 
 # Set default ggplot theme
 theme_set(theme_bw(base_size = 14,
-                    base_family = gt::google_font("Maven Pro")))
+                   base_family = "Maven Pro"))
 theme_update(strip.background = element_blank(),
              axis.text.x = element_text(angle = 70, hjust = 1))
 ## Colors, these come from the khroma package ("muted")
@@ -143,7 +143,7 @@ QUAST was not included in the pipeline run.
 
 QUAST reports assembly statistics, taking into account the reference, if provided.
 
-```{r prepare quast, message = F}
+```{r prepare quast, message = F, warning = F}
 #| eval: !expr params$quast
 #| include: false
 #| warning: false
@@ -153,7 +153,7 @@ source("scripts/_quast.R")
 
 :::: {.panel-tabset .flow}
 
-```{r quast page}
+```{r quast page, message = F, warning = F}
 #| eval: !expr params$quast
 #| results: asis
 # This produces the contents of the page.
@@ -186,7 +186,7 @@ BUSCO was not included in the pipeline run.
 
 BUSCO assess assembly quality based on the presence / absence of expected single-copy orthologs.
 
-```{r busco data}
+```{r busco data, message = F, warning = F}
 #| eval: !expr params$busco
 #| warning: false
 #| message: false
@@ -197,7 +197,7 @@ source("scripts/_busco.R")
 
 :::: {.panel-tabset .flow}
 
-```{r busco page}
+```{r busco page, message = F, warning = F}
 #| eval: !expr params$busco
 #| results: asis
 #
@@ -210,7 +210,7 @@ source("scripts/_busco_page.R")
 
 :::
 
-```{r include = F}
+```{r include = F, message = F, warning = F}
 #| eval: !expr params$busco
 # Delete temporary files
 unlink("busco_files/orthologs", recursive = T)
@@ -241,7 +241,7 @@ merqury compares k-mer spectra between assemblies and short read libraries to as
 
 :::: {.panel-tabset .flow}
 
-```{r merqury add plots and valueboxes}
+```{r merqury add plots and valueboxes, message = F, warning = F}
 #| eval: !expr params$merqury
 #| results: asis
 source("scripts/_merqury_page.R")
@@ -281,7 +281,7 @@ genomescope_out <- list.files(paste0(data_base, "genomescope"), full.names = T, 
 
 Below are the genomescope estimates based on the provided QC reads:
 
-```{r echo = F}
+```{r echo = F, message = F, warning = F}
 #| eval: !expr params$jellyfish
 #| output: asis
 source("scripts/_genomescope_page.R")
@@ -294,7 +294,7 @@ source("scripts/_genomescope_page.R")
 
 The pipeline was run using the following software versions:
 
-```{r}
+```{r , message = F, warning = F}
 #| message: false
 #| echo: false
 #| output: asis
@@ -317,6 +317,7 @@ lapply(1:length(versions), \(process) {
     bind_rows()
 }) |>
   bind_rows() |>
+  dplyr::arrange(Tool) |>
         gt::gt() |>
         gt::fmt_auto() |>
         gt::opt_stylize(color = "gray") |>
