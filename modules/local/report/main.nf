@@ -5,11 +5,8 @@ process REPORT {
     container "${workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container
         ? 'oras://community.wave.seqera.io/library/quarto_r-gt_r-plotly_r-quarto_pruned:c7c55c1c911608e9'
         : 'community.wave.seqera.io/library/quarto_r-gt_r-plotly_r-quarto_pruned:9829faca188871f4'}"
-    /* wave builds OLD
-    https://wave.seqera.io/view/builds/bd-6e20dd9b9b77f359_1 singularity
-    https://wave.seqera.io/view/builds/bd-be4a8863b7b76cf7_1 docker
-    */
-    /* wave builds new container TESTING
+    /* wave builds new container
+    https://wave.seqera.io/view/builds/bd-2e7b05f37680e427_1 singularity
     https://wave.seqera.io/view/builds/bd-9829faca188871f4_1 docker
     */
     input:
@@ -94,7 +91,7 @@ process REPORT {
     export NUMBA_NUM_THREADS="${task.cpus}"
 
     export HOME="\$PWD"
-    quarto render report.qmd \\
+    LC_ALL=C.UTF-8 quarto render report.qmd \\
         ${report_profile} \\
         ${report_params}
     """
