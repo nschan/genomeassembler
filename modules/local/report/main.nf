@@ -5,10 +5,7 @@ process REPORT {
     container "${ workflow.containerEngine in ['singularity', 'apptainer'] && !task.ext.singularity_pull_docker_container
 ?         'https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/bf/bfe93e1b53e41d2de7d9119a029a590a003fb2f335d26ef94c2b077bf026873b/data'
 :         'community.wave.seqera.io/library/quarto_r-gt_r-plotly_r-quarto_pruned:6ca44959250fa39d' }"
-    /* wave builds new container
-    https://wave.seqera.io/view/builds/bd-2e7b05f37680e427_1 singularity
-    https://wave.seqera.io/view/builds/bd-9829faca188871f4_1 docker
-    */
+
     input:
     path qmdir_files,       stageAs: "*"
     path funct_files,       stageAs: "functions/*"
