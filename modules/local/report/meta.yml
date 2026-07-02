@@ -1,0 +1,92 @@
+name: report
+description: Create report for nf-core/genomeassembler
+keywords:
+  - report
+  - quarto
+tools:
+  - quarto:
+      description: An open-source scientific and technical publishing system.
+      homepage: https://quarto.org/
+      documentation: https://quarto.org/docs/reference/
+      tool_dev_url: https://github.com/quarto-dev/quarto-cli
+      licence: ["MIT"]
+      identifier: ""
+input:
+  - qmdir_files:
+      type: path
+      description: |
+        qmd for reporting
+  - funct_files:
+      type: path
+      description: |
+        Functions for reporting
+  - script_files:
+      type: path
+      description: |
+        Scripts for reporting
+  - fastplong_files:
+      type: path
+      description: |
+        Fastplong json outputs
+  - jelly_files:
+      type: path
+      description: |
+        Genomescope outputs
+  - quast_files:
+      type: path
+      description: |
+        quast tsv report
+  - busco_files:
+      type: path
+      description: |
+        busco short summary
+  - meryl_files:
+      type: path
+      description: |
+        merqury plot.log.png files.
+  - versions:
+      type: val
+      description: |
+        Collected versions.
+  - groups:
+      type: val
+      description: |
+        Sample - group relationshipts
+output:
+  - report_html:
+      - - "report.html":
+            type: path
+            description: |
+              Report html file
+        - "report_files/*":
+            type: path
+            description: |
+              Files required to view html report.
+  - busco_table:
+      - - "reports.csv":
+            type: path
+            description: |
+              Collated busco reports
+  - quast_table:
+      - - "reports.csv":
+            type: path
+            description: |
+              Collated quast reports
+authors:
+  - "@nschan"
+maintainers:
+  - "@nschan"
+containers:
+  docker:
+    linux/amd64:
+      name: community.wave.seqera.io/library/quarto_r-gt_r-plotly_r-quarto_pruned:6ca44959250fa39d
+      build_id: bd-6ca44959250fa39d_1
+      scan_id: sc-607a542712e1de26_1
+  singularity:
+    linux/amd64:
+      name: oras://community.wave.seqera.io/library/quarto_r-gt_r-plotly_r-quarto_pruned:210f2ce43d70ea08
+      build_id: bd-210f2ce43d70ea08_1
+      https: https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/bf/bfe93e1b53e41d2de7d9119a029a590a003fb2f335d26ef94c2b077bf026873b/data
+  conda:
+    linux/amd64:
+      lock_file: modules/local/report/.conda-lock/linux_amd64-bd-6ca44959250fa39d_1.txt
