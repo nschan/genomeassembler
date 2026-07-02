@@ -323,7 +323,7 @@
                 "format": "file-path",
                 "default": null,
                 "description": "Path to reverse HiC short reads",
-                "meta": ["hic_trim"]
+                "meta": ["hic_R"]
             }
         },
         "required": ["sample"]

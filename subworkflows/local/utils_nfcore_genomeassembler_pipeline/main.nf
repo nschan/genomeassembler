@@ -100,28 +100,70 @@ workflow PIPELINE_INITIALISATION {
     //
     // Create channel from input file provided through params.input
     //
-
     ch_samplesheet = channel.fromList(samplesheetToList(params.input, "assets/schema_input.json"))
         /*
         This is a somewhat crucial step, where the samplesheet and params are used to determine per-sample parameters.
+        This has been greatly simplified thanks to @nvnieuwk
         */
         .map { it ->
-            def strategy        =   it.strategy ?: params.strategy
-            def ontreads        =   it.ontreads ?: params.ontreads
-            def hifireads       =   it.hifireads ?: params.hifireads
-            def assembler       =   it.assembler ?: params.assembler
+            def meta = it[0]
+            // Populate everything that has no value with the value from params
+            return meta.collectEntries { key, val -> key == "group" ? [ key, val ] : [ key, val ?: params.get(key) ] }
+        }
+        .map{
+            it ->
             def assembler_ont   =   it.assembler_ont ?:
+                                    (it.strategy == "single" && it.assembler && it.ontreads && !it.hifireads) ? it.assembler :
+                                    (it.strategy == "hybrid" && it.assembler == "hifiasm") ? it.assembler :
+                                    it.assembler.contains("_") ? it.assembler.tokenize("_")[0] :
+                                    null
+            def assembler_hifi  =   it.assembler_hifi ?:
+                                    (it.strategy == "single" && it.assembler && it.hifireads && !it.ontreads) ? it.assembler :
+                                    it.assembler.contains("_") ? it.assembler.tokenize("_")[1] :
+                                    null
+            def polish          =   it.polish ?:
+                                    (it.polish_medaka && it.polish_dorado) ? error("Both polish_medaka and polish_dorado are set.") :
+                                    (it.polish_medaka && it.polish_pilon && it.ontreads) ? "medaka+pilon" :
+                                    (it.polish_dorado && it.polish_pilon && it.ontreads) ? "dorado+pilon" :
+                                    (it.polish_medaka && it.ontreads) ? "medaka" :
+                                    (it.polish_dorado && it.ontreads) ? "dorado" :
+                                    (it.polish_pilon && (it.shortread_F || params.shortread_F)) ? "pilon" :
+                                    null
+            def merqury         =   it.merqury & !it.shortread_F ? false : it.merqury
+            it - it.subMap(
+                [
+                    "assembler_ont",
+                    "assembler_hifi",
+                    "polish",
+                    "merqury"
+                ]) + [
+                    assembler_ont: assembler_ont,
+                    assembler_hifi: assembler_hifi,
+                    polish: polish,
+                    merqury: merqury
+                ]
+
+        }
+        .map {
+            it -> [meta: it]
+        }
+        /*
+            def strategy        =   meta.strategy ?: params.strategy
+            def ontreads        =   meta.ontreads ?: params.ontreads
+            def hifireads       =   meta.hifireads ?: params.hifireads
+            def assembler       =   meta.assembler ?: params.assembler
+            def assembler_ont   =   meta.assembler_ont ?:
                                     (strategy == "single" && assembler && ontreads && !hifireads) ? assembler :
                                     params.assembler_ont ?:
                                     (strategy == "hybrid" && assembler == "hifiasm") ? assembler :
                                     assembler.contains("_") ? assembler.tokenize("_")[0] :
                                     null
-            def assembler_hifi  =   it.assembler_hifi ?:
+            def assembler_hifi  =   meta.assembler_hifi ?:
                                     (strategy == "single" && assembler && hifireads && !ontreads) ? assembler :
                                     params.assembler_hifi ?:
                                     assembler.contains("_") ? assembler.tokenize("_")[1] :
                                     null
-            def polish          =   it.polish ?:
+            def polish          =   meta.polish ?:
                                     (params.polish_medaka && params.polish_dorado) ? error("Both polish_medaka and polish_dorado are set.") :
                                     (params.polish_medaka && params.polish_pilon && ontreads) ? "medaka+pilon" :
                                     (params.polish_dorado && params.polish_pilon && ontreads) ? "dorado+pilon" :
@@ -129,12 +171,12 @@ workflow PIPELINE_INITIALISATION {
                                     (params.polish_dorado && ontreads) ? "dorado" :
                                     (params.polish_pilon && (it.shortread_F || params.shortread_F)) ? "pilon" :
                                     null
-            def scaffold_hic    =   it.scaffold_hic ?: params.scaffold_hic
+            def scaffold_hic    =   meta.scaffold_hic ?: params.scaffold_hic
             def hic_F           =   scaffold_hic ? (it.hic_F ?: params.hic_F) : []
             def hic_R           =   scaffold_hic ? (it.hic_R ?: params.hic_R) : []
             def hic_trim        =   scaffold_hic ? (it.hic_trim ?: params.hic_trim) : false
-            def assembler_ont_args =  it.assembler_ont_args ?: params.assembler_ont_args ?: ''
-            def assembler_hifi_args = it.assembler_hifi_args ?: params.assembler_hifi_args ?: ''
+            def assembler_ont_args =  meta.assembler_ont_args ?: params.assembler_ont_args ?: ''
+            def assembler_hifi_args = meta.assembler_hifi_args ?: params.assembler_hifi_args ?: ''
             // Check if strategy can be inferred
             strategy == "single" && ontreads && hifireads && !((!assembler_ont && assembler_hifi) || (assembler_ont && !assembler_hifi)) ?
                 error(
@@ -213,8 +255,8 @@ workflow PIPELINE_INITIALISATION {
             ]
         ]
         }
-    ch_samplesheet.view { it -> "Parsed samplesheet: $it"}
-    // Define valid hybrid assemblers
+    */
+    //ch_samplesheet.view { it -> "Reformatted samplesheet: $it"}
     ch_samplesheet.dump(tag: "PARSED INPUTS:")
 
     emit:
