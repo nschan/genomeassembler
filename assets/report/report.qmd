@@ -6,6 +6,8 @@ format:
     toc: true
     toc_float: true
     toc-location: left
+    embed-resources: true
+    self-contained: true
     other-links:
       - text: "Github repo"
         icon: github
