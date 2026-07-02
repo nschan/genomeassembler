@@ -214,22 +214,15 @@ def create_shortread_channel(row) { // This function expects a meta map as input
 def create_hic_shortread_channel(row) { // This function expects a meta map as input
     // create meta map
     def meta = row
-    meta.paired = true
-    meta.single_end = !meta.paired
 
     // add path(s) of the fastq file(s) to the meta map
     def hic_reads = []
     if (!file(row.hic_F).exists()) {
         exit(1, "ERROR: hic_F fastq file does not exist!\n${row.hic_F}")
     }
-    if (!meta.paired) {
-        hic_reads = [meta: meta + [hic_reads: [row.hic_F]]]
+    if (!file(row.hic_R).exists()) {
+        exit(1, "ERROR: hic_R fastq file does not exist!\n${row.hic_R}")
     }
-    else {
-        if (!file(row.hic_R).exists()) {
-            exit(1, "ERROR: shortread_R fastq file does not exist!\n${row.hic_R}")
-        }
-        hic_reads = [ meta: meta + [hic_reads:  [row.hic_F, row.hic_R]] ]
-    }
+    hic_reads = [ meta: meta + [hic_reads:  [row.hic_F, row.hic_R]] ]
     return hic_reads
 }
