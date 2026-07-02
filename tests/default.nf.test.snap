@@ -590,7 +590,6 @@
                 "test_hifiasm_flye_hic_bwamem_index.bwt.2bit.64:md5,f1dd16d8f1167b75b942ad58e64a6962",
                 "test_hifiasm_flye_hic_bwamem_index.pac:md5,e04d7a732218fe98156e72b2ebb3a901",
                 "test_hifiasm_flye_hic_bwamem.bam:md5,837f8fbfbaf79b1049093e62a23a02b2",
-                "test_hifiasm_flye_hic_hic_dedup.MarkDuplicates.metrics.txt:md5,527edaa78cb27077ae13d1107660d799",
                 "test_hifiasm_flye_hic_hic_dedup.bai:md5,aeda4dd1092e5ae65a44c90faa2a4e86",
                 "test_hifiasm_flye_hic_hic_dedup.bam:md5,d93aabe7dbda135b1562eeef7808d347",
                 "test_hifiasm_flye_hic_assembly_patch.patch.fasta.gz.fai:md5,06f2947d7897ca8a7c6f30a81bd6bdcc",
@@ -638,7 +637,6 @@
                 "test_ont_hifiasm_hic_bwamem_index.bwt.2bit.64:md5,f1dd16d8f1167b75b942ad58e64a6962",
                 "test_ont_hifiasm_hic_bwamem_index.pac:md5,e04d7a732218fe98156e72b2ebb3a901",
                 "test_ont_hifiasm_hic_bwamem.bam:md5,17974deb636209b4c107a34eed65cf36",
-                "test_ont_hifiasm_hic_hic_dedup.MarkDuplicates.metrics.txt:md5,7750654dfa7341a464556464c4645a5f",
                 "test_ont_hifiasm_hic_hic_dedup.bai:md5,35ed2a1466f9c7d89037da1f9fe8b81e",
                 "test_ont_hifiasm_hic_hic_dedup.bam:md5,9246dec2c1b6d6f4fd37383ddda244cb",
                 "test_ont_hifiasm_hic.fasta.gz.fai:md5,3f23b28c147c40cb4f1d6571cf2dc045",
@@ -647,10 +645,10 @@
                 "test_ont_hifiasm_hic_hic_scaffolds_final.fa:md5,3ac2a0232e899bcb28b72e3c4f1c2d79"
             ]
         ],
+        "timestamp": "2026-07-02T15:41:23.009205129",
         "meta": {
-            "nf-test": "0.9.2",
+            "nf-test": "0.9.5",
             "nextflow": "25.10.4"
-        },
-        "timestamp": "2026-07-02T15:11:59.946518202"
+        }
     }
 }
